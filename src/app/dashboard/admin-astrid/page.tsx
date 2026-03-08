@@ -11,6 +11,7 @@ export default function AstridAdminDashboard() {
     const [summary, setSummary] = useState({ totalMinutes: 0 });
     const [isLoggingTime, setIsLoggingTime] = useState<string | null>(null);
     const [minutesToLog, setMinutesToLog] = useState<string>('');
+    const [logDescription, setLogDescription] = useState<string>('');
     const router = useRouter();
 
     const fetchAdminData = async () => {
@@ -34,12 +35,12 @@ export default function AstridAdminDashboard() {
             // return;
         }
 
-        // 2. Fetch Tickets with user info
+        // 2. Fetch Tickets with user info (including email)
         const { data: ticketsData } = await supabase
             .from('tickets')
             .select(`
                 *,
-                profiles (full_name)
+                profiles (full_name, email)
             `)
             .order('created_at', { ascending: false });
 
@@ -72,7 +73,8 @@ export default function AstridAdminDashboard() {
             .eq('id', ticketId);
 
         if (!error) {
-            fetchAdminData();
+            // Update local state immediately for better UX
+            setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus } : t));
         }
     };
 
@@ -80,12 +82,13 @@ export default function AstridAdminDashboard() {
         const mins = parseInt(minutesToLog);
         if (isNaN(mins) || mins <= 0) return;
 
-        // 1. Insert Log
+        // 1. Insert Log with Description
         const { error: logError } = await supabase
             .from('work_logs')
             .insert({
                 ticket_id: ticketId,
-                minutes_spent: mins
+                minutes_spent: mins,
+                description: logDescription
             });
 
         if (!logError) {
@@ -117,8 +120,11 @@ export default function AstridAdminDashboard() {
                 .eq('id', userId);
 
             setMinutesToLog('');
+            setLogDescription('');
             setIsLoggingTime(null);
             fetchAdminData();
+        } else {
+            alert("Error al registrar tiempo: " + logError.message);
         }
     };
 
@@ -162,7 +168,8 @@ export default function AstridAdminDashboard() {
                                     {tickets.map(ticket => (
                                         <tr key={ticket.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                                             <td style={{ padding: '1.5rem' }}>
-                                                {ticket.profiles?.full_name}
+                                                <div style={{ fontWeight: 600 }}>{ticket.profiles?.full_name}</div>
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--fg-muted)' }}>{ticket.profiles?.email}</div>
                                             </td>
                                             <td style={{ padding: '1.5rem' }}>
                                                 <div style={{ fontWeight: 600 }}>{ticket.title}</div>
@@ -192,14 +199,21 @@ export default function AstridAdminDashboard() {
                                             </td>
                                             <td style={{ padding: '1.5rem' }}>
                                                 {isLoggingTime === ticket.id ? (
-                                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: '150px' }}>
+                                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                            <input
+                                                                type="number" autoFocus placeholder="Min"
+                                                                value={minutesToLog} onChange={(e) => setMinutesToLog(e.target.value)}
+                                                                style={{ width: '60px', padding: '0.4rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--accent-primary)', color: 'white' }}
+                                                            />
+                                                            <button onClick={() => handleLogTime(ticket.id, ticket.user_id)} className="btn-primary" style={{ padding: '0.4rem', flex: 1 }}>Registrar</button>
+                                                            <button onClick={() => setIsLoggingTime(null)} style={{ background: 'none', border: 'none', color: '#ef4444' }}>✕</button>
+                                                        </div>
                                                         <input
-                                                            type="number" autoFocus placeholder="Min"
-                                                            value={minutesToLog} onChange={(e) => setMinutesToLog(e.target.value)}
-                                                            style={{ width: '60px', padding: '0.4rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--accent-primary)', color: 'white' }}
+                                                            type="text" placeholder="¿Qué hiciste?"
+                                                            value={logDescription} onChange={(e) => setLogDescription(e.target.value)}
+                                                            style={{ width: '100%', padding: '0.4rem', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontSize: '0.8rem' }}
                                                         />
-                                                        <button onClick={() => handleLogTime(ticket.id, ticket.user_id)} className="btn-primary" style={{ padding: '0.4rem' }}>✓</button>
-                                                        <button onClick={() => setIsLoggingTime(null)} style={{ background: 'none', border: 'none', color: '#ef4444' }}>✕</button>
                                                     </div>
                                                 ) : (
                                                     <button

@@ -5,6 +5,7 @@ create extension if not exists "uuid-ossp";
 create table if not exists profiles (
   id uuid references auth.users on delete cascade primary key,
   full_name text,
+  email text,
   paypal_account text,
   is_admin boolean default false,
   total_minutes_used integer default 0,
@@ -31,6 +32,7 @@ create table if not exists work_logs (
   id uuid default uuid_generate_v4() primary key,
   ticket_id uuid references tickets(id) on delete cascade not null,
   minutes_spent integer not null,
+  description text,
   logged_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -73,8 +75,8 @@ end $$;
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, full_name)
-  values (new.id, new.raw_user_meta_data->>'full_name');
+  insert into public.profiles (id, full_name, email)
+  values (new.id, new.raw_user_meta_data->>'full_name', new.email);
   return new;
 end;
 $$ language plpgsql security definer;
@@ -87,8 +89,9 @@ create trigger on_auth_user_created
   for each row execute procedure public.handle_new_user();
 
 -- Migration: Create profiles for existing users who don't have one
-insert into public.profiles (id, full_name)
-select id, raw_user_meta_data->>'full_name'
+insert into public.profiles (id, full_name, email)
+select id, raw_user_meta_data->>'full_name', email
 from auth.users
 where id not in (select id from public.profiles)
-on conflict (id) do nothing;
+on conflict (id) do update 
+set email = excluded.email;

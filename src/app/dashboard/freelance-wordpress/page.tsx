@@ -51,10 +51,13 @@ export default function UserFreelanceDashboard() {
 
         setProfile(profileData);
 
-        // 2. Get Tickets
+        // 2. Get Tickets with Work Logs
         const { data: ticketsData } = await supabase
             .from('tickets')
-            .select('*')
+            .select(`
+                *,
+                work_logs (*)
+            `)
             .eq('user_id', user.id)
             .order('created_at', { ascending: false });
 
@@ -215,20 +218,41 @@ export default function UserFreelanceDashboard() {
                                     </thead>
                                     <tbody>
                                         {tickets.map(ticket => (
-                                            <tr key={ticket.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                                <td style={{ padding: '1.5rem' }}>{ticket.title}</td>
-                                                <td style={{ padding: '1.5rem' }}>
-                                                    <span style={{
-                                                        fontSize: '0.8rem',
-                                                        padding: '0.2rem 0.6rem',
-                                                        borderRadius: '4px',
-                                                        background: ticket.priority === 'Alta' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255, 255, 255, 0.05)',
-                                                        color: ticket.priority === 'Alta' ? '#ef4444' : 'var(--fg-main)'
-                                                    }}>{ticket.priority}</span>
-                                                </td>
-                                                <td style={{ padding: '1.5rem' }}>{ticket.status}</td>
-                                                <td style={{ padding: '1.5rem' }}>{ticket.total_minutes} min</td>
-                                            </tr>
+                                            <>
+                                                <tr key={ticket.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <td style={{ padding: '1.5rem' }}>
+                                                        <div style={{ fontWeight: 600 }}>{ticket.title}</div>
+                                                        <div style={{ fontSize: '0.85rem', color: 'var(--fg-muted)' }}>{ticket.description}</div>
+                                                    </td>
+                                                    <td style={{ padding: '1.5rem' }}>
+                                                        <span style={{
+                                                            fontSize: '0.8rem',
+                                                            padding: '0.2rem 0.6rem',
+                                                            borderRadius: '4px',
+                                                            background: ticket.priority === 'Alta' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+                                                            color: ticket.priority === 'Alta' ? '#ef4444' : 'var(--fg-main)'
+                                                        }}>{ticket.priority}</span>
+                                                    </td>
+                                                    <td style={{ padding: '1.5rem' }}>{ticket.status}</td>
+                                                    <td style={{ padding: '1.5rem' }}>{ticket.total_minutes} min</td>
+                                                </tr>
+                                                {/* Work Logs History Row */}
+                                                {ticket.work_logs && ticket.work_logs.length > 0 && (
+                                                    <tr>
+                                                        <td colSpan={4} style={{ padding: '0 1.5rem 1.5rem 1.5rem', background: 'rgba(255,255,255,0.02)' }}>
+                                                            <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+                                                                <small style={{ color: 'var(--accent-primary)', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>Desglose de trabajo:</small>
+                                                                {ticket.work_logs.map((log: any) => (
+                                                                    <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
+                                                                        <span style={{ color: 'var(--fg-muted)' }}>• {log.description || 'Sin descripción'}</span>
+                                                                        <span style={{ fontWeight: 600 }}>{log.minutes_spent} min</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </>
                                         ))}
                                     </tbody>
                                 </table>
