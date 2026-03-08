@@ -59,39 +59,29 @@ alter table tickets enable row level security;
 alter table work_logs enable row level security;
 alter table payments enable row level security;
 
--- Function to check admin status (SECURITY DEFINER to avoid recursion)
-create or replace function public.is_admin()
+-- Anti-Recursion Function: Runs with system permissions to bypass RLS loops
+create or replace function public.soy_admin() 
 returns boolean as $$
 begin
-  return exists (
-    select 1 from public.profiles
-    where id = auth.uid() and is_admin = true
-  );
+  return (select coalesce(is_admin, false) from public.profiles where id = auth.uid());
 end;
 $$ language plpgsql security definer;
 
--- PROFILES: Each user sees their own, admins see all.
-create policy "p_select" on profiles for select using (auth.uid() = id or public.is_admin());
-create policy "p_insert" on profiles for insert with check (auth.uid() = id);
-create policy "p_update" on profiles for update using (auth.uid() = id or public.is_admin());
+-- PROFILES Policies
+create policy "perfiles_propios" on profiles for all using (auth.uid() = id);
+create policy "perfiles_admin_ver" on profiles for select using (public.soy_admin());
 
--- TICKETS: Users see their own, admins see all.
-create policy "t_select" on tickets for select using (auth.uid() = user_id or public.is_admin());
-create policy "t_insert" on tickets for insert with check (auth.uid() = user_id);
-create policy "t_update" on tickets for update using (auth.uid() = user_id or public.is_admin());
-create policy "t_delete" on tickets for delete using (auth.uid() = user_id or public.is_admin());
+-- TICKETS Policies
+create policy "tickets_propios" on tickets for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "tickets_admin_total" on tickets for all using (public.soy_admin());
 
--- WORK_LOGS: Users see logs of their tickets, admins see/manage all.
-create policy "l_select" on work_logs for select using (
-  exists (select 1 from tickets where tickets.id = work_logs.ticket_id and tickets.user_id = auth.uid())
-  or public.is_admin()
-);
-create policy "l_admin" on work_logs for all using (public.is_admin());
+-- WORK_LOGS Policies
+create policy "logs_ver" on work_logs for select using (true);
+create policy "logs_admin" on work_logs for all using (public.soy_admin());
 
--- PAYMENTS: Users see/create own, admins see all.
-create policy "pay_select" on payments for select using (auth.uid() = user_id or public.is_admin());
-create policy "pay_insert" on payments for insert with check (auth.uid() = user_id);
-create policy "pay_update" on payments for update using (public.is_admin());
+-- PAYMENTS Policies
+create policy "pagos_propios" on payments for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "pagos_admin" on payments for all using (public.soy_admin());
 
 -- Trigger to create profile on signup
 create or replace function public.handle_new_user()
