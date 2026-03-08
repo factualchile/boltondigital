@@ -83,7 +83,52 @@ h3,
   padding: 0 2rem;
 }
 
+/* Responsive Table Wrapper */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Base Styles */
 section {
   padding: 8rem 0;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  :root {
+    --header-height: 70px;
+  }
+
+  .container {
+    padding: 0 1.25rem;
+  }
+
+  section {
+    padding: 4rem 0;
+  }
+
+  h1 {
+    font-size: 2.5rem !important;
+  }
+
+  h2 {
+    font-size: 2rem !important;
+  }
+
+  .nav-links {
+    gap: 0.75rem !important;
+  }
+
+  .nav-links span.user-greeting {
+    display: none;
+    /* Hide 'Hola [Name]' on small screens */
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 2rem !important;
+  }
 }

@@ -104,11 +104,11 @@ export default function SuperAdminDashboard() {
                     <MetricCard label="Tickets Activos" value={stats.activeTickets} />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '2rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
                     {/* Recent Activities */}
                     <section>
                         <h3 style={{ marginBottom: '1.5rem' }}>Registro de Movimientos (Astrid)</h3>
-                        <div className="glass" style={{ borderRadius: '24px', overflow: 'hidden' }}>
+                        <div className="glass table-responsive" style={{ borderRadius: '24px', overflow: 'hidden' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                                 <thead>
                                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>

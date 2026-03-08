@@ -131,7 +131,12 @@ export default function UserFreelanceDashboard() {
         <main>
             <Navbar />
             <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 2rem)' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '2rem' }}>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gap: '2rem',
+                    alignItems: 'start'
+                }}>
 
                     {/* Sidebar */}
                     <aside>
@@ -207,7 +212,7 @@ export default function UserFreelanceDashboard() {
                         {/* Stats Grid */}
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(3, 1fr)',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                             gap: '1.5rem',
                             marginBottom: '3rem'
                         }}>
@@ -217,7 +222,7 @@ export default function UserFreelanceDashboard() {
                         </div>
 
                         {/* Tickets Table */}
-                        <div className="glass" style={{ borderRadius: '24px', overflow: 'hidden' }}>
+                        <div className="glass table-responsive" style={{ borderRadius: '24px', overflow: 'hidden' }}>
                             {tickets.length === 0 ? (
                                 <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--fg-muted)' }}>
                                     Todavía no tienes solicitudes activas.

@@ -160,7 +160,7 @@ export default function AstridAdminDashboard() {
                     <p style={{ color: 'var(--fg-muted)' }}>Gestión de solicitudes y registro de tiempos técnicos.</p>
                 </header>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
 
                     {/* Active Tickets List */}
                     <section>
@@ -188,7 +188,7 @@ export default function AstridAdminDashboard() {
                                 ))}
                             </div>
                         </div>
-                        <div className="glass" style={{ borderRadius: '24px', overflow: 'hidden' }}>
+                        <div className="glass table-responsive" style={{ borderRadius: '24px', overflow: 'hidden' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                                 <thead>
                                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
