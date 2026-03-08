@@ -9,39 +9,74 @@ export default function UserFreelanceDashboard() {
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<any>(null);
     const [tickets, setTickets] = useState<any[]>([]);
+    const [showModal, setShowModal] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
-    useEffect(() => {
-        async function getDashboardData() {
-            const { data: { user } } = await supabase.auth.getUser();
+    // Form states
+    const [title, setTitle] = useState('');
+    const [priority, setPriority] = useState('Media');
+    const [description, setDescription] = useState('');
 
-            if (!user) {
-                router.push('/login');
-                return;
-            }
+    async function getDashboardData() {
+        const { data: { user } } = await supabase.auth.getUser();
 
-            // 1. Get Profile (Stats)
-            const { data: profileData } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id)
-                .single();
-
-            setProfile(profileData);
-
-            // 2. Get Tickets
-            const { data: ticketsData } = await supabase
-                .from('tickets')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
-
-            setTickets(ticketsData || []);
-            setLoading(false);
+        if (!user) {
+            router.push('/login');
+            return;
         }
 
+        // 1. Get Profile (Stats)
+        const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+        setProfile(profileData);
+
+        // 2. Get Tickets
+        const { data: ticketsData } = await supabase
+            .from('tickets')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+        setTickets(ticketsData || []);
+        setLoading(false);
+    }
+
+    useEffect(() => {
         getDashboardData();
     }, [router]);
+
+    const handleCreateTicket = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        const { data: { user } } = await supabase.auth.getUser();
+
+        const { error } = await supabase
+            .from('tickets')
+            .insert({
+                user_id: user?.id,
+                title,
+                priority,
+                description,
+                status: 'Pendiente'
+            });
+
+        if (!error) {
+            setTitle('');
+            setDescription('');
+            setPriority('Media');
+            setShowModal(false);
+            getDashboardData(); // Refresh list
+        } else {
+            alert("Error al crear la solicitud: " + error.message);
+        }
+        setIsSubmitting(false);
+    };
 
     if (loading) {
         return (
@@ -78,8 +113,61 @@ export default function UserFreelanceDashboard() {
                     <section>
                         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                             <h2>Mi Panel <span className="text-gradient">Freelance</span></h2>
-                            <button className="btn-primary">+ Nueva Solicitud</button>
+                            <button className="btn-primary" onClick={() => setShowModal(true)}>+ Nueva Solicitud</button>
                         </header>
+
+                        {/* Modal Create Ticket */}
+                        {showModal && (
+                            <div style={{
+                                position: 'fixed',
+                                top: 0, left: 0, width: '100%', height: '100%',
+                                background: 'rgba(0,0,0,0.8)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                zIndex: 2000,
+                                padding: '1rem'
+                            }}>
+                                <div className="glass" style={{ width: '100%', maxWidth: '600px', padding: '2.5rem', borderRadius: '24px', position: 'relative' }}>
+                                    <button
+                                        onClick={() => setShowModal(false)}
+                                        style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '1.5rem' }}
+                                    >✕</button>
+                                    <h3 style={{ marginBottom: '2rem', fontSize: '1.75rem' }}>Nueva Solicitud para <span className="text-gradient">Astrid</span></h3>
+
+                                    <form onSubmit={handleCreateTicket} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--fg-muted)' }}>Título de la solicitud</label>
+                                            <input
+                                                type="text" required value={title} onChange={(e) => setTitle(e.target.value)}
+                                                placeholder="Ej: Error en formulario de contacto"
+                                                style={{ width: '100%', padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white' }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--fg-muted)' }}>Prioridad</label>
+                                            <select
+                                                value={priority} onChange={(e) => setPriority(e.target.value)}
+                                                style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white' }}
+                                            >
+                                                <option value="Baja">Baja</option>
+                                                <option value="Media">Media</option>
+                                                <option value="Alta">Alta</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--fg-muted)' }}>Descripción completa</label>
+                                            <textarea
+                                                required rows={4} value={description} onChange={(e) => setDescription(e.target.value)}
+                                                placeholder="Describe detalladamente lo que necesitas..."
+                                                style={{ width: '100%', padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', resize: 'vertical' }}
+                                            />
+                                        </div>
+                                        <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ padding: '1rem' }}>
+                                            {isSubmitting ? 'Creando...' : 'Crear Solicitud'}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Stats Grid */}
                         <div style={{
