@@ -27,11 +27,27 @@ export default function UserFreelanceDashboard() {
         }
 
         // 1. Get Profile (Stats)
-        const { data: profileData } = await supabase
+        let { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', user.id)
             .single();
+
+        // AUTO-CREATE PROFILE IF MISSING (Fix for FK Error)
+        if (profileError || !profileData) {
+            const { data: newProfile, error: createError } = await supabase
+                .from('profiles')
+                .upsert({
+                    id: user.id,
+                    full_name: user.user_metadata?.full_name || 'Usuario'
+                })
+                .select()
+                .single();
+
+            if (!createError) {
+                profileData = newProfile;
+            }
+        }
 
         setProfile(profileData);
 

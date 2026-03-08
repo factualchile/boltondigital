@@ -85,3 +85,10 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- Migration: Create profiles for existing users who don't have one
+insert into public.profiles (id, full_name)
+select id, raw_user_meta_data->>'full_name'
+from auth.users
+where id not in (select id from public.profiles)
+on conflict (id) do nothing;
