@@ -60,37 +60,29 @@ alter table work_logs enable row level security;
 alter table payments enable row level security;
 
 -- Policies for PROFILES
-create policy "Users can view own profile" on profiles for select using (auth.uid() = id);
-create policy "Admins can view all profiles" on profiles for select using (
-  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
-);
-create policy "Admins can update profiles" on profiles for update using (
-  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
-);
+create policy "perfil_ver_propio" on profiles for select using (auth.uid() = id);
+create policy "perfil_insertar_propio" on profiles for insert with check (auth.uid() = id);
+create policy "perfil_admin_ver_todo" on profiles for select using (is_admin = true);
+create policy "perfil_admin_editar_todo" on profiles for update using (is_admin = true);
 
 -- Policies for TICKETS
-create policy "Users can view own tickets" on tickets for select using (auth.uid() = user_id);
-create policy "Users can insert own tickets" on tickets for insert with check (auth.uid() = user_id);
-create policy "Admins can view all tickets" on tickets for select using (
-  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
-);
-create policy "Admins can update tickets" on tickets for update using (
-  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
-);
+create policy "tickets_ver" on tickets for select using (auth.uid() = user_id or (select is_admin from profiles where id = auth.uid()));
+create policy "tickets_insertar" on tickets for insert with check (auth.uid() = user_id);
+create policy "tickets_editar" on tickets for update using (auth.uid() = user_id or (select is_admin from profiles where id = auth.uid()));
 
 -- Policies for WORK_LOGS
-create policy "Users can view logs of their tickets" on work_logs for select using (
-  exists (select 1 from tickets where tickets.id = work_logs.ticket_id and tickets.user_id = auth.uid())
+create policy "logs_ver" on work_logs for select using (
+  exists (select 1 from tickets where tickets.id = work_logs.ticket_id and tickets.user_id = auth.uid()) 
+  or 
+  (select is_admin from profiles where id = auth.uid())
 );
-create policy "Admins can manage work logs" on work_logs for all using (
-  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+create policy "logs_admin" on work_logs for all using (
+  (select is_admin from profiles where id = auth.uid())
 );
 
 -- Policies for PAYMENTS
-create policy "Users can view own payments" on payments for select using (auth.uid() = user_id);
-create policy "Admins can manage payments" on payments for all using (
-  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
-);
+create policy "pagos_ver" on payments for select using (auth.uid() = user_id or (select is_admin from profiles where id = auth.uid()));
+create policy "pagos_insertar" on payments for insert with check (auth.uid() = user_id);
 
 -- Trigger to create profile on signup
 create or replace function public.handle_new_user()
