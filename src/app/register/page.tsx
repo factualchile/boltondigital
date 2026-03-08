@@ -1,0 +1,173 @@
+'use client';
+
+import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+
+export default function RegisterPage() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [fullName, setFullName] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState(false);
+    const router = useRouter();
+
+    const handleRegister = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        // 1. Sign up the user
+        const { data, error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    full_name: fullName,
+                }
+            }
+        });
+
+        if (signUpError) {
+            setError(signUpError.message);
+            setLoading(false);
+        } else {
+            setSuccess(true);
+            setLoading(false);
+            // Wait a bit and redirect
+            setTimeout(() => {
+                router.push('/login');
+            }, 3000);
+        }
+    };
+
+    return (
+        <main style={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'var(--bg-deep)',
+            padding: '2rem'
+        }}>
+            <div className="glass" style={{
+                width: '100%',
+                maxWidth: '450px',
+                padding: '3rem',
+                borderRadius: '32px',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            }}>
+                <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                    <Link href="/" style={{ fontSize: '1.5rem', fontWeight: 800, textDecoration: 'none', color: 'white' }} className="font-heading">
+                        BOLTON<span className="text-gradient">DIGITAL</span>
+                    </Link>
+                    <h1 style={{ fontSize: '2rem', marginTop: '1.5rem' }}>Crea tu cuenta</h1>
+                    <p style={{ color: 'var(--fg-muted)', marginTop: '0.5rem' }}>Únete a la agencia del futuro</p>
+                </div>
+
+                {error && (
+                    <div style={{
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        color: '#ef4444',
+                        padding: '1rem',
+                        borderRadius: '12px',
+                        marginBottom: '1.5rem',
+                        fontSize: '0.9rem',
+                        border: '1px solid rgba(239, 68, 68, 0.2)'
+                    }}>
+                        {error}
+                    </div>
+                )}
+
+                {success ? (
+                    <div style={{
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        color: '#10b981',
+                        padding: '2rem',
+                        borderRadius: '12px',
+                        textAlign: 'center',
+                        border: '1px solid rgba(16, 185, 129, 0.2)'
+                    }}>
+                        <h3 style={{ marginBottom: '1rem' }}>¡Registro exitoso!</h3>
+                        <p>Revisa tu correo para confirmar tu cuenta. Te redirigiremos al login en unos segundos...</p>
+                    </div>
+                ) : (
+                    <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--fg-muted)' }}>Nombre Completo</label>
+                            <input
+                                type="text"
+                                required
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                placeholder="Juan Pérez"
+                                style={{
+                                    width: '100%',
+                                    padding: '1rem',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '12px',
+                                    color: 'white',
+                                    outline: 'none'
+                                }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--fg-muted)' }}>Email</label>
+                            <input
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="tu@email.com"
+                                style={{
+                                    width: '100%',
+                                    padding: '1rem',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '12px',
+                                    color: 'white',
+                                    outline: 'none'
+                                }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--fg-muted)' }}>Contraseña</label>
+                            <input
+                                type="password"
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Mínimo 6 caracteres"
+                                style={{
+                                    width: '100%',
+                                    padding: '1rem',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '12px',
+                                    color: 'white',
+                                    outline: 'none'
+                                }}
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="btn-primary"
+                            style={{ marginTop: '1rem', padding: '1rem' }}
+                        >
+                            {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+                        </button>
+                    </form>
+                )}
+
+                <p style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--fg-muted)', fontSize: '0.9rem' }}>
+                    ¿Ya tienes una cuenta? <Link href="/login" style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>Inicia sesión</Link>
+                </p>
+            </div>
+        </main>
+    );
+}
