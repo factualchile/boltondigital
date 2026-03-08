@@ -13,6 +13,9 @@ create table if not exists profiles (
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- Ensure columns exist in profiles if table was already there
+alter table profiles add column if not exists email text;
+
 -- Tickets Table
 create table if not exists tickets (
   id uuid default uuid_generate_v4() primary key,
@@ -35,6 +38,9 @@ create table if not exists work_logs (
   description text,
   logged_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- Ensure columns exist in work_logs if table was already there
+alter table work_logs add column if not exists description text;
 
 -- Payment Verifications
 create table if not exists payments (
