@@ -8,6 +8,7 @@ create table if not exists profiles (
   email text,
   paypal_account text,
   role text check (role in ('user', 'freelancer', 'admin')) default 'user',
+  access_level integer default 1, -- 1: User, 2: Freelancer, 3: Admin
   total_minutes_used integer default 0,
   total_usd_spent decimal(10,2) default 0.00,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null

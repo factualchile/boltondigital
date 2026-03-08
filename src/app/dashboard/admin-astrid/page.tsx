@@ -121,7 +121,7 @@ export default function AstridAdminDashboard() {
                 .single();
 
             const updatedMins = (userProfile?.total_minutes_used || 0) + mins;
-            const updatedUsd = (updatedMins / 60) * 7;
+            const updatedUsd = (updatedMins / 60) * 9;
 
             await supabase
                 .from('profiles')
@@ -149,7 +149,7 @@ export default function AstridAdminDashboard() {
     }
 
     const totalHours = (summary.totalMinutes / 60).toFixed(1);
-    const totalEarnings = ((summary.totalMinutes / 60) * 7).toFixed(2);
+    const totalEarnings = ((summary.totalMinutes / 60) * 9).toFixed(2);
 
     return (
         <main>
@@ -281,7 +281,7 @@ export default function AstridAdminDashboard() {
                                 <div style={{ fontSize: '2rem', fontWeight: 800 }}>{totalHours} h</div>
                             </div>
                             <div style={{ marginBottom: '1.5rem' }}>
-                                <small style={{ color: 'var(--fg-muted)' }}>Ingresos Calculados ($7/hr):</small>
+                                <small style={{ color: 'var(--fg-muted)' }}>Ingresos Calculados ($9/hr):</small>
                                 <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-secondary)' }}>${totalEarnings} <span style={{ fontSize: '0.9rem', color: 'var(--fg-muted)' }}>USD</span></div>
                             </div>
                         </div>

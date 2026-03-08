@@ -26,7 +26,7 @@ export default function FreelanceWordpressPage() {
                                 <BenefitItem title="Experiencia Senior" desc="Astrid es experta en el ecosistema WordPress, desde plugins hasta plantillas personalizadas." />
                                 <BenefitItem title="Transparencia Total" desc="Paga solo por el tiempo real invertido. Registro de minutos exactos en cada ticket." />
                                 <BenefitItem title="Dashboard Profesional" desc="Gestiona tus solicitudes y pagos en un solo lugar con claridad técnica." />
-                                <BenefitItem title="Tarifa Competitiva" desc="Soporte premium a una tarifa de $7 USD por hora de trabajo real." />
+                                <BenefitItem title="Tarifa Competitiva" desc="Soporte premium a una tarifa de $9 USD por hora de trabajo real." />
                             </ul>
                         </div>
 
@@ -44,7 +44,7 @@ export default function FreelanceWordpressPage() {
 
                             <div className="glass" style={{ padding: '2rem', borderRadius: '24px' }}>
                                 <h3 style={{ marginBottom: '0.5rem' }}>Tarifa Única</h3>
-                                <span style={{ fontSize: '2.5rem', fontWeight: 800 }}>$7 <span style={{ fontSize: '1rem', color: 'var(--fg-muted)', fontWeight: 400 }}>/ hora</span></span>
+                                <span style={{ fontSize: '2.5rem', fontWeight: 800 }}>$9 <span style={{ fontSize: '1rem', color: 'var(--fg-muted)', fontWeight: 400 }}>/ hora</span></span>
                             </div>
                         </div>
                     </div>

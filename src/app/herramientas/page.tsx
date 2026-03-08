@@ -6,7 +6,7 @@ const tools = [
         id: "freelance-wordpress",
         title: "Freelance Experta WordPress",
         description: "Acceso directo a Astrid, experta en edición y optimización de sitios WordPress. Soporte técnico por hora.",
-        price: "$7 / hora",
+        price: "$9 / hora",
         tags: ["WordPress", "Soporte", "Freelance"],
         href: "/herramientas/freelance-wordpress"
     },

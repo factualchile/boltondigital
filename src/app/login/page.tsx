@@ -29,19 +29,31 @@ export default function LoginPage() {
             return;
         }
 
-        // Fetch actual role from profile
+        // Fetch access level and role from profile
         const { data: profile } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, access_level')
             .eq('id', authData.user?.id)
             .single();
 
-        const actualRole = profile?.role || 'user';
+        const level = profile?.access_level || 1;
 
-        // Redirection logic
-        if (actualRole === 'admin') {
+        // Validation based on selectedRole and access_level
+        if (selectedRole === 'admin' && level < 3) {
+            setError('No tienes permisos de Administrador.');
+            setLoading(false);
+            return;
+        }
+        if (selectedRole === 'freelancer' && level < 2) {
+            setError('No tienes permisos de Freelancer.');
+            setLoading(false);
+            return;
+        }
+
+        // Redirection logic based on CHOICE (if allowed)
+        if (selectedRole === 'admin') {
             router.push('/dashboard/super-admin');
-        } else if (actualRole === 'freelancer') {
+        } else if (selectedRole === 'freelancer') {
             router.push('/dashboard/admin-astrid');
         } else {
             router.push('/dashboard/freelance-wordpress');

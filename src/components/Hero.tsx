@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Hero() {
     return (
         <section style={{
@@ -48,7 +50,7 @@ export default function Hero() {
                     </p>
 
                     <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-                        <button className="btn-primary">Explorar Soluciones</button>
+                        <Link href="/herramientas" className="btn-primary" style={{ textDecoration: 'none' }}>Explorar Soluciones</Link>
                         <button className="glass" style={{
                             padding: '0.8rem 2rem',
                             borderRadius: '50px',

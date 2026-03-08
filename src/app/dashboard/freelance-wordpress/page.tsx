@@ -291,7 +291,7 @@ export default function UserFreelanceDashboard() {
                                             <small style={{ color: 'var(--fg-muted)' }}>Cuenta PayPal:</small>
                                             <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>@joseluismartz</div>
                                         </div>
-                                        <p style={{ fontSize: '0.9rem', color: 'var(--fg-muted)' }}>* Recuerda que Astrid cobra $7 USD por hora de trabajo.</p>
+                                        <p style={{ fontSize: '0.9rem', color: 'var(--fg-muted)' }}>* Recuerda que Astrid cobra $9 USD por hora de trabajo.</p>
                                     </div>
 
                                     <form style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
