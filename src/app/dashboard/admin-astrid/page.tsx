@@ -6,47 +6,50 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from 'next/navigation';
 
 export default function AstridAdminDashboard() {
-    const [loading, setLoading] = useState(true);
     const [tickets, setTickets] = useState<any[]>([]);
+    const [filter, setFilter] = useState<'Pendiente' | 'Terminada' | 'En Proceso'>('Pendiente');
+    const [loading, setLoading] = useState(true);
+    const [profile, setProfile] = useState<any>(null);
     const [summary, setSummary] = useState({ totalMinutes: 0 });
     const [isLoggingTime, setIsLoggingTime] = useState<string | null>(null);
     const [minutesToLog, setMinutesToLog] = useState<string>('');
     const [logDescription, setLogDescription] = useState<string>('');
     const router = useRouter();
 
-    const fetchAdminData = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
+    async function getTickets() {
+        const { data } = await supabase
+            .from('tickets')
+            .select(`
+                *,
+                profiles (full_name, email)
+            `)
+            .eq('status', filter)
+            .order('created_at', { ascending: false });
 
+        setTickets(data || []);
+    }
+
+    async function fetchAdminData() {
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             router.push('/login');
             return;
         }
 
         // 1. Check Admin Status
-        const { data: profile } = await supabase
+        const { data: profileData } = await supabase
             .from('profiles')
-            .select('is_admin')
+            .select('*')
             .eq('id', user.id)
             .single();
 
-        if (!profile?.is_admin) {
-            // Un-comment this when admin is set in Supabase dashboard
-            // router.push('/dashboard/freelance-wordpress');
-            // return;
+        if (!profileData || (profileData.role !== 'freelancer' && profileData.role !== 'admin')) {
+            router.push('/dashboard/freelance-wordpress');
+            return;
         }
+        setProfile(profileData);
 
-        // 2. Fetch Tickets with user info (including email)
-        const { data: ticketsData } = await supabase
-            .from('tickets')
-            .select(`
-                *,
-                profiles (full_name, email)
-            `)
-            .order('created_at', { ascending: false });
-
-        setTickets(ticketsData || []);
-
-        // 3. Fetch Monthly Work Logs (Summary)
+        // 2. Fetch Monthly Work Logs (Summary)
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
@@ -56,26 +59,35 @@ export default function AstridAdminDashboard() {
             .select('minutes_spent')
             .gte('logged_at', startOfMonth.toISOString());
 
-        const total = logs?.reduce((acc, log) => acc + log.minutes_spent, 0) || 0;
+        const total = logs?.reduce((acc: number, log: any) => acc + log.minutes_spent, 0) || 0;
         setSummary({ totalMinutes: total });
 
+        // 3. Initial tickets fetch
+        await getTickets();
+
         setLoading(false);
-    };
+    }
 
     useEffect(() => {
         fetchAdminData();
     }, [router]);
 
+    useEffect(() => {
+        if (!loading) getTickets();
+    }, [filter]);
+
     const handleUpdateStatus = async (ticketId: string, newStatus: string) => {
+        const updateData: any = { status: newStatus };
+        if (newStatus === 'Terminada') {
+            updateData.finished_at = new Date().toISOString();
+        }
+
         const { error } = await supabase
             .from('tickets')
-            .update({ status: newStatus })
+            .update(updateData)
             .eq('id', ticketId);
 
-        if (!error) {
-            // Update local state immediately for better UX
-            setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus } : t));
-        }
+        if (!error) getTickets();
     };
 
     const handleLogTime = async (ticketId: string, userId: string) => {
@@ -152,7 +164,30 @@ export default function AstridAdminDashboard() {
 
                     {/* Active Tickets List */}
                     <section>
-                        <h3 style={{ marginBottom: '1.5rem' }}>Todas las Solicitudes</h3>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ margin: 0 }}>Gestión de Solicitudes</h3>
+                            <div className="glass" style={{ padding: '0.5rem', borderRadius: '12px', display: 'flex', gap: '0.5rem' }}>
+                                {(['Pendiente', 'En Proceso', 'Terminada'] as const).map(f => (
+                                    <button
+                                        key={f}
+                                        onClick={() => setFilter(f)}
+                                        style={{
+                                            padding: '0.4rem 1rem',
+                                            borderRadius: '8px',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            fontSize: '0.85rem',
+                                            fontWeight: 600,
+                                            background: filter === f ? 'var(--accent-primary)' : 'transparent',
+                                            color: filter === f ? 'white' : 'var(--fg-muted)',
+                                            transition: 'var(--transition-smooth)'
+                                        }}
+                                    >
+                                        {f}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                         <div className="glass" style={{ borderRadius: '24px', overflow: 'hidden' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                                 <thead>

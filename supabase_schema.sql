@@ -7,14 +7,15 @@ create table if not exists profiles (
   full_name text,
   email text,
   paypal_account text,
-  is_admin boolean default false,
+  role text check (role in ('user', 'freelancer', 'admin')) default 'user',
   total_minutes_used integer default 0,
   total_usd_spent decimal(10,2) default 0.00,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Ensure columns exist in profiles if table was already there
+-- Ensure columns exist
 alter table profiles add column if not exists email text;
+alter table profiles add column if not exists role text check (role in ('user', 'freelancer', 'admin')) default 'user';
 
 -- Tickets Table
 create table if not exists tickets (
@@ -27,10 +28,14 @@ create table if not exists tickets (
   status text check (status in ('Pendiente', 'En Proceso', 'Terminada')) default 'Pendiente',
   total_minutes integer default 0,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  finished_at timestamp with time zone
 );
 
--- Ticket Time Logs (For Astrid)
+-- Ensure finished_at exists
+alter table tickets add column if not exists finished_at timestamp with time zone;
+
+-- Ticket Time Logs
 create table if not exists work_logs (
   id uuid default uuid_generate_v4() primary key,
   ticket_id uuid references tickets(id) on delete cascade not null,
@@ -39,7 +44,6 @@ create table if not exists work_logs (
   logged_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Ensure columns exist in work_logs if table was already there
 alter table work_logs add column if not exists description text;
 
 -- Payment Verifications
@@ -60,28 +64,33 @@ alter table work_logs enable row level security;
 alter table payments enable row level security;
 
 -- PROFILES Policies
-create policy "acceso_total_perfil_propio" on profiles for all using (auth.uid() = id) with check (auth.uid() = id);
-create policy "admin_ve_todo_perfiles" on profiles for select using (is_admin = true);
+create policy "p_self" on profiles for all using (auth.uid() = id) with check (auth.uid() = id);
+create policy "p_admin" on profiles for select using (role = 'admin');
 
 -- TICKETS Policies
-create policy "acceso_total_tickets_propios" on tickets for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-create policy "admin_ve_todo_tickets" on tickets for select using (exists (select 1 from profiles where id = auth.uid() and is_admin = true));
-create policy "admin_update_tickets" on tickets for update using (exists (select 1 from profiles where id = auth.uid() and is_admin = true));
+create policy "t_self" on tickets for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "t_privileged" on tickets for all using (
+  exists (select 1 from profiles where id = auth.uid() and role in ('freelancer', 'admin'))
+);
 
 -- WORK_LOGS Policies
-create policy "ver_logs_abierto" on work_logs for select using (true);
-create policy "admin_gestiona_logs" on work_logs for all using (exists (select 1 from profiles where id = auth.uid() and is_admin = true));
+create policy "l_view" on work_logs for select using (true);
+create policy "l_manage" on work_logs for all using (
+  exists (select 1 from profiles where id = auth.uid() and role in ('freelancer', 'admin'))
+);
 
 -- PAYMENTS Policies
-create policy "pagos_propios" on payments for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-create policy "admin_ve_pagos" on payments for select using (exists (select 1 from profiles where id = auth.uid() and is_admin = true));
+create policy "pay_self" on payments for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "pay_admin" on payments for all using (
+  exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+);
 
 -- Trigger to create profile on signup
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, full_name, email)
-  values (new.id, new.raw_user_meta_data->>'full_name', new.email);
+  insert into public.profiles (id, full_name, email, role)
+  values (new.id, new.raw_user_meta_data->>'full_name', new.email, 'user');
   return new;
 end;
 $$ language plpgsql security definer;
@@ -94,8 +103,8 @@ create trigger on_auth_user_created
   for each row execute procedure public.handle_new_user();
 
 -- Migration: Create profiles for existing users who don't have one
-insert into public.profiles (id, full_name, email)
-select id, raw_user_meta_data->>'full_name', email
+insert into public.profiles (id, full_name, email, role)
+select id, raw_user_meta_data->>'full_name', email, 'user'
 from auth.users
 where id not in (select id from public.profiles)
 on conflict (id) do update 

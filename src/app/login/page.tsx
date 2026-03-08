@@ -8,6 +8,7 @@ import Link from 'next/link';
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [selectedRole, setSelectedRole] = useState<'user' | 'freelancer' | 'admin'>('user');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
@@ -17,18 +18,36 @@ export default function LoginPage() {
         setLoading(true);
         setError(null);
 
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
 
-        if (error) {
-            setError(error.message);
+        if (authError) {
+            setError(authError.message);
             setLoading(false);
+            return;
+        }
+
+        // Fetch actual role from profile
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', authData.user?.id)
+            .single();
+
+        const actualRole = profile?.role || 'user';
+
+        // Redirection logic
+        if (actualRole === 'admin') {
+            router.push('/dashboard/super-admin');
+        } else if (actualRole === 'freelancer') {
+            router.push('/dashboard/admin-astrid');
         } else {
             router.push('/dashboard/freelance-wordpress');
-            router.refresh();
         }
+
+        router.refresh();
     };
 
     return (
@@ -108,6 +127,32 @@ export default function LoginPage() {
                                 outline: 'none'
                             }}
                         />
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.8rem', fontSize: '0.9rem', color: 'var(--fg-muted)' }}>Ingresar como:</label>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+                            {(['user', 'freelancer', 'admin'] as const).map((role) => (
+                                <button
+                                    key={role}
+                                    type="button"
+                                    onClick={() => setSelectedRole(role)}
+                                    style={{
+                                        padding: '0.75rem 0.5rem',
+                                        borderRadius: '12px',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        background: selectedRole === role ? 'rgba(79, 70, 229, 0.2)' : 'rgba(255,255,255,0.05)',
+                                        border: selectedRole === role ? '2px solid var(--accent-primary)' : '1px solid rgba(255,255,255,0.1)',
+                                        color: selectedRole === role ? 'white' : 'var(--fg-muted)'
+                                    }}
+                                >
+                                    {role === 'user' ? 'Cliente' : role === 'freelancer' ? 'Freelancer' : 'Admin'}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <button
