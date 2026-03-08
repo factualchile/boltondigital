@@ -59,23 +59,38 @@ alter table tickets enable row level security;
 alter table work_logs enable row level security;
 alter table payments enable row level security;
 
--- Policies (Drop if exists would be better but Supabase doesn't support 'OR REPLACE' for policies easily via simple scripts)
--- These will fail if already exist, which is fine if they are already there.
-do $$ 
-begin
-    if not exists (select 1 from pg_policies where policyname = 'Users can view own profile') then
-        create policy "Users can view own profile" on profiles for select using (auth.uid() = id);
-    end if;
-    if not exists (select 1 from pg_policies where policyname = 'Users can view own tickets') then
-        create policy "Users can view own tickets" on tickets for select using (auth.uid() = user_id);
-    end if;
-    if not exists (select 1 from pg_policies where policyname = 'Users can insert own tickets') then
-        create policy "Users can insert own tickets" on tickets for insert with check (auth.uid() = user_id);
-    end if;
-    if not exists (select 1 from pg_policies where policyname = 'Users can view own payments') then
-        create policy "Users can view own payments" on payments for select using (auth.uid() = user_id);
-    end if;
-end $$;
+-- Policies for PROFILES
+create policy "Users can view own profile" on profiles for select using (auth.uid() = id);
+create policy "Admins can view all profiles" on profiles for select using (
+  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+);
+create policy "Admins can update profiles" on profiles for update using (
+  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+);
+
+-- Policies for TICKETS
+create policy "Users can view own tickets" on tickets for select using (auth.uid() = user_id);
+create policy "Users can insert own tickets" on tickets for insert with check (auth.uid() = user_id);
+create policy "Admins can view all tickets" on tickets for select using (
+  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+);
+create policy "Admins can update tickets" on tickets for update using (
+  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+);
+
+-- Policies for WORK_LOGS
+create policy "Users can view logs of their tickets" on work_logs for select using (
+  exists (select 1 from tickets where tickets.id = work_logs.ticket_id and tickets.user_id = auth.uid())
+);
+create policy "Admins can manage work logs" on work_logs for all using (
+  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+);
+
+-- Policies for PAYMENTS
+create policy "Users can view own payments" on payments for select using (auth.uid() = user_id);
+create policy "Admins can manage payments" on payments for all using (
+  exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+);
 
 -- Trigger to create profile on signup
 create or replace function public.handle_new_user()
