@@ -26,6 +26,8 @@ export default function UserFreelanceDashboard() {
             return;
         }
 
+        console.log("Fetching data for user:", user.id);
+
         // 1. Get Profile (Stats)
         let { data: profileData, error: profileError } = await supabase
             .from('profiles')
@@ -33,26 +35,34 @@ export default function UserFreelanceDashboard() {
             .eq('id', user.id)
             .single();
 
+        if (profileError) {
+            console.error("Profile Error:", profileError);
+        }
+
         // AUTO-CREATE PROFILE IF MISSING (Fix for FK Error)
         if (profileError || !profileData) {
+            console.log("Profile missing, creating...");
             const { data: newProfile, error: createError } = await supabase
                 .from('profiles')
                 .upsert({
                     id: user.id,
-                    full_name: user.user_metadata?.full_name || 'Usuario'
+                    full_name: user.user_metadata?.full_name || 'Usuario',
+                    email: user.email
                 })
                 .select()
                 .single();
 
             if (!createError) {
                 profileData = newProfile;
+            } else {
+                console.error("Create Profile Error:", createError);
             }
         }
 
         setProfile(profileData);
 
         // 2. Get Tickets with Work Logs
-        const { data: ticketsData } = await supabase
+        const { data: ticketsData, error: ticketsError } = await supabase
             .from('tickets')
             .select(`
                 *,
@@ -60,6 +70,12 @@ export default function UserFreelanceDashboard() {
             `)
             .eq('user_id', user.id)
             .order('created_at', { ascending: false });
+
+        if (ticketsError) {
+            console.error("Tickets Fetch Error:", ticketsError);
+        } else {
+            console.log("Tickets Found:", ticketsData?.length || 0);
+        }
 
         setTickets(ticketsData || []);
         setLoading(false);

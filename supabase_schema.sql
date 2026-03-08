@@ -59,8 +59,8 @@ alter table tickets enable row level security;
 alter table work_logs enable row level security;
 alter table payments enable row level security;
 
--- Function to check admin status without recursion
-create or replace function public.check_is_admin()
+-- Function to check admin status (SECURITY DEFINER to avoid recursion)
+create or replace function public.is_admin()
 returns boolean as $$
 begin
   return exists (
@@ -70,31 +70,28 @@ begin
 end;
 $$ language plpgsql security definer;
 
--- Policies for PROFILES
-create policy "p_select_own" on profiles for select using (auth.uid() = id);
-create policy "p_select_admin" on profiles for select using (check_is_admin());
-create policy "p_insert_own" on profiles for insert with check (auth.uid() = id);
-create policy "p_update_own" on profiles for update using (auth.uid() = id);
-create policy "p_update_admin" on profiles for update using (check_is_admin());
+-- PROFILES: Each user sees their own, admins see all.
+create policy "p_select" on profiles for select using (auth.uid() = id or public.is_admin());
+create policy "p_insert" on profiles for insert with check (auth.uid() = id);
+create policy "p_update" on profiles for update using (auth.uid() = id or public.is_admin());
 
--- Policies for TICKETS
-create policy "t_select_own" on tickets for select using (auth.uid() = user_id);
-create policy "t_select_admin" on tickets for select using (check_is_admin());
-create policy "t_insert_own" on tickets for insert with check (auth.uid() = user_id);
-create policy "t_update_own" on tickets for update using (auth.uid() = user_id);
-create policy "t_update_admin" on tickets for update using (check_is_admin());
+-- TICKETS: Users see their own, admins see all.
+create policy "t_select" on tickets for select using (auth.uid() = user_id or public.is_admin());
+create policy "t_insert" on tickets for insert with check (auth.uid() = user_id);
+create policy "t_update" on tickets for update using (auth.uid() = user_id or public.is_admin());
+create policy "t_delete" on tickets for delete using (auth.uid() = user_id or public.is_admin());
 
--- Policies for WORK_LOGS
-create policy "l_select_own" on work_logs for select using (
+-- WORK_LOGS: Users see logs of their tickets, admins see/manage all.
+create policy "l_select" on work_logs for select using (
   exists (select 1 from tickets where tickets.id = work_logs.ticket_id and tickets.user_id = auth.uid())
+  or public.is_admin()
 );
-create policy "l_select_admin" on work_logs for select using (check_is_admin());
-create policy "l_manage_admin" on work_logs for all using (check_is_admin());
+create policy "l_admin" on work_logs for all using (public.is_admin());
 
--- Policies for PAYMENTS
-create policy "pay_select_own" on payments for select using (auth.uid() = user_id);
-create policy "pay_select_admin" on payments for select using (check_is_admin());
-create policy "pay_insert_own" on payments for insert with check (auth.uid() = user_id);
+-- PAYMENTS: Users see/create own, admins see all.
+create policy "pay_select" on payments for select using (auth.uid() = user_id or public.is_admin());
+create policy "pay_insert" on payments for insert with check (auth.uid() = user_id);
+create policy "pay_update" on payments for update using (public.is_admin());
 
 -- Trigger to create profile on signup
 create or replace function public.handle_new_user()
