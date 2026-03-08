@@ -1,17 +1,61 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Navbar from "@/components/Navbar";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from 'next/navigation';
 
 export default function UserFreelanceDashboard() {
-    // Mock data for UI demonstration
-    const stats = {
-        minutesUsed: 120,
-        totalSpent: 14.00,
-        activeTickets: 2
-    };
+    const [loading, setLoading] = useState(true);
+    const [profile, setProfile] = useState<any>(null);
+    const [tickets, setTickets] = useState<any[]>([]);
+    const router = useRouter();
 
-    const tickets = [
-        { id: 1, title: "Error en plugin de contacto", priority: "Alta", status: "In Progress", time: "45 min" },
-        { id: 2, title: "Optimización de imágenes Home", priority: "Media", status: "Pending", time: "0 min" },
-    ];
+    useEffect(() => {
+        async function getDashboardData() {
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                router.push('/login');
+                return;
+            }
+
+            // 1. Get Profile (Stats)
+            const { data: profileData } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            setProfile(profileData);
+
+            // 2. Get Tickets
+            const { data: ticketsData } = await supabase
+                .from('tickets')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+            setTickets(ticketsData || []);
+            setLoading(false);
+        }
+
+        getDashboardData();
+    }, [router]);
+
+    if (loading) {
+        return (
+            <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-deep)' }}>
+                <p className="text-gradient" style={{ fontSize: '1.5rem', fontWeight: 600 }}>Cargando tu panel...</p>
+            </main>
+        );
+    }
+
+    const stats = {
+        minutesUsed: profile?.total_minutes_used || 0,
+        totalSpent: profile?.total_usd_spent || 0,
+        activeTickets: tickets.filter(t => t.status !== 'Terminada').length
+    };
 
     return (
         <main>
@@ -51,34 +95,40 @@ export default function UserFreelanceDashboard() {
 
                         {/* Tickets Table */}
                         <div className="glass" style={{ borderRadius: '24px', overflow: 'hidden' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                <thead>
-                                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                                        <th style={{ padding: '1.5rem' }}>Título</th>
-                                        <th style={{ padding: '1.5rem' }}>Prioridad</th>
-                                        <th style={{ padding: '1.5rem' }}>Estado</th>
-                                        <th style={{ padding: '1.5rem' }}>Tiempo</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {tickets.map(ticket => (
-                                        <tr key={ticket.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <td style={{ padding: '1.5rem' }}>{ticket.title}</td>
-                                            <td style={{ padding: '1.5rem' }}>
-                                                <span style={{
-                                                    fontSize: '0.8rem',
-                                                    padding: '0.2rem 0.6rem',
-                                                    borderRadius: '4px',
-                                                    background: ticket.priority === 'Alta' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255, 255, 255, 0.05)',
-                                                    color: ticket.priority === 'Alta' ? '#ef4444' : 'var(--fg-main)'
-                                                }}>{ticket.priority}</span>
-                                            </td>
-                                            <td style={{ padding: '1.5rem' }}>{ticket.status}</td>
-                                            <td style={{ padding: '1.5rem' }}>{ticket.time}</td>
+                            {tickets.length === 0 ? (
+                                <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--fg-muted)' }}>
+                                    Todavía no tienes solicitudes activas.
+                                </div>
+                            ) : (
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                    <thead>
+                                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                                            <th style={{ padding: '1.5rem' }}>Título</th>
+                                            <th style={{ padding: '1.5rem' }}>Prioridad</th>
+                                            <th style={{ padding: '1.5rem' }}>Estado</th>
+                                            <th style={{ padding: '1.5rem' }}>Tiempo</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {tickets.map(ticket => (
+                                            <tr key={ticket.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <td style={{ padding: '1.5rem' }}>{ticket.title}</td>
+                                                <td style={{ padding: '1.5rem' }}>
+                                                    <span style={{
+                                                        fontSize: '0.8rem',
+                                                        padding: '0.2rem 0.6rem',
+                                                        borderRadius: '4px',
+                                                        background: ticket.priority === 'Alta' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+                                                        color: ticket.priority === 'Alta' ? '#ef4444' : 'var(--fg-main)'
+                                                    }}>{ticket.priority}</span>
+                                                </td>
+                                                <td style={{ padding: '1.5rem' }}>{ticket.status}</td>
+                                                <td style={{ padding: '1.5rem' }}>{ticket.total_minutes} min</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
                         </div>
 
                         {/* Payment Section */}
