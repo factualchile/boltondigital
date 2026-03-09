@@ -20,63 +20,68 @@ export default function SuperAdminDashboard() {
     const router = useRouter();
 
     async function fetchData() {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            router.push('/login');
-            return;
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                router.push('/login');
+                return;
+            }
+
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role, access_level')
+                .eq('id', user.id)
+                .single();
+
+            if (!profile || (profile.role !== 'admin' && profile.access_level !== 3)) {
+                router.push('/dashboard/freelance-wordpress');
+                return;
+            }
+
+            // 1. Basic Stats
+            const { data: tickets } = await supabase.from('tickets').select('*');
+            const { data: profiles } = await supabase
+                .from('profiles')
+                .select('*')
+                .order('updated_at', { ascending: false });
+
+            setUsers(profiles || []);
+
+            const totalRevenue = profiles?.reduce((acc: number, p: any) => acc + (Number(p.total_usd_spent) || 0), 0) || 0;
+            const totalHours = (profiles?.reduce((acc: number, p: any) => acc + (Number(p.total_minutes_used) || 0), 0) || 0) / 60;
+
+            // 2. Efficiency (Avg time per ticket)
+            const finishedTickets = tickets?.filter(t => t.status === 'Terminada' && t.finished_at) || [];
+            const totalSeconds = finishedTickets.reduce((acc, t) => {
+                const start = new Date(t.created_at).getTime();
+                const end = new Date(t.finished_at).getTime();
+                if (isNaN(start) || isNaN(end)) return acc;
+                return acc + (end - start) / 1000;
+            }, 0);
+            const avgCompletionTime = finishedTickets.length > 0 ? (totalSeconds / finishedTickets.length / 3600) : 0;
+
+            setStats({
+                totalRevenue,
+                totalHours,
+                avgCompletionTime,
+                activeTickets: tickets?.filter(t => t.status !== 'Terminada').length || 0,
+                totalTickets: tickets?.length || 0
+            });
+
+            // 3. Recent Movement Logs (Work Logs)
+            const { data: logs } = await supabase
+                .from('work_logs')
+                .select(`
+                    *,
+                    tickets (title, user_id, profiles!user_id (full_name))
+                `)
+                .order('logged_at', { ascending: false })
+                .limit(10);
+
+            setRecentLogs(logs || []);
+        } catch (error) {
+            console.error("Critical error in fetchData:", error);
         }
-
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role, access_level')
-            .eq('id', user.id)
-            .single();
-
-        if (!profile || (profile.role !== 'admin' && profile.access_level !== 3)) {
-            router.push('/dashboard/freelance-wordpress');
-            return;
-        }
-
-        // 1. Basic Stats
-        const { data: tickets } = await supabase.from('tickets').select('*');
-        const { data: profiles } = await supabase
-            .from('profiles')
-            .select('*')
-            .order('updated_at', { ascending: false });
-
-        setUsers(profiles || []);
-
-        const totalRevenue = profiles?.reduce((acc, p) => acc + (Number(p.total_usd_spent) || 0), 0) || 0;
-        const totalHours = (profiles?.reduce((acc, p) => acc + (Number(p.total_minutes_used) || 0), 0) || 0) / 60;
-
-        // 2. Efficiency (Avg time per ticket)
-        const finishedTickets = tickets?.filter(t => t.status === 'Terminada' && t.finished_at) || [];
-        const totalSeconds = finishedTickets.reduce((acc, t) => {
-            const start = new Date(t.created_at).getTime();
-            const end = new Date(t.finished_at).getTime();
-            return acc + (end - start) / 1000;
-        }, 0);
-        const avgCompletionTime = finishedTickets.length > 0 ? (totalSeconds / finishedTickets.length / 3600) : 0;
-
-        setStats({
-            totalRevenue,
-            totalHours,
-            avgCompletionTime,
-            activeTickets: tickets?.filter(t => t.status !== 'Terminada').length || 0,
-            totalTickets: tickets?.length || 0
-        });
-
-        // 3. Recent Movement Logs (Work Logs)
-        const { data: logs } = await supabase
-            .from('work_logs')
-            .select(`
-                *,
-                tickets (title, user_id, profiles!user_id (full_name))
-            `)
-            .order('logged_at', { ascending: false })
-            .limit(10);
-
-        setRecentLogs(logs || []);
 
         setLoading(false);
     }
