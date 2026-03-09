@@ -154,7 +154,13 @@ export default function AstridAdminDashboard() {
 
     const formatDate = (dateStr: string) => {
         if (!dateStr) return 'N/A';
-        return new Date(dateStr).toLocaleDateString();
+        try {
+            const d = new Date(dateStr);
+            // Uso de formato UTC determinista para evitar caídas de hidratación entre el servidor y el cliente
+            return `${d.getUTCDate().toString().padStart(2, '0')}/${(d.getUTCMonth() + 1).toString().padStart(2, '0')}/${d.getUTCFullYear()}`;
+        } catch (e) {
+            return 'N/A';
+        }
     };
 
     if (loading) {
@@ -169,7 +175,7 @@ export default function AstridAdminDashboard() {
     const totalEarnings = ((summary.totalMinutes / 60) * 9).toFixed(2);
 
     return (
-        <main>
+        <main suppressHydrationWarning>
             <Navbar />
             <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 2rem)', paddingBottom: '5rem' }}>
                 <header style={{ marginBottom: '3rem' }}>
@@ -232,8 +238,8 @@ export default function AstridAdminDashboard() {
                                         <div>
                                             <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.25rem' }}>{ticket.title}</div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <span style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 600 }}>{ticket.profiles?.full_name}</span>
-                                                <span style={{ fontSize: '0.85rem', color: 'var(--fg-muted)' }}>• {ticket.profiles?.email}</span>
+                                                <span style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 600 }}>{ticket.profiles?.full_name || 'Sin Asignar'}</span>
+                                                <span style={{ fontSize: '0.85rem', color: 'var(--fg-muted)' }}>• {ticket.profiles?.email || 'N/A'}</span>
                                             </div>
                                         </div>
                                         <div>
@@ -242,7 +248,7 @@ export default function AstridAdminDashboard() {
                                                 fontSize: '0.85rem',
                                                 fontWeight: 600,
                                                 color: ticket.status === 'Terminada' ? 'var(--accent-secondary)' : ticket.status === 'En Proceso' ? '#fbbf24' : 'white'
-                                            }}>● {ticket.status}</span>
+                                            }}>● {ticket.status || 'Pendiente'}</span>
                                         </div>
                                         <div>
                                             <div style={{ fontSize: '0.8rem', color: 'var(--fg-muted)', marginBottom: '0.25rem' }}>Trabajado</div>
@@ -360,8 +366,8 @@ export default function AstridAdminDashboard() {
                         <div style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '2rem', background: 'rgba(255,255,255,0.01)' }}>
                             <div className="glass" style={{ padding: '1.5rem', borderRadius: '24px' }}>
                                 <h5 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--fg-muted)', marginBottom: '1rem' }}>Solicitante</h5>
-                                <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{selectedTicket.profiles?.full_name}</div>
-                                <div style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>{selectedTicket.profiles?.email}</div>
+                                <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{selectedTicket.profiles?.full_name || 'Desconocido'}</div>
+                                <div style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>{selectedTicket.profiles?.email || 'N/A'}</div>
                                 <div style={{ fontSize: '0.8rem', color: 'var(--fg-muted)' }}>Creado el {formatDate(selectedTicket.created_at)}</div>
                             </div>
 
