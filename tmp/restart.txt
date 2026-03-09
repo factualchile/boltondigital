@@ -1,0 +1,1 @@
+Restart signal for Hostinger Passenger.

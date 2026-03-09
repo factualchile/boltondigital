@@ -173,8 +173,8 @@ export default function AstridAdminDashboard() {
             <Navbar />
             <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 2rem)', paddingBottom: '5rem' }}>
                 <header style={{ marginBottom: '3rem' }}>
-                    <h2 style={{ fontSize: '2.5rem' }}>Panel de Control <span className="text-gradient">Astrid</span></h2>
-                    <p style={{ color: 'var(--fg-muted)' }}>Gestión de solicitudes y registro de tiempos técnicos.</p>
+                    <h2 style={{ fontSize: '2.5rem' }}>Control de Solicitudes <span className="text-gradient">Astrid</span></h2>
+                    <p style={{ color: 'var(--fg-muted)' }}>Gestión profesional de tickets y avances técnicos.</p>
                 </header>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2.5rem', alignItems: 'start' }} className="admin-layout">
