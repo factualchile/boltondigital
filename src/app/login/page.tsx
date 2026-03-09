@@ -18,74 +18,59 @@ export default function LoginPage() {
         setLoading(true);
         setError(null);
 
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+        try {
+            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
 
-        if (authError) {
-            setError(authError.message);
-            setLoading(false);
-            return;
-        }
-
-        // Fetch access level and role from profile
-        console.log("Checking profile for user:", authData.user?.id);
-        let { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('role, access_level')
-            .eq('id', authData.user?.id)
-            .single();
-
-        console.log("Profile result:", profile, "Error:", profileError);
-
-        // If profile doesn't exist, try to create it (self-healing)
-        if (!profile && !profileError) {
-            console.log("Profile not found, creating default...");
-            const { data: newProfile, error: createError } = await supabase
-                .from('profiles')
-                .insert({
-                    id: authData.user?.id,
-                    full_name: authData.user?.user_metadata?.full_name || 'Nuevo Usuario',
-                    email: authData.user?.email,
-                    role: 'user',
-                    access_level: 1
-                })
-                .select()
-                .single();
-
-            if (createError) {
-                console.error("Critical: Could not create profile:", createError);
-            } else {
-                profile = newProfile;
+            if (authError) {
+                setError(authError.message);
+                setLoading(false);
+                return;
             }
-        }
 
-        const level = profile?.access_level || 1;
-        console.log("Access level detected:", level, "Requested role:", selectedRole);
+            if (!authData.user) {
+                setError("Error al obtener datos del usuario.");
+                setLoading(false);
+                return;
+            }
 
-        // Validation based on selectedRole and access_level
-        if (selectedRole === 'admin' && level < 3) {
-            setError(`No tienes permisos de Administrador. Tu nivel actual es: ${level}`);
+            // Fetch access level and role from profile
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('role, access_level')
+                .eq('id', authData.user.id)
+                .maybeSingle();
+
+            const level = profile?.access_level ?? 1;
+
+            // Validation based on selectedRole and access_level
+            if (selectedRole === 'admin' && level < 3) {
+                setError(`Acceso denegado. Tu cuenta tiene nivel ${level}, pero se requiere nivel 3 (Admin).`);
+                setLoading(false);
+                return;
+            }
+            if (selectedRole === 'freelancer' && level < 2) {
+                setError(`Acceso denegado. Tu cuenta tiene nivel ${level}, pero se requiere nivel 2 (Freelancer).`);
+                setLoading(false);
+                return;
+            }
+
+            // Redirection logic
+            if (selectedRole === 'admin') {
+                router.push('/admin');
+            } else if (selectedRole === 'freelancer') {
+                router.push('/dashboard/admin-astrid');
+            } else {
+                router.push('/dashboard/freelance-wordpress');
+            }
+        } catch (err: any) {
+            console.error("Login catch error:", err);
+            setError("Error inesperado en el inicio de sesión.");
+        } finally {
             setLoading(false);
-            return;
         }
-        if (selectedRole === 'freelancer' && level < 2) {
-            setError(`No tienes permisos de Freelancer. Tu nivel actual es: ${level}`);
-            setLoading(false);
-            return;
-        }
-
-        // Redirection logic based on CHOICE (if allowed)
-        if (selectedRole === 'admin') {
-            router.push('/admin');
-        } else if (selectedRole === 'freelancer') {
-            router.push('/dashboard/admin-astrid');
-        } else {
-            router.push('/dashboard/freelance-wordpress');
-        }
-
-        router.refresh();
     };
 
     return (
