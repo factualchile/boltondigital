@@ -30,22 +30,48 @@ export default function LoginPage() {
         }
 
         // Fetch access level and role from profile
-        const { data: profile } = await supabase
+        console.log("Checking profile for user:", authData.user?.id);
+        let { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('role, access_level')
             .eq('id', authData.user?.id)
             .single();
 
+        console.log("Profile result:", profile, "Error:", profileError);
+
+        // If profile doesn't exist, try to create it (self-healing)
+        if (!profile && !profileError) {
+            console.log("Profile not found, creating default...");
+            const { data: newProfile, error: createError } = await supabase
+                .from('profiles')
+                .insert({
+                    id: authData.user?.id,
+                    full_name: authData.user?.user_metadata?.full_name || 'Nuevo Usuario',
+                    email: authData.user?.email,
+                    role: 'user',
+                    access_level: 1
+                })
+                .select()
+                .single();
+
+            if (createError) {
+                console.error("Critical: Could not create profile:", createError);
+            } else {
+                profile = newProfile;
+            }
+        }
+
         const level = profile?.access_level || 1;
+        console.log("Access level detected:", level, "Requested role:", selectedRole);
 
         // Validation based on selectedRole and access_level
         if (selectedRole === 'admin' && level < 3) {
-            setError('No tienes permisos de Administrador.');
+            setError(`No tienes permisos de Administrador. Tu nivel actual es: ${level}`);
             setLoading(false);
             return;
         }
         if (selectedRole === 'freelancer' && level < 2) {
-            setError('No tienes permisos de Freelancer.');
+            setError(`No tienes permisos de Freelancer. Tu nivel actual es: ${level}`);
             setLoading(false);
             return;
         }
