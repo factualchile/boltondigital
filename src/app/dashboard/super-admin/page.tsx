@@ -42,12 +42,12 @@ export default function SuperAdminDashboard() {
         const { data: profiles } = await supabase
             .from('profiles')
             .select('*')
-            .order('created_at', { ascending: false });
+            .order('updated_at', { ascending: false });
 
         setUsers(profiles || []);
 
         const totalRevenue = profiles?.reduce((acc, p) => acc + (Number(p.total_usd_spent) || 0), 0) || 0;
-        const totalHours = (profiles?.reduce((acc, p) => acc + (p.total_minutes_used || 0), 0) || 0) / 60;
+        const totalHours = (profiles?.reduce((acc, p) => acc + (Number(p.total_minutes_used) || 0), 0) || 0) / 60;
 
         // 2. Efficiency (Avg time per ticket)
         const finishedTickets = tickets?.filter(t => t.status === 'Terminada' && t.finished_at) || [];
@@ -120,10 +120,10 @@ export default function SuperAdminDashboard() {
 
                 {/* Metrics Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-                    <MetricCard label="Ingresos Totales" value={`$${stats.totalRevenue.toFixed(2)} USD`} color="var(--accent-secondary)" />
-                    <MetricCard label="Horas Producidas" value={`${stats.totalHours.toFixed(1)} h`} />
-                    <MetricCard label="Tiempo Promedio Ticket" value={`${stats.avgCompletionTime.toFixed(1)} h`} />
-                    <MetricCard label="Tickets Activos" value={stats.activeTickets} />
+                    <MetricCard label="Ingresos Totales" value={`$${(stats.totalRevenue || 0).toFixed(2)} USD`} color="var(--accent-secondary)" />
+                    <MetricCard label="Horas Producidas" value={`${(stats.totalHours || 0).toFixed(1)} h`} />
+                    <MetricCard label="Tiempo Promedio Ticket" value={`${(stats.avgCompletionTime || 0).toFixed(1)} h`} />
+                    <MetricCard label="Tickets Activos" value={stats.activeTickets || 0} />
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
