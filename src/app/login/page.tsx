@@ -52,7 +52,7 @@ export default function LoginPage() {
 
         // Redirection logic based on CHOICE (if allowed)
         if (selectedRole === 'admin') {
-            router.push('/dashboard/super-admin');
+            router.push('/admin');
         } else if (selectedRole === 'freelancer') {
             router.push('/dashboard/admin-astrid');
         } else {
