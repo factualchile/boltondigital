@@ -43,6 +43,12 @@ export default function LoginPage() {
                 .eq('id', authData.user.id)
                 .maybeSingle();
 
+            if (profileError) {
+                setError(`Error interno de permisos (RLS): ${profileError.message}`);
+                setLoading(false);
+                return;
+            }
+
             const level = profile?.access_level ?? 1;
 
             // Validation based on selectedRole and access_level
