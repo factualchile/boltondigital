@@ -36,14 +36,14 @@ export default function AstridAdminDashboard() {
             return;
         }
 
-        // 1. Check Admin Status
+        // 1. Check Admin/Freelancer Status (Level 2 or 3)
         const { data: profileData } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', user.id)
             .single();
 
-        if (!profileData || (profileData.role !== 'freelancer' && profileData.role !== 'admin')) {
+        if (!profileData || (profileData.access_level < 2)) {
             router.push('/dashboard/freelance-wordpress');
             return;
         }
