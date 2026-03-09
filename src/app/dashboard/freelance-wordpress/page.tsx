@@ -127,6 +127,17 @@ export default function UserFreelanceDashboard() {
         activeTickets: tickets.filter(t => t.status !== 'Terminada').length
     };
 
+    const formatDate = (dateStr: string) => {
+        if (!dateStr) return 'N/A';
+        try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return 'N/A';
+            return d.toLocaleDateString();
+        } catch {
+            return 'N/A';
+        }
+    };
+
     return (
         <main>
             <Navbar />
@@ -142,14 +153,14 @@ export default function UserFreelanceDashboard() {
                 </header>
 
                 <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'minmax(250px, 300px) 1fr',
+                    display: 'flex',
+                    flexWrap: 'wrap',
                     gap: '2.5rem',
                     alignItems: 'start'
-                }} className="dashboard-layout">
+                }} className="dashboard-content-wrapper">
 
                     {/* Left Column: Stats & Navigation */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', flex: '1 1 300px', maxWidth: '300px' }}>
                         {/* Navigation Card */}
                         <div className="glass" style={{ padding: '1.8rem', borderRadius: '24px' }}>
                             <h4 style={{ marginBottom: '1.25rem', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--fg-muted)' }}>Menú</h4>
@@ -175,7 +186,7 @@ export default function UserFreelanceDashboard() {
                     </div>
 
                     {/* Right Column: Content */}
-                    <section>
+                    <section style={{ flex: '1 1 500px' }}>
                         {/* Modal Create Ticket */}
                         {showModal && (
                             <div style={{
@@ -248,8 +259,8 @@ export default function UserFreelanceDashboard() {
                                 tickets.map(ticket => (
                                     <div key={ticket.id} className="glass" style={{ padding: '2rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}>
                                         {/* Header of Ticket Card */}
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', gap: '1rem' }}>
-                                            <div style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+                                            <div style={{ flex: '1 1 200px' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
                                                     <span style={{
                                                         fontSize: '0.7rem',
@@ -261,28 +272,28 @@ export default function UserFreelanceDashboard() {
                                                         background: ticket.priority === 'Alta' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.05)',
                                                         color: ticket.priority === 'Alta' ? '#ef4444' : '#fff',
                                                         border: `1px solid ${ticket.priority === 'Alta' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.1)'}`
-                                                    }}>{ticket.priority}</span>
+                                                    }}>{ticket.priority || 'Media'}</span>
                                                     <span style={{
                                                         fontSize: '0.75rem',
                                                         fontWeight: 600,
                                                         color: ticket.status === 'Terminada' ? 'var(--accent-secondary)' : '#fbbf24'
-                                                    }}>● {ticket.status}</span>
+                                                    }}>● {ticket.status || 'Pendiente'}</span>
                                                 </div>
-                                                <h4 style={{ fontSize: '1.35rem', fontWeight: 700, lineHeight: '1.3' }}>{ticket.title}</h4>
+                                                <h4 style={{ fontSize: '1.35rem', fontWeight: 700, lineHeight: '1.3' }}>{ticket.title || 'Sin Título'}</h4>
                                             </div>
                                             <div style={{ textAlign: 'right', minWidth: '100px' }}>
-                                                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--accent-primary)' }}>{ticket.total_minutes} min</div>
-                                                <small style={{ color: 'var(--fg-muted)', fontSize: '0.75rem' }}>{new Date(ticket.created_at).toLocaleDateString()}</small>
+                                                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--accent-primary)' }}>{ticket.total_minutes || 0} min</div>
+                                                <small style={{ color: 'var(--fg-muted)', fontSize: '0.75rem' }} suppressHydrationWarning>{formatDate(ticket.created_at)}</small>
                                             </div>
                                         </div>
 
                                         {/* Description Section */}
                                         <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '16px', marginBottom: '1.5rem', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <p style={{ color: 'var(--fg-muted)', fontSize: '0.95rem', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>{ticket.description}</p>
+                                            <p style={{ color: 'var(--fg-muted)', fontSize: '0.95rem', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>{ticket.description || 'Sin descripción detallada.'}</p>
                                         </div>
 
                                         {/* Work Logs Breakdown */}
-                                        {ticket.work_logs && ticket.work_logs.length > 0 && (
+                                        {ticket.work_logs && Array.isArray(ticket.work_logs) && ticket.work_logs.length > 0 && (
                                             <div style={{ marginTop: '1.5rem' }}>
                                                 <h5 style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                     <span style={{ height: '1px', flex: 1, background: 'linear-gradient(90deg, var(--accent-primary), transparent)', opacity: 0.3 }}></span>
@@ -296,10 +307,10 @@ export default function UserFreelanceDashboard() {
                                                             background: 'rgba(255,255,255,0.03)', padding: '0.75rem 1rem', borderRadius: '12px', fontSize: '0.9rem'
                                                         }}>
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                                <span style={{ color: 'var(--fg-muted)', fontSize: '0.8rem' }}>{new Date(log.logged_at).toLocaleDateString()}</span>
+                                                                <span style={{ color: 'var(--fg-muted)', fontSize: '0.8rem' }} suppressHydrationWarning>{formatDate(log.logged_at)}</span>
                                                                 <span>{log.description || 'Avance en la tarea'}</span>
                                                             </div>
-                                                            <span style={{ fontWeight: 700, color: 'white' }}>+{log.minutes_spent} min</span>
+                                                            <span style={{ fontWeight: 700, color: 'white' }}>+{log.minutes_spent || 0} min</span>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -319,8 +330,8 @@ export default function UserFreelanceDashboard() {
                                 {/* Background Accent */}
                                 <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'var(--accent-primary)', opacity: 0.05, filter: 'blur(80px)', borderRadius: '50%' }}></div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', zIndex: 1, position: 'relative' }} className="payment-grid">
-                                    <div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4rem', zIndex: 1, position: 'relative' }} className="payment-grid">
+                                    <div style={{ flex: '1 1 300px' }}>
                                         <h4 style={{ fontSize: '1.4rem', marginBottom: '1.5rem' }}>Instrucciones de Pago</h4>
                                         <p style={{ marginBottom: '2rem', color: 'var(--fg-muted)', fontSize: '1.05rem', lineHeight: '1.6' }}>
                                             Cada hora de trabajo de Astrid tiene un valor de **$9.00 USD**. Para asignar nuevas tareas, asegúrate de tener saldo disponible.
@@ -342,7 +353,7 @@ export default function UserFreelanceDashboard() {
                                         </div>
                                     </div>
 
-                                    <div className="glass" style={{ padding: '2rem', borderRadius: '24px', background: 'rgba(255,255,255,0.02)' }}>
+                                    <div className="glass" style={{ padding: '2rem', borderRadius: '24px', background: 'rgba(255,255,255,0.02)', flex: '1 1 300px' }}>
                                         <h5 style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: 600 }}>Registrar Comprobante</h5>
                                         <form style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                                             <div>
@@ -368,18 +379,6 @@ export default function UserFreelanceDashboard() {
                     </section>
                 </div>
             </div>
-
-            <style jsx>{`
-                @media (max-width: 900px) {
-                    .dashboard-layout {
-                        grid-template-columns: 1fr !important;
-                    }
-                    .payment-grid {
-                        grid-template-columns: 1fr !important;
-                        gap: 2rem !important;
-                    }
-                }
-            `}</style>
         </main>
     );
 }
@@ -390,7 +389,7 @@ function StatCard({ label, value, sub, icon }: { label: string, value: string | 
             <div style={{ fontSize: '2rem', background: 'rgba(255,255,255,0.05)', width: '60px', height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {icon}
             </div>
-            <div>
+            <div style={{ flex: 1 }}>
                 <small style={{ color: 'var(--fg-muted)', display: 'block', marginBottom: '0.25rem', fontWeight: 500 }}>{label}</small>
                 <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>
                     {value} <span style={{ fontSize: '0.85rem', fontWeight: 400, color: 'var(--fg-muted)' }}>{sub}</span>
