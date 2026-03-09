@@ -15,6 +15,7 @@ export default function SuperAdminDashboard() {
         totalTickets: 0
     });
     const [recentLogs, setRecentLogs] = useState<any[]>([]);
+    const [users, setUsers] = useState<any[]>([]);
     const [astridEfficiency, setAstridEfficiency] = useState<any[]>([]);
     const router = useRouter();
 
@@ -27,18 +28,23 @@ export default function SuperAdminDashboard() {
 
         const { data: profile } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, access_level')
             .eq('id', user.id)
             .single();
 
-        if (!profile || profile.role !== 'admin') {
+        if (!profile || (profile.role !== 'admin' && profile.access_level !== 3)) {
             router.push('/dashboard/freelance-wordpress');
             return;
         }
 
         // 1. Basic Stats
         const { data: tickets } = await supabase.from('tickets').select('*');
-        const { data: profiles } = await supabase.from('profiles').select('total_usd_spent, total_minutes_used');
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        setUsers(profiles || []);
 
         const totalRevenue = profiles?.reduce((acc, p) => acc + (Number(p.total_usd_spent) || 0), 0) || 0;
         const totalHours = (profiles?.reduce((acc, p) => acc + (p.total_minutes_used || 0), 0) || 0) / 60;
@@ -74,6 +80,22 @@ export default function SuperAdminDashboard() {
 
         setLoading(false);
     }
+
+    const handleUpdateAccessLevel = async (userId: string, newLevel: number) => {
+        const { error } = await supabase
+            .from('profiles')
+            .update({
+                access_level: newLevel,
+                role: newLevel === 3 ? 'admin' : newLevel === 2 ? 'freelancer' : 'user'
+            })
+            .eq('id', userId);
+
+        if (!error) {
+            fetchData();
+        } else {
+            alert("Error al actualizar nivel: " + error.message);
+        }
+    };
 
     useEffect(() => {
         fetchData();
@@ -164,6 +186,50 @@ export default function SuperAdminDashboard() {
                         </div>
                     </aside>
                 </div>
+
+                {/* User Management Section */}
+                <section style={{ marginTop: '4rem', marginBottom: '4rem' }}>
+                    <h3 style={{ marginBottom: '1.5rem' }}>Gestión de Usuarios y Accesos</h3>
+                    <div className="glass table-responsive" style={{ borderRadius: '24px', overflow: 'hidden' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <th style={{ padding: '1.5rem' }}>Usuario</th>
+                                    <th style={{ padding: '1.5rem' }}>Email</th>
+                                    <th style={{ padding: '1.5rem' }}>Nivel de Acceso</th>
+                                    <th style={{ padding: '1.5rem' }}>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {users.map((u) => (
+                                    <tr key={u.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <td style={{ padding: '1.5rem', fontWeight: 600 }}>{u.full_name || 'Sin nombre'}</td>
+                                        <td style={{ padding: '1.5rem', color: 'var(--fg-muted)' }}>{u.email}</td>
+                                        <td style={{ padding: '1.5rem' }}>
+                                            <span style={{
+                                                padding: '0.4rem 0.8rem',
+                                                borderRadius: '20px',
+                                                fontSize: '0.8rem',
+                                                background: u.access_level === 3 ? 'rgba(239, 68, 68, 0.1)' : u.access_level === 2 ? 'rgba(79, 70, 229, 0.1)' : 'rgba(255,255,255,0.05)',
+                                                color: u.access_level === 3 ? '#ef4444' : u.access_level === 2 ? '#6366f1' : 'var(--fg-muted)',
+                                                border: '1px solid rgba(255,255,255,0.1)'
+                                            }}>
+                                                Nivel {u.access_level} ({u.role})
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '1.5rem' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button onClick={() => handleUpdateAccessLevel(u.id, 1)} className="glass" style={{ padding: '0.4rem 0.75rem', borderRadius: '8px', fontSize: '0.75rem', cursor: 'pointer' }}>Nivel 1</button>
+                                                <button onClick={() => handleUpdateAccessLevel(u.id, 2)} className="glass" style={{ padding: '0.4rem 0.75rem', borderRadius: '8px', fontSize: '0.75rem', cursor: 'pointer' }}>Nivel 2</button>
+                                                <button onClick={() => handleUpdateAccessLevel(u.id, 3)} className="glass" style={{ padding: '0.4rem 0.75rem', borderRadius: '8px', fontSize: '0.75rem', cursor: 'pointer' }}>Nivel 3</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
         </main>
     );
