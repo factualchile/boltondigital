@@ -6,7 +6,7 @@ const next = require('next');
 process.env.NODE_ENV = 'production';
 
 const dev = false;
-const hostname = 'localhost';
+const hostname = '0.0.0.0'; // Accept connections from any IP
 const port = process.env.PORT || 3000;
 
 // Initialize Next.js app in production mode
