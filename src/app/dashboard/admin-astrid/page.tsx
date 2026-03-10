@@ -138,7 +138,25 @@ export default function AstridAdminDashboard() {
             .update(updateData)
             .eq('id', ticketId);
 
-        if (!error) getTickets();
+        if (!error) {
+            // Send Notification Email to Client
+            const ticket = tickets.find(t => t.id === ticketId);
+            if (ticket && (ticket.requester?.email || ticket.profiles?.email)) {
+                fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        to: ticket.requester?.email || ticket.profiles?.email,
+                        type: 'STATUS_UPDATE',
+                        data: {
+                            ticketTitle: ticket.title,
+                            newStatus: newStatus
+                        }
+                    })
+                }).catch(e => console.error("Email status error:", e));
+            }
+            getTickets();
+        }
     };
 
     const handleLogTime = async (ticketId: string, userId: string) => {
@@ -158,12 +176,29 @@ export default function AstridAdminDashboard() {
         if (!logError) {
             // 2. Update Ticket Total
             const ticket = tickets.find(t => t.id === ticketId);
-            const newTotal = (ticket.total_minutes || 0) + mins;
+            const newTotal = (ticket?.total_minutes || 0) + mins;
 
             await supabase
                 .from('tickets')
                 .update({ total_minutes: newTotal })
                 .eq('id', ticketId);
+
+            // Send Notification Email to Client
+            if (ticket && (ticket.requester?.email || ticket.profiles?.email)) {
+                fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        to: ticket.requester?.email || ticket.profiles?.email,
+                        type: 'WORK_LOG',
+                        data: {
+                            ticketTitle: ticket.title,
+                            minutes: mins,
+                            description: logDescription || 'Avance técnico'
+                        }
+                    })
+                }).catch(e => console.error("Email log error:", e));
+            }
 
             // 3. Update User Profile Total
             const { data: userProfile } = await supabase

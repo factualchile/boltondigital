@@ -102,6 +102,36 @@ export default function UserFreelanceDashboard() {
             });
 
         if (!error) {
+            // Send Email Notifications (Async, don't block UI)
+            fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: user?.email,
+                    type: 'NEW_TICKET_CLIENT',
+                    data: {
+                        userName: profile?.full_name || user?.email?.split('@')[0],
+                        ticketTitle: title,
+                        ticketPriority: priority
+                    }
+                })
+            }).catch(e => console.error("Email error client:", e));
+
+            // Notify Staff (Astrid/Admin)
+            fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: 'astrid@boltondigital.cl', // Fallback profesional, Claudio lo puede cambiar en env
+                    type: 'NEW_TICKET_STAFF',
+                    data: {
+                        userName: profile?.full_name || user?.email?.split('@')[0],
+                        userEmail: user?.email,
+                        ticketTitle: title
+                    }
+                })
+            }).catch(e => console.error("Email error staff:", e));
+
             setTitle('');
             setDescription('');
             setPriority('Media');
