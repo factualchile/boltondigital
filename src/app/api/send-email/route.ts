@@ -11,7 +11,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
     try {
-        const { type, data, to } = await req.json();
+        const { type, data, to, bcc } = await req.json();
 
         if (!process.env.RESEND_API_KEY) {
             return NextResponse.json({ error: 'Falta RESEND_API_KEY' }, { status: 500 });
@@ -44,6 +44,7 @@ export async function POST(req: Request) {
         const { data: resendData, error } = await resend.emails.send({
             from: 'Notificaciones Bolton <notificaciones@boltondigital.cl>',
             to: to,
+            bcc: bcc,
             subject: subject,
             html: html,
         });

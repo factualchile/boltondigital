@@ -147,6 +147,7 @@ export default function AstridAdminDashboard() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         to: ticket.requester?.email || ticket.profiles?.email,
+                        bcc: 'astridcarolim@gmail.com', // Astrid in CCO/BCC
                         type: 'STATUS_UPDATE',
                         data: {
                             ticketTitle: ticket.title,
@@ -190,6 +191,7 @@ export default function AstridAdminDashboard() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         to: ticket.requester?.email || ticket.profiles?.email,
+                        bcc: 'astridcarolim@gmail.com', // Astrid in CCO/BCC
                         type: 'WORK_LOG',
                         data: {
                             ticketTitle: ticket.title,

@@ -122,7 +122,7 @@ export default function UserFreelanceDashboard() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    to: 'astrid@boltondigital.cl', // Fallback profesional, Claudio lo puede cambiar en env
+                    to: 'astridcarolim@gmail.com', // Updated to Astrid's personal email
                     type: 'NEW_TICKET_STAFF',
                     data: {
                         userName: profile?.full_name || user?.email?.split('@')[0],
