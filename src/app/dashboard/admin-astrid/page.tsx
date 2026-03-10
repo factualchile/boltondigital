@@ -52,21 +52,30 @@ export default function AstridAdminDashboard() {
     const router = useRouter();
 
     async function getTickets() {
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from('tickets')
             .select(`
                 *,
-                profiles (full_name, email),
+                profiles (id, full_name, email),
                 work_logs (*)
             `)
             .eq('status', filter)
             .order('created_at', { ascending: false });
 
-        setTickets(data || []);
+        if (error) {
+            console.error("Error fetching tickets:", error);
+        }
 
-        // If a ticket is selected, refresh its data too
+        // Handle postgrest joining quirk (sometimes it returns an array for single joins)
+        const processedData = data?.map(t => ({
+            ...t,
+            requester: Array.isArray(t.profiles) ? t.profiles[0] : t.profiles
+        })) || [];
+
+        setTickets(processedData);
+
         if (selectedTicket) {
-            const updated = data?.find(t => t.id === selectedTicket.id);
+            const updated = processedData.find(t => t.id === selectedTicket.id);
             if (updated) setSelectedTicket(updated);
         }
     }
@@ -272,8 +281,12 @@ export default function AstridAdminDashboard() {
                                             <div>
                                                 <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.25rem' }}>{ticket.title}</div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                    <span style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 600 }}>{ticket.profiles?.full_name || 'Sin Asignar'}</span>
-                                                    <span style={{ fontSize: '0.85rem', color: 'var(--fg-muted)' }}>• {ticket.profiles?.email || 'N/A'}</span>
+                                                    <span style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 600 }}>
+                                                        {ticket.requester?.full_name || ticket.requester?.email || 'Pendiente de Perfil'}
+                                                    </span>
+                                                    {ticket.requester?.email && ticket.requester?.full_name && (
+                                                        <span style={{ fontSize: '0.85rem', color: 'var(--fg-muted)' }}>• {ticket.requester.email}</span>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div>
@@ -400,9 +413,14 @@ export default function AstridAdminDashboard() {
                             <div style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '2rem', background: 'rgba(255,255,255,0.01)' }}>
                                 <div className="glass" style={{ padding: '1.5rem', borderRadius: '24px' }}>
                                     <h5 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--fg-muted)', marginBottom: '1rem' }}>Solicitante</h5>
-                                    <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{selectedTicket.profiles?.full_name || 'Desconocido'}</div>
-                                    <div style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>{selectedTicket.profiles?.email || 'N/A'}</div>
+                                    <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{selectedTicket.requester?.full_name || 'Sin Nombre'}</div>
+                                    <div style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>{selectedTicket.requester?.email || 'Email Bloqueado / No disponible'}</div>
                                     <div style={{ fontSize: '0.8rem', color: 'var(--fg-muted)' }}>Creado el {formatDate(selectedTicket.created_at)}</div>
+                                    {!selectedTicket.requester && (
+                                        <div style={{ marginTop: '0.5rem', fontSize: '0.7rem', color: '#ef4444', fontStyle: 'italic' }}>
+                                            Nota: No tienes permisos RLS para ver los datos de este cliente.
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="glass" style={{ padding: '1.5rem', borderRadius: '24px' }}>
