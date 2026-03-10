@@ -10,7 +10,7 @@ export default function Home() {
       {/* Services Section Placeholder */}
       <section id="servicios" className="container">
         <h2 style={{ fontSize: '3rem', marginBottom: '4rem', textAlign: 'center' }}>
-          Nuestras <span className="text-gradient">Capacidades</span>
+          Nuestras <span className="text-gradient">Especialidades</span>
         </h2>
 
         <div style={{
