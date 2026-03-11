@@ -18,6 +18,14 @@ const tools = [
         tags: ["IA", "Estrategia", "Marketing"],
         href: "#",
         disabled: true
+    },
+    {
+        id: "google-ads-inteligente",
+        title: "Google Ads Inteligente",
+        description: "Conecta tu cuenta y optimiza tus campañas con IA basada en la metodología de Claudio. Simple, claro y estratégico.",
+        price: "Premium",
+        tags: ["Google Ads", "IA", "Automatización"],
+        href: "/herramientas/google-ads-inteligente"
     }
 ];
 
