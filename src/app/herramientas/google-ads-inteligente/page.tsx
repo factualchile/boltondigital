@@ -210,7 +210,15 @@ export default function GoogleAdsInteligentePage() {
     );
 }
 
-function MetricCard({ title, value, trend, icon, color = 'var(--accent-primary)' }) {
+interface MetricCardProps {
+    title: string;
+    value: string;
+    trend: string;
+    icon: React.ReactNode;
+    color?: string;
+}
+
+function MetricCard({ title, value, trend, icon, color = 'var(--accent-primary)' }: MetricCardProps) {
     return (
         <div className="glass" style={{ padding: '1.5rem', borderRadius: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
@@ -232,7 +240,14 @@ function MetricCard({ title, value, trend, icon, color = 'var(--accent-primary)'
     );
 }
 
-function SuggestionItem({ title, reason, impact, type }) {
+interface SuggestionItemProps {
+    title: string;
+    reason: string;
+    impact: string;
+    type: 'pause' | 'play';
+}
+
+function SuggestionItem({ title, reason, impact, type }: SuggestionItemProps) {
     return (
         <div className="glass" style={{ 
             padding: '1.5rem', 
@@ -241,8 +256,7 @@ function SuggestionItem({ title, reason, impact, type }) {
             alignItems: 'center', 
             justifyContent: 'space-between',
             border: '1px solid rgba(255,255,255,0.05)',
-            transition: 'var(--transition-smooth)',
-            hover: { background: 'rgba(255,255,255,0.02)' }
+            transition: 'var(--transition-smooth)'
         }}>
             <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
                 <div style={{ 
