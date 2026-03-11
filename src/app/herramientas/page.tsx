@@ -26,6 +26,14 @@ const tools = [
         price: "Premium",
         tags: ["Google Ads", "IA", "Automatización"],
         href: "/herramientas/google-ads-inteligente"
+    },
+    {
+        id: "bolton-pages",
+        title: "Bolton Pages",
+        description: "Crea tu propia landing page profesional con tu dominio .cl de forma automática. Estratégico y simple.",
+        price: "Premium",
+        tags: ["Web", "Landing Pages", "Vercel"],
+        href: "/herramientas/bolton-pages"
     }
 ];
 
