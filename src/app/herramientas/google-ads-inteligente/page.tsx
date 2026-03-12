@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 import { 
     DollarSign, 
     Target,
@@ -27,6 +28,7 @@ type ViewLevel = 'campaigns' | 'adgroups' | 'details';
 type PeriodScope = 'TODAY' | 'LAST_7_DAYS' | 'LAST_30_DAYS';
 
 export default function GoogleAdsInteligentePage() {
+    const router = useRouter();
     const [isConnected, setIsConnected] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [viewLevel, setViewLevel] = useState<ViewLevel>('campaigns');
@@ -59,7 +61,19 @@ export default function GoogleAdsInteligentePage() {
                 setSubscriptionStatus(status);
 
                 if (status === 'EXPIRED') {
-                    setIsLoading(false);
+                    router.push('/onboarding');
+                    return;
+                }
+
+                // 2. Verificar Perfil y Google Ads ID
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('google_ads_id')
+                    .eq('id', user.id)
+                    .single();
+
+                if (!profile?.google_ads_id) {
+                    router.push('/onboarding');
                     return;
                 }
 

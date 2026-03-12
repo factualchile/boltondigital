@@ -13,11 +13,12 @@ import {
     HelpCircle,
     Info,
     Mail,
-    Sparkles
+    Sparkles,
+    Clock
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
-type Step = 'profile' | 'payment' | 'google-ads' | 'finish';
+type Step = 'profile' | 'payment' | 'payment-waiting' | 'google-ads' | 'finish';
 
 export default function OnboardingPage() {
     const router = useRouter();
@@ -46,8 +47,27 @@ export default function OnboardingPage() {
                     setBusinessName(profile.business_name || '');
                     setPhone(profile.phone || '');
                     setGoogleAdsId(profile.google_ads_id || '');
-                    if (profile.onboarding_completed) {
+                    
+                    // Lógica de salto de etapa basado en datos reales
+                    const { data: subData } = await supabase
+                        .from('v_active_subscriptions')
+                        .select('current_access_status')
+                        .eq('user_id', user.id)
+                        .eq('category', 'SEM')
+                        .single();
+
+                    const isSubscribed = subData?.current_access_status === 'ACTIVE' || subData?.current_access_status === 'GRACE';
+
+                    if (!profile.business_name || !profile.phone) {
+                        setCurrentStep('profile');
+                    } else if (!isSubscribed) {
+                        setCurrentStep('payment');
+                    } else if (!profile.google_ads_id) {
+                        setCurrentStep('google-ads');
+                    } else if (profile.onboarding_completed) {
                         router.push('/herramientas/google-ads-inteligente');
+                    } else {
+                        setCurrentStep('finish');
                     }
                 }
             }
@@ -69,21 +89,11 @@ export default function OnboardingPage() {
         setIsLoading(false);
     };
 
-    const handleSimulatePayment = async () => {
-        setIsLoading(true);
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-            // Simular inserción de pago en Supabase
-            await supabase.from('user_subscriptions').upsert({
-                user_id: user.id,
-                category: 'SEM',
-                current_period_end: new Date(Date.now() + 44 * 24 * 60 * 60 * 1000).toISOString(), // 30 + 14 días
-                grace_period_end: new Date(Date.now() + 58 * 24 * 60 * 60 * 1000).toISOString(),
-                status: 'ACTIVE'
-            });
-            setCurrentStep('google-ads');
-        }
-        setIsLoading(false);
+    const handleGoToMercadoPago = () => {
+        // Redirigir al link real de suscripción de Claudio
+        const mpLink = "https://www.mercadopago.cl/subscriptions/checkout?preapproval_plan_id=2c93808495f10ec10195f75c1e020489";
+        window.open(mpLink, '_blank');
+        setCurrentStep('payment-waiting');
     };
 
     const handleSaveAdsId = async () => {
@@ -159,9 +169,29 @@ export default function OnboardingPage() {
                                     </div>
                                 </div>
 
-                                <button onClick={handleSimulatePayment} className="btn-primary" style={{ width: '100%', padding: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
-                                    Configurar pago en MercadoPago <ArrowRight size={20} />
+                                <button onClick={handleGoToMercadoPago} className="btn-primary" style={{ width: '100%', padding: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+                                    Suscribirme en MercadoPago <ArrowRight size={20} />
                                 </button>
+                            </div>
+                        )}
+
+                        {currentStep === 'payment-waiting' && (
+                            <div className="animate-in fade-in zoom-in duration-500 text-center">
+                                <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'rgba(251, 191, 36, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
+                                    <Clock size={40} color="#fbbf24" className="animate-pulse" />
+                                </div>
+                                <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '1rem' }}>Esperando a MercadoPago...</h2>
+                                <p style={{ color: 'var(--fg-muted)', marginBottom: '2.5rem' }}>
+                                    Una vez que completes la suscripción en la otra pestaña, nuestro sistema se activará automáticamente (esto puede tardar unos segundos).
+                                </p>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <button onClick={() => window.location.reload()} className="btn-primary" style={{ width: '100%', padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        Ya pagué, actualizar estado
+                                    </button>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--fg-muted)' }}>
+                                        ¿Tuviste problemas? <a href="#" style={{ color: 'var(--accent-primary)' }}>Habla con soporte</a>
+                                    </p>
+                                </div>
                             </div>
                         )}
 
