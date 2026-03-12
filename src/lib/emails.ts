@@ -53,3 +53,49 @@ export const sendStrategyEmail = async (email: string, name: string) => {
         console.error("Error sending strategy email:", error);
     }
 };
+
+export const sendUrgentSupportEmail = async (userData: {
+    email: string;
+    name: string;
+    businessName: string;
+    phone: string;
+    contactPhone: string;
+    date: string;
+    service: string;
+}) => {
+    try {
+        await resend.emails.send({
+            from: 'Sistema Alertas <alertas@boltondigital.cl>',
+            to: ['cfernandez.bolton@gmail.com', 'contactoboltondigital@gmail.com'],
+            subject: 'URGENTE: Cliente nuevo no reconocido',
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333; border: 2px solid #ef4444; border-radius: 12px;">
+                    <h1 style="color: #ef4444; margin-top: 0;">🚨 Alerta de Activación Fallida</h1>
+                    <p>Un cliente reporta que completó su suscripción en Mercado Pago pero el sistema de Bolton no lo ha reconocido automáticamente.</p>
+                    
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0; color: #1e293b;">Datos del Cliente</h3>
+                        <p><strong>Nombre:</strong> ${userData.name}</p>
+                        <p><strong>Email Registro:</strong> ${userData.email}</p>
+                        <p><strong>Negocio:</strong> ${userData.businessName}</p>
+                        <p><strong>Teléfono Registro:</strong> ${userData.phone}</p>
+                        <p><strong>Teléfono de Contacto URGENTE:</strong> <span style="font-size: 1.2rem; color: #ef4444; font-weight: bold;">${userData.contactPhone}</span></p>
+                    </div>
+
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0; color: #1e293b;">Detalles del Servicio</h3>
+                        <p><strong>Servicio:</strong> ${userData.service}</p>
+                        <p><strong>Fecha Reporte:</strong> ${userData.date}</p>
+                    </div>
+
+                    <p style="font-size: 0.9rem; color: #64748b;">El cliente confirmó que han pasado más de 10 minutos, refrescó la página y ratificó que inició la suscripción correctamente.</p>
+                    
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                    <p style="font-size: 12px; color: #999;">Bolton Digital - Sistema de Alertas Críticas</p>
+                </div>
+            `
+        });
+    } catch (error) {
+        console.error("Error sending urgent support email:", error);
+    }
+};

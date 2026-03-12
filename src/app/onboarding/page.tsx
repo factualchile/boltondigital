@@ -14,7 +14,9 @@ import {
     Info,
     Mail,
     Sparkles,
-    Clock
+    Clock,
+    AlertCircle,
+    X
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
@@ -29,6 +31,14 @@ export default function OnboardingPage() {
     const [businessName, setBusinessName] = useState('');
     const [phone, setPhone] = useState('');
     const [googleAdsId, setGoogleAdsId] = useState('');
+    const [userProfile, setUserProfile] = useState<any>(null);
+
+    // Support Modal State
+    const [showSupportModal, setShowSupportModal] = useState(false);
+    const [supportStep, setSupportStep] = useState(1);
+    const [contactPhone, setContactPhone] = useState('');
+    const [isSendingSupport, setIsSendingSupport] = useState(false);
+    const [supportSent, setSupportSent] = useState(false);
 
     useEffect(() => {
         const checkUser = async () => {
@@ -44,6 +54,7 @@ export default function OnboardingPage() {
                     .single();
                 
                 if (profile) {
+                    setUserProfile(profile);
                     setBusinessName(profile.business_name || '');
                     setPhone(profile.phone || '');
                     setGoogleAdsId(profile.google_ads_id || '');
@@ -108,6 +119,33 @@ export default function OnboardingPage() {
             setCurrentStep('finish');
         }
         setIsLoading(false);
+    };
+
+    const handleSendUrgentSupport = async () => {
+        setIsSendingSupport(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && userProfile) {
+            try {
+                const response = await fetch('/api/support/urgent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: user.email,
+                        name: userProfile.full_name || 'Usuario Bolton',
+                        businessName: businessName,
+                        phone: phone,
+                        contactPhone: contactPhone,
+                        service: 'Bolton SEM (MercadoPago)'
+                    })
+                });
+                if (response.ok) {
+                    setSupportSent(true);
+                }
+            } catch (error) {
+                console.error("Error sending support alert:", error);
+            }
+        }
+        setIsSendingSupport(false);
     };
 
     return (
@@ -188,9 +226,94 @@ export default function OnboardingPage() {
                                     <button onClick={() => window.location.reload()} className="btn-primary" style={{ width: '100%', padding: '1rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                                         Ya pagué, actualizar estado
                                     </button>
-                                    <p style={{ fontSize: '0.8rem', color: 'var(--fg-muted)' }}>
-                                        ¿Tuviste problemas? <a href="#" style={{ color: 'var(--accent-primary)' }}>Habla con soporte</a>
-                                    </p>
+                                    <button 
+                                        onClick={() => { setShowSupportModal(true); setSupportStep(1); }}
+                                        style={{ background: 'none', border: 'none', color: '#f43f5e', fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'underline' }}
+                                    >
+                                        Ya me suscribí y no puedo acceder
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Support Modal */}
+                        {showSupportModal && (
+                            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+                                <div className="glass animate-in zoom-in duration-300" style={{ maxWidth: '500px', width: '100%', padding: '2.5rem', borderRadius: '24px', position: 'relative', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <button onClick={() => setShowSupportModal(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', color: 'var(--fg-muted)', cursor: 'pointer' }}>
+                                        <X size={24} />
+                                    </button>
+
+                                    {!supportSent ? (
+                                        <>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', color: '#f43f5e' }}>
+                                                <AlertCircle size={24} />
+                                                <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Soporte Crítico</h3>
+                                            </div>
+
+                                            {supportStep === 1 && (
+                                                <div className="animate-in slide-in-from-right-4 duration-300">
+                                                    <p style={{ marginBottom: '2rem', lineHeight: 1.6 }}>¿Han pasado por lo menos 10 minutos desde que hiciste la suscripción en Mercado Pago?</p>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                                        <button onClick={() => setSupportStep(2)} className="btn-primary" style={{ padding: '0.75rem' }}>SÍ</button>
+                                                        <button onClick={() => setShowSupportModal(false)} className="btn-primary" style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.05)' }}>NO</button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {supportStep === 2 && (
+                                                <div className="animate-in slide-in-from-right-4 duration-300">
+                                                    <p style={{ marginBottom: '2rem', lineHeight: 1.6 }}>¿Probaste actualizando la página de Boltondigital después de esos 10 minutos?</p>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                                        <button onClick={() => setSupportStep(3)} className="btn-primary" style={{ padding: '0.75rem' }}>SÍ</button>
+                                                        <button onClick={() => setShowSupportModal(false)} className="btn-primary" style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.05)' }}>NO</button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {supportStep === 3 && (
+                                                <div className="animate-in slide-in-from-right-4 duration-300">
+                                                    <p style={{ marginBottom: '2rem', lineHeight: 1.6 }}>Las respuestas que ingresaste realmente son verdaderas y confirmas que realmente iniciaste la suscripción en MercadoPago?</p>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                                        <button onClick={() => setSupportStep(4)} className="btn-primary" style={{ padding: '0.75rem' }}>SÍ, confirmo</button>
+                                                        <button onClick={() => setShowSupportModal(false)} className="btn-primary" style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.05)' }}>NO</button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {supportStep === 4 && (
+                                                <div className="animate-in slide-in-from-right-4 duration-300">
+                                                    <p style={{ marginBottom: '1.5rem', color: 'var(--fg-muted)', fontSize: '0.9rem' }}>Por favor ingresa un número de teléfono para que un encargado te contacte de inmediato.</p>
+                                                    <input 
+                                                        type="text" 
+                                                        value={contactPhone} 
+                                                        onChange={(e) => setContactPhone(e.target.value)} 
+                                                        placeholder="+56 9 ..."
+                                                        style={{ marginBottom: '1.5rem' }}
+                                                    />
+                                                    <button 
+                                                        onClick={handleSendUrgentSupport} 
+                                                        disabled={!contactPhone || isSendingSupport}
+                                                        className="btn-primary" 
+                                                        style={{ width: '100%', padding: '1rem' }}
+                                                    >
+                                                        {isSendingSupport ? 'Enviando Alerta...' : 'Enviar Alerta URGENTE'}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="text-center animate-in zoom-in duration-500">
+                                            <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                                                <CheckCircle2 size={30} color="#10b981" />
+                                            </div>
+                                            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '1rem' }}>Alerta Enviada</h3>
+                                            <p style={{ color: 'var(--fg-muted)', fontSize: '0.95rem', lineHeight: 1.6 }}>
+                                                Hemos enviado una notificación urgente a Claudio y al equipo de soporte. Te contactarán en breve al número proporcionado.
+                                            </p>
+                                            <button onClick={() => setShowSupportModal(false)} className="btn-primary" style={{ marginTop: '2rem', padding: '0.8rem 1.5rem' }}>Cerrar</button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
