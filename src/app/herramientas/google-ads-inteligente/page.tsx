@@ -4,11 +4,6 @@ import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { supabase } from '@/lib/supabase';
 import { 
-    LayoutDashboard, 
-    Link as LinkIcon, 
-    TrendingUp, 
-    MousePointer2, 
-    Eye, 
     DollarSign, 
     Target,
     MessageSquare,
@@ -20,7 +15,12 @@ import {
     Clock,
     CheckCircle2,
     Pause,
-    Play
+    Play,
+    TrendingUp,
+    Sparkles,
+    Info,
+    AlertTriangle,
+    Link as LinkIcon
 } from 'lucide-react';
 
 type ViewLevel = 'campaigns' | 'adgroups' | 'details';
@@ -115,6 +115,58 @@ export default function GoogleAdsInteligentePage() {
         if (kwRes.data) setKeywords(kwRes.data);
     };
 
+    const generateSugerencias = () => {
+        const totalClicks = campaigns.reduce((acc, c) => acc + (c.clicks || 0), 0);
+        const totalCosto = campaigns.reduce((acc, c) => acc + (c.cost || 0), 0);
+        const impressions = campaigns.reduce((acc, c) => acc + (c.impressions || 0), 1);
+        const avgCtr = (totalClicks / impressions) * 100;
+
+        const sugs = [];
+
+        if (avgCtr < 5) {
+            sugs.push({
+                id: 'optimizar_anuncios',
+                title: 'Optimizar Títulos de Anuncios',
+                reason: `Tu CTR actual es de ${avgCtr.toFixed(2)}%. Claudio sugiere que tus anuncios no son lo suficientemente "magnéticos" para el buscador.`,
+                impact: 'ALTO',
+                action: 'SUGGEST_TITLES'
+            });
+        }
+
+        if (totalCosto > 0 && campaigns.reduce((acc, c) => acc + (c.conversions || 0), 0) === 0) {
+            sugs.push({
+                id: 'pausar_no_convierten',
+                title: 'Pausar Campañas Ineficientes',
+                reason: 'Has gastado dinero sin generar conversiones reales. Claudio recomienda pausar temporalmente para revisar la landing page.',
+                impact: 'CRÍTICO',
+                action: 'PAUSE_CAMPAIGN'
+            });
+        }
+
+        sugs.push({
+            id: 'limpiar_negativas',
+            title: 'Limpiar Palabras Negativas',
+            reason: 'Se detectó tráfico irrelevante. Claudio sugiere filtrar términos de búsqueda para no desperdiciar presupuesto.',
+            impact: 'MEDIO',
+            action: 'ADD_NEGATIVE_KEYWORDS'
+        });
+
+        return sugs.slice(0, 3);
+    };
+
+    const handleAcceptSuggestion = async (suggestion: any) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            await supabase.from('ads_actions_queue').insert({
+                user_id: user.id,
+                action_type: suggestion.action,
+                target_id: selectedCampaignId || 'ALL',
+                status: 'PENDING',
+                metadata: { suggestion_id: suggestion.id }
+            });
+        }
+    };
+
     const handleCampaignClick = (c: any) => {
         setSelectedCampaignId(c.google_id);
         fetchAdGroups(c.google_id);
@@ -151,7 +203,7 @@ export default function GoogleAdsInteligentePage() {
                 <Navbar />
                 <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 5rem)' }}>
                     <div className="glass" style={{ padding: '4rem', borderRadius: '32px', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
-                        <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'rgba(244, 63, 94, 0.1)', display: 'flex', alignItems: 'center', justifyCenter: 'center', margin: '0 auto 2rem' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'rgba(244, 63, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
                             <DollarSign size={40} color="#f43f5e" />
                         </div>
                         <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Suscripción SEM Requerida</h2>
@@ -238,7 +290,50 @@ export default function GoogleAdsInteligentePage() {
                                 </div>
                             </div>
 
-                            {/* Contenido Dinámico */}
+                            {/* Grid de Métricas con Info IA */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+                                <MetricCard 
+                                    title="Inversión" 
+                                    value={`$${campaigns.reduce((acc, c) => acc + (c.cost || 0), 0).toFixed(0)}`} 
+                                    icon={<DollarSign size={18} />} 
+                                    info="Es el capital total que Google ha consumido. Claudio dice: 'No es un gasto, es el motor de búsqueda de tus clientes'."
+                                />
+                                <MetricCard 
+                                    title="Conversiones" 
+                                    value={campaigns.reduce((acc, c) => acc + (c.conversions || 0), 0).toString()} 
+                                    icon={<CheckCircle2 size={18} />} 
+                                    color="#10b981" 
+                                    info="Ventas o leads reales. Si esto está bajo, revisa urgente tu Bolton Page."
+                                />
+                                <MetricCard 
+                                    title="CTR Prom." 
+                                    value={`${((campaigns.reduce((acc, c) => acc + (c.clicks || 0), 0) / (campaigns.reduce((acc, c) => acc + (c.impressions || 0), 1)) || 0) * 100).toFixed(2)}%`} 
+                                    icon={<TrendingUp size={18} />} 
+                                    color="#f59e0b" 
+                                    info="Click Through Rate. Indica qué tan atractivo es tu anuncio. Menos de 1% es señal de alerta."
+                                />
+                            </div>
+
+                            {/* Panel de Optimización IA */}
+                            <div className="glass" style={{ borderRadius: '28px', padding: '2rem', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
+                                    <Sparkles size={24} className="text-gradient" />
+                                    <h3 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Sugerencias de Optimización</h3>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                    {generateSugerencias().map((s, i) => (
+                                        <SuggestionAction 
+                                            key={i}
+                                            title={s.title}
+                                            reason={s.reason}
+                                            impact={s.impact}
+                                            onAccept={() => handleAcceptSuggestion(s)}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Contenido Dinámico (Tablas) */}
                             {viewLevel === 'campaigns' && (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                     {campaigns.map(c => (
@@ -345,6 +440,74 @@ export default function GoogleAdsInteligentePage() {
 }
 
 // COMPONENTES AUXILIARES
+
+function MetricCard({ title, value, icon, color = "var(--accent-primary)", info }: any) {
+    const [showInfo, setShowInfo] = useState(false);
+    return (
+        <div className="glass" style={{ padding: '1.5rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `${color}15`, color: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {icon}
+                </div>
+                <button 
+                    onMouseEnter={() => setShowInfo(true)}
+                    onMouseLeave={() => setShowInfo(false)}
+                    style={{ background: 'none', border: 'none', color: 'var(--fg-muted)', cursor: 'help' }}
+                >
+                    <Info size={16} />
+                </button>
+            </div>
+            {showInfo && info && (
+                <div className="animate-in fade-in zoom-in duration-200" style={{ 
+                    position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, 
+                    background: '#1a1a1a', padding: '1rem', borderRadius: '12px', 
+                    fontSize: '0.8rem', border: '1px solid var(--accent-primary)', marginTop: '0.5rem',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                }}>
+                    {info}
+                </div>
+            )}
+            <div style={{ fontSize: '0.85rem', color: 'var(--fg-muted)', marginBottom: '0.25rem' }}>{title}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{value}</div>
+        </div>
+    );
+}
+
+function SuggestionAction({ title, reason, impact, onAccept }: any) {
+    const [status, setStatus] = useState<'IDLE' | 'LOADING' | 'DONE'>('IDLE');
+
+    const handleClick = async () => {
+        setStatus('LOADING');
+        await onAccept();
+        setStatus('DONE');
+    };
+
+    return (
+        <div className="glass" style={{ padding: '1.5rem', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
+            <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 800, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {title}
+                    <span style={{ fontSize: '0.65rem', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.1rem 0.5rem', borderRadius: '50px' }}>{impact}</span>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--fg-muted)' }}>{reason}</p>
+            </div>
+            <button 
+                onClick={handleClick}
+                disabled={status !== 'IDLE'}
+                className="btn-primary" 
+                style={{ 
+                    padding: '0.6rem 1.5rem', fontSize: '0.85rem', 
+                    background: status === 'DONE' ? '#10b981' : 'var(--accent-primary)',
+                    border: 'none', minWidth: '120px'
+                }}
+            >
+                {status === 'IDLE' && 'Aceptar'}
+                {status === 'LOADING' && 'Procesando...'}
+                {status === 'DONE' && '¡Encolado!'}
+            </button>
+        </div>
+    );
+}
 
 function PeriodBtn({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) {
     return (

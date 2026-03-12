@@ -10,7 +10,9 @@ import {
     Search,
     ChevronRight,
     Globe,
-    Megaphone
+    Megaphone,
+    Briefcase,
+    Code
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -35,6 +37,21 @@ const tools = [
                 icon: <Layout size={24} />,
                 href: "/herramientas/bolton-pages",
                 color: "linear-gradient(135deg, #FF4B2B, #FF416C)"
+            }
+        ]
+    },
+    {
+        category: "Freelancers & Desarrollo",
+        icon: <Briefcase className="text-emerald-500" size={24} />,
+        description: "Soluciones especializadas para profesionales independientes y agencias que buscan escalar su flujo de trabajo.",
+        items: [
+            {
+                id: "freelance-wordpress",
+                title: "WordPress Freelancer",
+                description: "Gestiona tus proyectos de desarrollo WordPress, clientes y tareas de forma centralizada.",
+                icon: <Code size={24} />,
+                href: "/herramientas/freelance-wordpress",
+                color: "linear-gradient(135deg, #21759b, #d54e21)"
             }
         ]
     }
