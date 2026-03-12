@@ -23,14 +23,83 @@ export default function GoogleAdsInteligentePage() {
     const [isConnected, setIsConnected] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedPeriod, setSelectedPeriod] = useState('30_days');
+    const [metrics, setMetrics] = useState<any[]>([]);
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [isApplying, setIsApplying] = useState<string | null>(null);
 
     useEffect(() => {
-        // Simular chequeo de conexión
-        const timer = setTimeout(() => {
+        const checkConnection = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                // Verificar si hay datos en la tabla de sincronización
+                const { data, error } = await supabase
+                    .from('ads_metrics_sync')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .limit(1);
+                
+                if (data && data.length > 0) {
+                    setIsConnected(true);
+                    fetchMetrics(user.id);
+                }
+            }
             setIsLoading(false);
-        }, 1000);
-        return () => clearTimeout(timer);
+        };
+
+        const fetchMetrics = async (userId: string) => {
+            const { data, error } = await supabase
+                .from('ads_metrics_sync')
+                .select('*')
+                .eq('user_id', userId)
+                .order('synced_at', { ascending: false });
+            
+            if (data) {
+                setMetrics(data);
+                generateSuggestions(data);
+            }
+        };
+
+        checkConnection();
     }, []);
+
+    const generateSuggestions = (data: any[]) => {
+        // Lógica simple de sugerencias basada en los lineamientos de Claudio
+        const newSuggestions = data.filter(m => m.clicks > 20 && m.conversions === 0).map(m => ({
+            id: m.id,
+            target_id: m.campaign_id,
+            title: `Pausar campaña '${m.campaign_name}'`,
+            reason: `Tiene ${m.clicks} clics y 0 conversiones. Está consumiendo presupuesto sin resultados.`,
+            impact: `Ahorro estimado: $${m.cost.toFixed(2)}`,
+            type: 'pause'
+        }));
+        setSuggestions(newSuggestions);
+    };
+
+    const handleApplyAction = async (suggestion: any) => {
+        setIsApplying(suggestion.id);
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) return;
+
+        const { error } = await supabase
+            .from('ads_actions_queue')
+            .insert([{
+                user_id: user.id,
+                account_id: metrics[0]?.account_id || 'unknown',
+                action_type: suggestion.type === 'pause' ? 'PAUSE_CAMPAIGN' : 'UPDATE_BUDGET',
+                target_id: suggestion.target_id,
+                target_name: suggestion.title,
+                status: 'PENDING'
+            }]);
+
+        if (!error) {
+            alert('Acción encolada. El Google Ads Script la ejecutará en su próxima corrida.');
+            setSuggestions(suggestions.filter(s => s.id !== suggestion.id));
+        } else {
+            alert('Error al encolar acción: ' + error.message);
+        }
+        setIsApplying(null);
+    };
 
     if (isLoading) {
         return (
@@ -132,12 +201,39 @@ export default function GoogleAdsInteligentePage() {
 
                             {/* Grid de Métricas */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-                                <MetricCard title="Inversión" value="$450.00" trend="+12%" icon={<DollarSign size={20} />} />
-                                <MetricCard title="Conversiones" value="24" trend="+5%" icon={<CheckCircle2 size={20} />} color="#10b981" />
-                                <MetricCard title="Costo / Conv." value="$18.75" trend="-8%" icon={<TrendingUp size={20} />} color="#f59e0b" />
-                                <MetricCard title="Clics" value="1,240" trend="+15%" icon={<MousePointer2 size={20} />} />
-                                <MetricCard title="CTR" value="2.4%" trend="+0.2%" icon={<Eye size={20} />} />
-                                <MetricCard title="CPC Prom." value="$0.36" trend="0%" icon={<DollarSign size={20} />} />
+                                <MetricCard 
+                                    title="Inversión" 
+                                    value={`$${metrics.reduce((acc, m) => acc + (m.cost || 0), 0).toFixed(2)}`} 
+                                    trend="+--" 
+                                    icon={<DollarSign size={20} />} 
+                                />
+                                <MetricCard 
+                                    title="Conversiones" 
+                                    value={metrics.reduce((acc, m) => acc + (m.conversions || 0), 0).toString()} 
+                                    trend="+--" 
+                                    icon={<CheckCircle2 size={20} />} 
+                                    color="#10b981" 
+                                />
+                                <MetricCard 
+                                    title="Costo / Conv." 
+                                    value={`$${(metrics.reduce((acc, m) => acc + (m.cost || 0), 0) / (metrics.reduce((acc, m) => acc + (m.conversions || 0), 0) || 1)).toFixed(2)}`} 
+                                    trend="--" 
+                                    icon={<TrendingUp size={20} />} 
+                                    color="#f59e0b" 
+                                />
+                                <MetricCard title="Clics" value={metrics.reduce((acc, m) => acc + (m.clicks || 0), 0).toString()} trend="+--" icon={<MousePointer2 size={20} />} />
+                                <MetricCard 
+                                    title="CTR" 
+                                    value={`${((metrics.reduce((acc, m) => acc + (m.clicks || 0), 0) / (metrics.reduce((acc, m) => acc + (m.impressions || 0), 1)) || 0) * 100).toFixed(2)}%`} 
+                                    trend="--" 
+                                    icon={<Eye size={20} />} 
+                                />
+                                <MetricCard 
+                                    title="CPC Prom." 
+                                    value={`$${(metrics.reduce((acc, m) => acc + (m.cost || 0), 0) / (metrics.reduce((acc, m) => acc + (m.clicks || 0), 1)) || 0).toFixed(2)}`} 
+                                    trend="--" 
+                                    icon={<DollarSign size={20} />} 
+                                />
                             </div>
 
                             {/* Análisis de IA */}
@@ -156,18 +252,21 @@ export default function GoogleAdsInteligentePage() {
                             {/* Sugerencias Actionables */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Sugerencias de Mejora</h3>
-                                <SuggestionItem 
-                                    title="Pausar palabra clave 'curso gratis'"
-                                    reason="Ha generado 42 clics sin ninguna conversión en los últimos 30 días."
-                                    impact="Ahorro estimado: $15/mes"
-                                    type="pause"
-                                />
-                                <SuggestionItem 
-                                    title="Aumentar presupuesto en 'Campaña Ventas'"
-                                    reason="El ROAS es de 4.5x y la campaña está limitada por presupuesto."
-                                    impact="Ventas estimadas: +15%"
-                                    type="play"
-                                />
+                                {suggestions.length > 0 ? suggestions.map(s => (
+                                    <SuggestionItem 
+                                        key={s.id}
+                                        title={s.title}
+                                        reason={s.reason}
+                                        impact={s.impact}
+                                        type={s.type}
+                                        onApply={() => handleApplyAction(s)}
+                                        isLoading={isApplying === s.id}
+                                    />
+                                )) : (
+                                    <div className="glass" style={{ padding: '2rem', textAlign: 'center', color: 'var(--fg-muted)', borderRadius: '20px' }}>
+                                        No hay sugerencias críticas por ahora. ¡Buen trabajo!
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -245,9 +344,11 @@ interface SuggestionItemProps {
     reason: string;
     impact: string;
     type: 'pause' | 'play';
+    onApply: () => void;
+    isLoading: boolean;
 }
 
-function SuggestionItem({ title, reason, impact, type }: SuggestionItemProps) {
+function SuggestionItem({ title, reason, impact, type, onApply, isLoading }: SuggestionItemProps) {
     return (
         <div className="glass" style={{ 
             padding: '1.5rem', 
@@ -278,8 +379,12 @@ function SuggestionItem({ title, reason, impact, type }: SuggestionItemProps) {
                     <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 600 }}>{impact}</span>
                 </div>
             </div>
-            <button className="btn-primary" style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
-                Aplicar Cambio
+            <button 
+                className="btn-primary" 
+                onClick={onApply}
+                disabled={isLoading}
+                style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
+                {isLoading ? 'Encolando...' : 'Aplicar Cambio'}
             </button>
         </div>
     );
