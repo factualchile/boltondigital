@@ -8,7 +8,6 @@ import Link from 'next/link';
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [selectedRole, setSelectedRole] = useState<'user' | 'freelancer' | 'admin'>('user');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
@@ -36,41 +35,8 @@ export default function LoginPage() {
                 return;
             }
 
-            // Fetch access level and role from profile
-            const { data: profile, error: profileError } = await supabase
-                .from('profiles')
-                .select('role, access_level')
-                .eq('id', authData.user.id)
-                .maybeSingle();
-
-            if (profileError) {
-                setError(`Error interno de permisos (RLS): ${profileError.message}`);
-                setLoading(false);
-                return;
-            }
-
-            const level = profile?.access_level ?? 1;
-
-            // Validation based on selectedRole and access_level
-            if (selectedRole === 'admin' && level < 3) {
-                setError(`Acceso denegado. Tu cuenta tiene nivel ${level}, pero se requiere nivel 3 (Admin).`);
-                setLoading(false);
-                return;
-            }
-            if (selectedRole === 'freelancer' && level < 2) {
-                setError(`Acceso denegado. Tu cuenta tiene nivel ${level}, pero se requiere nivel 2 (Freelancer).`);
-                setLoading(false);
-                return;
-            }
-
-            // Redirection logic
-            if (selectedRole === 'admin') {
-                router.push('/admin');
-            } else if (selectedRole === 'freelancer') {
-                router.push('/dashboard/admin-astrid');
-            } else {
-                router.push('/dashboard/freelance-wordpress');
-            }
+            // Redirection to tools marketplace
+            router.push('/herramientas');
         } catch (err: any) {
             console.error("Login catch error:", err);
             setError("Error inesperado en el inicio de sesión.");
@@ -158,31 +124,6 @@ export default function LoginPage() {
                         />
                     </div>
 
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.8rem', fontSize: '0.9rem', color: 'var(--fg-muted)' }}>Ingresar como:</label>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
-                            {(['user', 'freelancer', 'admin'] as const).map((role) => (
-                                <button
-                                    key={role}
-                                    type="button"
-                                    onClick={() => setSelectedRole(role)}
-                                    style={{
-                                        padding: '0.75rem 0.5rem',
-                                        borderRadius: '12px',
-                                        fontSize: '0.8rem',
-                                        fontWeight: 600,
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease',
-                                        background: selectedRole === role ? 'rgba(79, 70, 229, 0.2)' : 'rgba(255,255,255,0.05)',
-                                        border: selectedRole === role ? '2px solid var(--accent-primary)' : '1px solid rgba(255,255,255,0.1)',
-                                        color: selectedRole === role ? 'white' : 'var(--fg-muted)'
-                                    }}
-                                >
-                                    {role === 'user' ? 'Cliente' : role === 'freelancer' ? 'Freelancer' : 'Admin'}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
 
                     <button
                         type="submit"
