@@ -31,6 +31,7 @@ export default function GoogleAdsInteligentePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [viewLevel, setViewLevel] = useState<ViewLevel>('campaigns');
     const [period, setPeriod] = useState<PeriodScope>('LAST_30_DAYS');
+    const [subscriptionStatus, setSubscriptionStatus] = useState<'ACTIVE' | 'GRACE' | 'EXPIRED' | 'NONE'>('NONE');
     
     // Jerarquía de selección
     const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
@@ -43,9 +44,26 @@ export default function GoogleAdsInteligentePage() {
     const [keywords, setKeywords] = useState<any[]>([]);
 
     useEffect(() => {
-        const checkConnection = async () => {
+        const checkInitialState = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
+                // 1. Verificar Suscripción
+                const { data: subData } = await supabase
+                    .from('v_active_subscriptions')
+                    .select('current_access_status')
+                    .eq('user_id', user.id)
+                    .eq('category', 'SEM')
+                    .single();
+                
+                const status = subData?.current_access_status || 'EXPIRED';
+                setSubscriptionStatus(status);
+
+                if (status === 'EXPIRED') {
+                    setIsLoading(false);
+                    return;
+                }
+
+                // 2. Verificar Conexión de Ads
                 const { data } = await supabase
                     .from('ads_campaigns')
                     .select('*')
@@ -59,7 +77,7 @@ export default function GoogleAdsInteligentePage() {
             }
             setIsLoading(false);
         };
-        checkConnection();
+        checkInitialState();
     }, [period]);
 
     const fetchCampaigns = async (userId: string, p: PeriodScope) => {
@@ -127,9 +145,49 @@ export default function GoogleAdsInteligentePage() {
         );
     }
 
+    if (subscriptionStatus === 'EXPIRED') {
+        return (
+            <main className="min-h-screen">
+                <Navbar />
+                <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 5rem)' }}>
+                    <div className="glass" style={{ padding: '4rem', borderRadius: '32px', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'rgba(244, 63, 94, 0.1)', display: 'flex', alignItems: 'center', justifyCenter: 'center', margin: '0 auto 2rem' }}>
+                            <DollarSign size={40} color="#f43f5e" />
+                        </div>
+                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Suscripción SEM Requerida</h2>
+                        <p style={{ color: 'var(--fg-muted)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>
+                            Esta herramienta es parte del plan premium **Bolton SEM**. Tu acceso ha expirado o aún no has realizado tu primer pago.
+                        </p>
+                        <button className="btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
+                            Pagar con MercadoPago (Chile)
+                        </button>
+                    </div>
+                </div>
+            </main>
+        );
+    }
+
     return (
         <main className="min-h-screen">
             <Navbar />
+            
+            {subscriptionStatus === 'GRACE' && (
+                <div style={{ 
+                    background: 'linear-gradient(90deg, #f59e0b, #d97706)', 
+                    color: 'white', 
+                    padding: '0.75rem', 
+                    textAlign: 'center', 
+                    fontSize: '0.9rem', 
+                    fontWeight: 600,
+                    position: 'fixed',
+                    top: 'var(--header-height)',
+                    left: 0,
+                    right: 0,
+                    zIndex: 100
+                }}>
+                    ⚠️ Tienes un pago pendiente. Tu acceso de cortesía termina en pocos días. ¡Ponte al día para no perder tus métricas!
+                </div>
+            )}
             
             <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 3rem)', paddingBottom: '5rem' }}>
                 <header style={{ marginBottom: '3rem' }}>
