@@ -24,6 +24,7 @@ import {
     Link as LinkIcon,
     LogIn
 } from 'lucide-react';
+import AuthGuard from '@/components/AuthGuard';
 
 type ViewLevel = 'campaigns' | 'adgroups' | 'details';
 type PeriodScope = 'TODAY' | 'LAST_7_DAYS' | 'LAST_30_DAYS';
@@ -48,27 +49,10 @@ export default function GoogleAdsInteligentePage() {
     const [keywords, setKeywords] = useState<any[]>([]);
 
     useEffect(() => {
-        const checkInitialState = async () => {
+        const loadInitialData = async () => {
             const { data: { user: authUser } } = await supabase.auth.getUser();
-            setUser(authUser);
             if (authUser) {
-                // 1. Verificar Suscripción
-                const { data: subData } = await supabase
-                    .from('v_active_subscriptions')
-                    .select('current_access_status')
-                    .eq('user_id', authUser.id)
-                    .eq('category', 'SEM')
-                    .single();
-                
-                const status = subData?.current_access_status || 'EXPIRED';
-                setSubscriptionStatus(status);
-
-                if (status === 'EXPIRED') {
-                    router.push('/onboarding');
-                    return;
-                }
-
-                // 2. Verificar Perfil y Google Ads ID
+                // Verificar Perfil y Google Ads ID
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('google_ads_id')
@@ -80,7 +64,7 @@ export default function GoogleAdsInteligentePage() {
                     return;
                 }
 
-                // 2. Verificar Conexión de Ads
+                // Verificar Conexión de Ads
                 const { data } = await supabase
                     .from('ads_campaigns')
                     .select('*')
@@ -94,7 +78,7 @@ export default function GoogleAdsInteligentePage() {
             }
             setIsLoading(false);
         };
-        checkInitialState();
+        loadInitialData();
     }, [period]);
 
     const fetchCampaigns = async (userId: string, p: PeriodScope) => {
@@ -203,269 +187,255 @@ export default function GoogleAdsInteligentePage() {
         } else if (viewLevel === 'adgroups') {
             setViewLevel('campaigns');
             setSelectedCampaignId(null);
-        }
-    };
-
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-            </div>
-        );
-    }
-
-    if (!user) {
-        return (
-            <main className="min-h-screen">
-                <Navbar />
-                <ToolLanding />
-            </main>
-        );
-    }
-
-    if (subscriptionStatus === 'EXPIRED') {
-        return (
-            <main className="min-h-screen">
-                <Navbar />
-                <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 5rem)' }}>
-                    <div className="glass" style={{ padding: '4rem', borderRadius: '32px', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
-                        <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'rgba(244, 63, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
-                            <DollarSign size={40} color="#f43f5e" />
-                        </div>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Suscripción SEM Requerida</h2>
-                        <p style={{ color: 'var(--fg-muted)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>
-                            Esta herramienta es parte del plan premium **Bolton SEM**. Tu acceso ha expirado o aún no has realizado tu primer pago.
-                        </p>
-                        <button 
-                            onClick={() => router.push('/onboarding')}
-                            className="btn-primary" 
-                            style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}
-                        >
-                            Ver Planes de Suscripción
-                        </button>
-                    </div>
-                </div>
-            </main>
-        );
-    }
-
-    return (
-        <main className="min-h-screen">
-            <Navbar />
-            
-            {subscriptionStatus === 'GRACE' && (
-                <div style={{ 
-                    background: 'linear-gradient(90deg, #f59e0b, #d97706)', 
-                    color: 'white', 
-                    padding: '0.75rem', 
-                    textAlign: 'center', 
-                    fontSize: '0.9rem', 
-                    fontWeight: 600,
-                    position: 'fixed',
-                    top: 'var(--header-height)',
-                    left: 0,
-                    right: 0,
-                    zIndex: 100
-                }}>
-                    ⚠️ Tienes un pago pendiente. Tu acceso de cortesía termina en pocos días. ¡Ponte al día para no perder tus métricas!
-                </div>
-            )}
-            
-            <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 3rem)', paddingBottom: '5rem' }}>
-                <header style={{ marginBottom: '3rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                        <div style={{ 
-                            width: '40px', 
-                            height: '40px', 
-                            borderRadius: '12px', 
-                            background: 'linear-gradient(135deg, #4285F4, #FBBC05)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            <Target size={24} color="white" />
-                        </div>
-                        <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>
-                            Google Ads <span className="text-gradient">Inteligente</span>
-                        </h1>
-                    </div>
-                </header>
-
-                {!isConnected ? (
-                    <ConnectionGuide UID={user?.id || ''} />
-                ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2rem' }}>
-                        {/* Area de Trabajo Principal */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                            
-                            {/* Toolbar: Navegación y Período */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                    {viewLevel !== 'campaigns' && (
-                                        <button onClick={goBack} className="glass" style={{ padding: '0.6rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', cursor: 'pointer', color: 'white' }}>
-                                            <ArrowLeft size={18} /> Volver
-                                        </button>
-                                    )}
-                                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>
-                                        {viewLevel === 'campaigns' && 'Mis Campañas'}
-                                        {viewLevel === 'adgroups' && 'Grupos de Anuncios'}
-                                        {viewLevel === 'details' && 'Anuncios y Keywords'}
-                                    </h2>
-                                </div>
-
-                                <div className="glass" style={{ padding: '0.4rem', borderRadius: '12px', display: 'flex', gap: '0.4rem' }}>
-                                    <PeriodBtn active={period === 'TODAY'} onClick={() => setPeriod('TODAY')} label="Hoy" />
-                                    <PeriodBtn active={period === 'LAST_7_DAYS'} onClick={() => setPeriod('LAST_7_DAYS')} label="7d" />
-                                    <PeriodBtn active={period === 'LAST_30_DAYS'} onClick={() => setPeriod('LAST_30_DAYS')} label="30d" />
+           return (
+        <AuthGuard landing={<ToolLanding />} category="SEM">
+            {(user, subscriptionStatus) => {
+                if (subscriptionStatus === 'EXPIRED') {
+                    return (
+                        <main className="min-h-screen">
+                            <Navbar />
+                            <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 5rem)' }}>
+                                <div className="glass" style={{ padding: '4rem', borderRadius: '32px', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
+                                    <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'rgba(244, 63, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
+                                        <DollarSign size={40} color="#f43f5e" />
+                                    </div>
+                                    <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Suscripción SEM Requerida</h2>
+                                    <p style={{ color: 'var(--fg-muted)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>
+                                        Esta herramienta es parte del plan premium **Bolton SEM**. Tu acceso ha expirado o aún no has realizado tu primer pago.
+                                    </p>
+                                    <button 
+                                        onClick={() => router.push('/onboarding')}
+                                        className="btn-primary" 
+                                        style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}
+                                    >
+                                        Ver Planes de Suscripción
+                                    </button>
                                 </div>
                             </div>
+                        </main>
+                    );
+                }
 
-                            {/* Grid de Métricas con Info IA */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-                                <MetricCard 
-                                    title="Inversión" 
-                                    value={`$${campaigns.reduce((acc, c) => acc + (c.cost || 0), 0).toFixed(0)}`} 
-                                    icon={<DollarSign size={18} />} 
-                                    info="Es el capital total que Google ha consumido. Claudio dice: 'No es un gasto, es el motor de búsqueda de tus clientes'."
-                                />
-                                <MetricCard 
-                                    title="Conversiones" 
-                                    value={campaigns.reduce((acc, c) => acc + (c.conversions || 0), 0).toString()} 
-                                    icon={<CheckCircle2 size={18} />} 
-                                    color="#10b981" 
-                                    info="Ventas o leads reales. Si esto está bajo, revisa urgente tu Bolton Page."
-                                />
-                                <MetricCard 
-                                    title="CTR Prom." 
-                                    value={`${((campaigns.reduce((acc, c) => acc + (c.clicks || 0), 0) / (campaigns.reduce((acc, c) => acc + (c.impressions || 0), 1)) || 0) * 100).toFixed(2)}%`} 
-                                    icon={<TrendingUp size={18} />} 
-                                    color="#f59e0b" 
-                                    info="Click Through Rate. Indica qué tan atractivo es tu anuncio. Menos de 1% es señal de alerta."
-                                />
+                return (
+                    <main className="min-h-screen">
+                        <Navbar />
+                        
+                        {subscriptionStatus === 'GRACE' && (
+                            <div style={{ 
+                                background: 'linear-gradient(90deg, #f59e0b, #d97706)', 
+                                color: 'white', 
+                                padding: '0.75rem', 
+                                textAlign: 'center', 
+                                fontSize: '0.9rem', 
+                                fontWeight: 600,
+                                position: 'fixed',
+                                top: 'var(--header-height)',
+                                left: 0,
+                                right: 0,
+                                zIndex: 100
+                            }}>
+                                ⚠️ Tienes un pago pendiente. Tu acceso de cortesía termina en pocos días. ¡Ponte al día para no perder tus métricas!
                             </div>
-
-                            {/* Panel de Optimización IA */}
-                            <div className="glass" style={{ borderRadius: '28px', padding: '2rem', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
-                                    <Sparkles size={24} className="text-gradient" />
-                                    <h3 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Sugerencias de Optimización</h3>
+                        )}
+                        
+                        <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 3rem)', paddingBottom: '5rem' }}>
+                            <header style={{ marginBottom: '3rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                                    <div style={{ 
+                                        width: '40px', 
+                                        height: '40px', 
+                                        borderRadius: '12px', 
+                                        background: 'linear-gradient(135deg, #4285F4, #FBBC05)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <Target size={24} color="white" />
+                                    </div>
+                                    <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>
+                                        Google Ads <span className="text-gradient">Inteligente</span>
+                                    </h1>
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                                    {generateSugerencias().map((s, i) => (
-                                        <SuggestionAction 
-                                            key={i}
-                                            title={s.title}
-                                            reason={s.reason}
-                                            impact={s.impact}
-                                            onAccept={() => handleAcceptSuggestion(s)}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
+                            </header>
 
-                            {/* Contenido Dinámico (Tablas) */}
-                            {viewLevel === 'campaigns' && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    {campaigns.map(c => (
-                                        <RowItem 
-                                            key={c.google_id}
-                                            title={c.name}
-                                            sub={`ID: ${c.google_id}`}
-                                            status={c.status}
-                                            metrics={c}
-                                            onClick={() => handleCampaignClick(c)}
-                                        />
-                                    ))}
-                                </div>
-                            )}
+                            {!isConnected ? (
+                                <ConnectionGuide UID={user?.id || ''} />
+                            ) : (
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2rem' }}>
+                                    {/* Area de Trabajo Principal */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                                        
+                                        {/* Toolbar: Navegación y Período */}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                {(viewLevel as string) !== 'campaigns' && (
+                                                    <button onClick={goBack} className="glass" style={{ padding: '0.6rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', cursor: 'pointer', color: 'white' }}>
+                                                        <ArrowLeft size={18} /> Volver
+                                                    </button>
+                                                )}
+                                                <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                                                    {(viewLevel as string) === 'campaigns' && 'Mis Campañas'}
+                                                    {(viewLevel as string) === 'adgroups' && 'Grupos de Anuncios'}
+                                                    {(viewLevel as string) === 'details' && 'Anuncios y Keywords'}
+                                                </h2>
+                                            </div>
 
-                            {viewLevel === 'adgroups' && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    {adGroups.map(g => (
-                                        <RowItem 
-                                            key={g.google_id}
-                                            title={g.name}
-                                            sub={`Grupo de Anuncios`}
-                                            status={g.status}
-                                            metrics={g}
-                                            onClick={() => handleAdGroupClick(g)}
-                                            isAdGroup
-                                        />
-                                    ))}
-                                </div>
-                            )}
-
-                            {viewLevel === 'details' && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-                                    {/* Sub-nivel: Anuncios */}
-                                    <div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                                            <Layers size={20} className="text-gradient" />
-                                            <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Anuncios (/Ads)</h3>
+                                            <div className="glass" style={{ padding: '0.4rem', borderRadius: '12px', display: 'flex', gap: '0.4rem' }}>
+                                                <PeriodBtn active={period === 'TODAY'} onClick={() => setPeriod('TODAY')} label="Hoy" />
+                                                <PeriodBtn active={period === 'LAST_7_DAYS'} onClick={() => setPeriod('LAST_7_DAYS')} label="7d" />
+                                                <PeriodBtn active={period === 'LAST_30_DAYS'} onClick={() => setPeriod('LAST_30_DAYS')} label="30d" />
+                                            </div>
                                         </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                                            {ads.map(ad => (
-                                                <AdCard key={ad.google_id} ad={ad} />
-                                            ))}
+
+                                        {/* Grid de Métricas con Info IA */}
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+                                            <MetricCard 
+                                                title="Inversión" 
+                                                value={`$${campaigns.reduce((acc, c) => acc + (c.cost || 0), 0).toFixed(0)}`} 
+                                                icon={<DollarSign size={18} />} 
+                                                info="Es el capital total que Google ha consumido. Claudio dice: 'No es un gasto, es el motor de búsqueda de tus clientes'."
+                                            />
+                                            <MetricCard 
+                                                title="Conversiones" 
+                                                value={campaigns.reduce((acc, c) => acc + (c.conversions || 0), 0).toString()} 
+                                                icon={<CheckCircle2 size={18} />} 
+                                                color="#10b981" 
+                                                info="Ventas o leads reales. Si esto está bajo, revisa urgente tu Bolton Page."
+                                            />
+                                            <MetricCard 
+                                                title="CTR Prom." 
+                                                value={`${((campaigns.reduce((acc, c) => acc + (c.clicks || 0), 0) / (campaigns.reduce((acc, c) => acc + (c.impressions || 0), 1)) || 0) * 100).toFixed(2)}%`} 
+                                                icon={<TrendingUp size={18} />} 
+                                                color="#f59e0b" 
+                                                info="Click Through Rate. Indica qué tan atractivo es tu anuncio. Menos de 1% es señal de alerta."
+                                            />
                                         </div>
+
+                                        {/* Panel de Optimización IA */}
+                                        <div className="glass" style={{ borderRadius: '28px', padding: '2rem', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
+                                                <Sparkles size={24} className="text-gradient" />
+                                                <h3 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Sugerencias de Optimización</h3>
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                                {generateSugerencias().map((s, i) => (
+                                                    <SuggestionAction 
+                                                        key={i}
+                                                        title={s.title}
+                                                        reason={s.reason}
+                                                        impact={s.impact}
+                                                        onAccept={() => handleAcceptSuggestion(s)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Contenido Dinámico (Tablas) */}
+                                        {(viewLevel as string) === 'campaigns' && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                                {campaigns.map(c => (
+                                                    <RowItem 
+                                                        key={c.google_id}
+                                                        title={c.name}
+                                                        sub={`ID: ${c.google_id}`}
+                                                        status={c.status}
+                                                        metrics={c}
+                                                        onClick={() => handleCampaignClick(c)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {(viewLevel as string) === 'adgroups' && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                                {adGroups.map(g => (
+                                                    <RowItem 
+                                                        key={g.google_id}
+                                                        title={g.name}
+                                                        sub={`Grupo de Anuncios`}
+                                                        status={g.status}
+                                                        metrics={g}
+                                                        onClick={() => handleAdGroupClick(g)}
+                                                        isAdGroup
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {(viewLevel as string) === 'details' && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+                                                {/* Sub-nivel: Anuncios */}
+                                                <div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                                                        <Layers size={20} className="text-gradient" />
+                                                        <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Anuncios (/Ads)</h3>
+                                                    </div>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                                                        {ads.map(ad => (
+                                                            <AdCard key={ad.google_id} ad={ad} />
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Sub-nivel: Keywords */}
+                                                <div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                                                        <Tag size={20} className="text-gradient" />
+                                                        <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Palabras Clave (/Keywords)</h3>
+                                                    </div>
+                                                    <div className="glass" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+                                                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                                            <thead>
+                                                                <tr style={{ background: 'rgba(255,255,255,0.03)', fontSize: '0.85rem', color: 'var(--fg-muted)' }}>
+                                                                    <th style={{ padding: '1rem' }}>Keyword</th>
+                                                                    <th style={{ padding: '1rem' }}>Concordancia</th>
+                                                                    <th style={{ padding: '1rem' }}>Clics</th>
+                                                                    <th style={{ padding: '1rem' }}>Conv.</th>
+                                                                    <th style={{ padding: '1rem' }}>Costo</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {keywords.map(kw => (
+                                                                    <tr key={kw.google_id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '0.9rem' }}>
+                                                                        <td style={{ padding: '1rem', fontWeight: 600 }}>{kw.text}</td>
+                                                                        <td style={{ padding: '1rem' }}><span style={{ opacity: 0.6 }}>{kw.match_type}</span></td>
+                                                                        <td style={{ padding: '1rem' }}>{kw.clicks}</td>
+                                                                        <td style={{ padding: '1rem' }}>{kw.conversions}</td>
+                                                                        <td style={{ padding: '1rem' }}>${kw.cost.toFixed(2)}</td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {/* Sub-nivel: Keywords */}
-                                    <div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                                            <Tag size={20} className="text-gradient" />
-                                            <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Palabras Clave (/Keywords)</h3>
+                                    {/* Asistente - Siempre presente */}
+                                    <div className="glass" style={{ borderRadius: '28px', display: 'flex', flexDirection: 'column', height: 'fit-content', position: 'sticky', top: 'calc(var(--header-height) + 2rem)' }}>
+                                        <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                                                <MessageSquare size={18} className="text-gradient" />
+                                                <h4 style={{ fontWeight: 700, fontSize: '1.1rem' }}>Análisis IA</h4>
+                                            </div>
+                                            <p style={{ fontSize: '0.8rem', color: 'var(--fg-muted)' }}>Estrategia personalizada de Claudio</p>
                                         </div>
-                                        <div className="glass" style={{ borderRadius: '20px', overflow: 'hidden' }}>
-                                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                                <thead>
-                                                    <tr style={{ background: 'rgba(255,255,255,0.03)', fontSize: '0.85rem', color: 'var(--fg-muted)' }}>
-                                                        <th style={{ padding: '1rem' }}>Keyword</th>
-                                                        <th style={{ padding: '1rem' }}>Concordancia</th>
-                                                        <th style={{ padding: '1rem' }}>Clics</th>
-                                                        <th style={{ padding: '1rem' }}>Conv.</th>
-                                                        <th style={{ padding: '1rem' }}>Costo</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {keywords.map(kw => (
-                                                        <tr key={kw.google_id} style={{ borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '0.9rem' }}>
-                                                            <td style={{ padding: '1rem', fontWeight: 600 }}>{kw.text}</td>
-                                                            <td style={{ padding: '1rem' }}><span style={{ opacity: 0.6 }}>{kw.match_type}</span></td>
-                                                            <td style={{ padding: '1rem' }}>{kw.clicks}</td>
-                                                            <td style={{ padding: '1rem' }}>{kw.conversions}</td>
-                                                            <td style={{ padding: '1rem' }}>${kw.cost.toFixed(2)}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
+                                        <div style={{ padding: '1.5rem', minHeight: '300px' }}>
+                                            <div style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '1.25rem', borderRadius: '16px', borderLeft: '3px solid var(--accent-primary)', fontSize: '0.95rem', lineHeight: 1.6 }}>
+                                                {(viewLevel as string) === 'campaigns' && "Estoy analizando tus campañas globales. Detecto que la inversión total es de saludale, pero podemos optimizar el CTR."}
+                                                {(viewLevel as string) === 'adgroups' && "En este nivel podemos ver qué segmentos de público están funcionando mejor."}
+                                                {(viewLevel as string) === 'details' && "Revisa las keywords en rojo. Son palabras que gastan pero no venden."}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             )}
                         </div>
-
-                        {/* Asistente - Siempre presente */}
-                        <div className="glass" style={{ borderRadius: '28px', display: 'flex', flexDirection: 'column', height: 'fit-content', position: 'sticky', top: 'calc(var(--header-height) + 2rem)' }}>
-                             <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                                    <MessageSquare size={18} className="text-gradient" />
-                                    <h4 style={{ fontWeight: 700, fontSize: '1.1rem' }}>Análisis IA</h4>
-                                </div>
-                                <p style={{ fontSize: '0.8rem', color: 'var(--fg-muted)' }}>Estrategia personalizada de Claudio</p>
-                            </div>
-                            <div style={{ padding: '1.5rem', minHeight: '300px' }}>
-                                <div style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '1.25rem', borderRadius: '16px', borderLeft: '3px solid var(--accent-primary)', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                                    {viewLevel === 'campaigns' && "Estoy analizando tus campañas globales. Detecto que la inversión total es de saludale, pero podemos optimizar el CTR."}
-                                    {viewLevel === 'adgroups' && "En este nivel podemos ver qué segmentos de público están funcionando mejor."}
-                                    {viewLevel === 'details' && "Revisa las keywords en rojo. Son palabras que gastan pero no venden."}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </main>
+                    </main>
+                );
+            }}
+        </AuthGuard>
     );
 }
 

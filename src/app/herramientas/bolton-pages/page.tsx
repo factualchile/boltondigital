@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import AuthGuard from '@/components/AuthGuard';
 
 export default function BoltonPagesDashboard() {
     const router = useRouter();
@@ -28,132 +29,101 @@ export default function BoltonPagesDashboard() {
     const [subscriptionStatus, setSubscriptionStatus] = useState<'ACTIVE' | 'GRACE' | 'EXPIRED' | 'NONE'>('NONE');
 
     useEffect(() => {
-        const checkAccess = async () => {
-            const { data: { user: authUser } } = await supabase.auth.getUser();
-            setUser(authUser);
+        const fetchSites = async () => {
+            const { data } = await supabase
+                .from('client_sites')
+                .select('*')
+                .order('created_at', { ascending: false });
             
-            if (authUser) {
-                // Verificar Suscripción
-                const { data: subData } = await supabase
-                    .from('v_active_subscriptions')
-                    .select('current_access_status')
-                    .eq('user_id', authUser.id)
-                    .eq('category', 'SEM')
-                    .single();
-                
-                const status = subData?.current_access_status || 'EXPIRED';
-                setSubscriptionStatus(status);
-
-                if (status === 'ACTIVE' || status === 'GRACE') {
-                    // Fetch sites only if access is valid
-                    const { data } = await supabase
-                        .from('client_sites')
-                        .select('*')
-                        .order('created_at', { ascending: false });
-                    
-                    if (data) setSites(data);
-                }
-            }
-            setIsLoading(false);
+            if (data) setSites(data);
         };
 
-        checkAccess();
+        fetchSites();
     }, []);
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-            </div>
-        );
-    }
-
-    if (!user) {
-        return (
-            <main className="min-h-screen">
-                <Navbar />
-                <BoltonPagesLanding />
-            </main>
-        );
-    }
-
-    if (subscriptionStatus === 'EXPIRED') {
-        return (
-            <main className="min-h-screen">
-                <Navbar />
-                <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 5rem)' }}>
-                    <div className="glass" style={{ padding: '4rem', borderRadius: '32px', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
-                        <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'rgba(244, 63, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
-                            <DollarSign size={40} color="#f43f5e" />
-                        </div>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Suscripción requerida</h2>
-                        <p style={{ color: 'var(--fg-muted)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>
-                            El editor de landing pages es exclusivo de nuestro plan **SEM**. Suscríbete para empezar a crear sitios de alta conversión.
-                        </p>
-                        <button 
-                            onClick={() => router.push('/onboarding')}
-                            className="btn-primary" 
-                            style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}
-                        >
-                            Ver Planes de Suscripción
-                        </button>
-                    </div>
-                </div>
-            </main>
-        );
-    }
-
     return (
-        <main className="min-h-screen">
-            <Navbar />
-            
-            <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 3rem)', paddingBottom: '5rem' }}>
-                <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
-                    <div>
-                        <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>
-                            Bolton <span className="text-gradient">Pages</span>
-                        </h1>
-                        <p style={{ color: 'var(--fg-muted)', fontSize: '1.1rem' }}>
-                            Gestiona tus landing pages y dominios personalizados.
-                        </p>
-                    </div>
-                    <Link href="/herramientas/bolton-pages/editor" className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem' }}>
-                        <Plus size={20} />
-                        Crear Nuevo Sitio
-                    </Link>
-                </header>
+        <AuthGuard landing={<BoltonPagesLanding />} category="SEM">
+            {(user, subscriptionStatus) => {
+                if (subscriptionStatus === 'EXPIRED') {
+                    return (
+                        <main className="min-h-screen">
+                            <Navbar />
+                            <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 5rem)' }}>
+                                <div className="glass" style={{ padding: '4rem', borderRadius: '32px', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
+                                    <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'rgba(244, 63, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
+                                        <DollarSign size={40} color="#f43f5e" />
+                                    </div>
+                                    <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Suscripción requerida</h2>
+                                    <p style={{ color: 'var(--fg-muted)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>
+                                        El editor de landing pages es exclusivo de nuestro plan **SEM**. Suscríbete para empezar a crear sitios de alta conversión.
+                                    </p>
+                                    <button 
+                                        onClick={() => router.push('/onboarding')}
+                                        className="btn-primary" 
+                                        style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}
+                                    >
+                                        Ver Planes de Suscripción
+                                    </button>
+                                </div>
+                            </div>
+                        </main>
+                    );
+                }
 
-                {sites.length === 0 ? (
-                    <div className="glass" style={{ padding: '5rem', textAlign: 'center', borderRadius: '32px' }}>
-                        <div style={{ 
-                            width: '80px', 
-                            height: '80px', 
-                            borderRadius: '24px', 
-                            background: 'rgba(99, 102, 241, 0.1)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto 2rem'
-                        }}>
-                            <Layout size={40} className="text-gradient" />
+                return (
+                    <main className="min-h-screen">
+                        <Navbar />
+                        
+                        <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 3rem)', paddingBottom: '5rem' }}>
+                            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
+                                <div>
+                                    <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>
+                                        Bolton <span className="text-gradient">Pages</span>
+                                    </h1>
+                                    <p style={{ color: 'var(--fg-muted)', fontSize: '1.1rem' }}>
+                                        Gestiona tus landing pages y dominios personalizados.
+                                    </p>
+                                </div>
+                                <Link href="/herramientas/bolton-pages/editor" className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem' }}>
+                                    <Plus size={20} />
+                                    Crear Nuevo Sitio
+                                </Link>
+                            </header>
+
+                            {sites.length === 0 ? (
+                                <div className="glass" style={{ padding: '5rem', textAlign: 'center', borderRadius: '32px' }}>
+                                    <div style={{ 
+                                        width: '80px', 
+                                        height: '80px', 
+                                        borderRadius: '24px', 
+                                        background: 'rgba(99, 102, 241, 0.1)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 2rem'
+                                    }}>
+                                        <Layout size={40} className="text-gradient" />
+                                    </div>
+                                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem' }}>Aún no tienes ningún sitio</h2>
+                                    <p style={{ color: 'var(--fg-muted)', marginBottom: '2.5rem', maxWidth: '500px', margin: '0 auto 2.5rem' }}>
+                                        Comienza a crear tu primera landing page profesional en minutos usando nuestras plantillas estratégicas.
+                                    </p>
+                                    <Link href="/herramientas/bolton-pages/editor" className="btn-primary">
+                                        Empezar ahora
+                                    </Link>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '2rem' }}>
+                                    {sites.map((site) => (
+                                        <SiteCard key={site.id} site={site} />
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem' }}>Aún no tienes ningún sitio</h2>
-                        <p style={{ color: 'var(--fg-muted)', marginBottom: '2.5rem', maxWidth: '500px', margin: '0 auto 2.5rem' }}>
-                            Comienza a crear tu primera landing page profesional en minutos usando nuestras plantillas estratégicas.
-                        </p>
-                        <Link href="/herramientas/bolton-pages/editor" className="btn-primary">
-                            Empezar ahora
-                        </Link>
-                    </div>
-                ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '2rem' }}>
-                        {sites.map((site) => (
-                            <SiteCard key={site.id} site={site} />
-                        ))}
-                    </div>
-                )}
-            </div>
-        </main>
+                    </main>
+                );
+            }}
+        </AuthGuard>
     );
 }
 
