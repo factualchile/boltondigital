@@ -56,7 +56,7 @@ export default function GoogleAdsInteligentePage() {
                 const { data: subData } = await supabase
                     .from('v_active_subscriptions')
                     .select('current_access_status')
-                    .eq('user_id', user.id)
+                    .eq('user_id', authUser.id)
                     .eq('category', 'SEM')
                     .single();
                 
@@ -72,7 +72,7 @@ export default function GoogleAdsInteligentePage() {
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('google_ads_id')
-                    .eq('id', user.id)
+                    .eq('id', authUser.id)
                     .single();
 
                 if (!profile?.google_ads_id) {
@@ -84,12 +84,12 @@ export default function GoogleAdsInteligentePage() {
                 const { data } = await supabase
                     .from('ads_campaigns')
                     .select('*')
-                    .eq('user_id', user.id)
+                    .eq('user_id', authUser.id)
                     .limit(1);
                 
                 if (data && data.length > 0) {
                     setIsConnected(true);
-                    fetchCampaigns(user.id, period);
+                    fetchCampaigns(authUser.id, period);
                 }
             }
             setIsLoading(false);
@@ -292,7 +292,7 @@ export default function GoogleAdsInteligentePage() {
                 </header>
 
                 {!isConnected ? (
-                    <ConnectionGuide UID={user.id} />
+                    <ConnectionGuide UID={user?.id || ''} />
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2rem' }}>
                         {/* Area de Trabajo Principal */}
