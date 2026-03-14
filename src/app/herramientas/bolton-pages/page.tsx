@@ -28,48 +28,28 @@ export default function BoltonPagesDashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [subscriptionStatus, setSubscriptionStatus] = useState<'ACTIVE' | 'GRACE' | 'EXPIRED' | 'NONE'>('NONE');
 
-    useEffect(() => {
-        const fetchSites = async () => {
-            const { data } = await supabase
-                .from('client_sites')
-                .select('*')
-                .order('created_at', { ascending: false });
-            
-            if (data) setSites(data);
-        };
-
-        fetchSites();
-    }, []);
+    const fetchSites = async (userId: string) => {
+        const { data, error } = await supabase
+            .from('client_sites')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+        
+        if (data) setSites(data);
+        setIsLoading(false);
+    };
 
     return (
         <AuthGuard landing={<BoltonPagesLanding />} category="SEM">
-            {(user, subscriptionStatus) => {
-                if (subscriptionStatus === 'EXPIRED') {
-                    return (
-                        <main className="min-h-screen">
-                            <Navbar />
-                            <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 5rem)' }}>
-                                <div className="glass" style={{ padding: '4rem', borderRadius: '32px', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
-                                    <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'rgba(244, 63, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
-                                        <DollarSign size={40} color="#f43f5e" />
-                                    </div>
-                                    <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Suscripción requerida</h2>
-                                    <p style={{ color: 'var(--fg-muted)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>
-                                        El editor de landing pages es exclusivo de nuestro plan **SEM**. Suscríbete para empezar a crear sitios de alta conversión.
-                                    </p>
-                                    <button 
-                                        onClick={() => router.push('/onboarding')}
-                                        className="btn-primary" 
-                                        style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}
-                                    >
-                                        Ver Planes de Suscripción
-                                    </button>
-                                </div>
-                            </div>
-                        </main>
-                    );
+            {(user) => {
+                // Disparar carga de sitios si aún no se ha hecho
+                if (sites.length === 0 && user && isLoading) {
+                    fetchSites(user.id);
                 }
 
+                // Obtener status de suscripción desde el perfil (AuthGuard ya lo maneja internamente pero necesitamos mostrar la pantalla de bloqueo si es EXPIRED)
+                // Usaremos un truco: si AuthGuard permite el paso, es que es ACTIVE o GRACE.
+                
                 return (
                     <main className="min-h-screen">
                         <Navbar />

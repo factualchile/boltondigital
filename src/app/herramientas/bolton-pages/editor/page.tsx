@@ -21,6 +21,8 @@ import Link from 'next/link';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import AuthGuard from '@/components/AuthGuard';
+import { DollarSign } from 'lucide-react';
 
 export default function BoltonPagesEditorPage() {
     return (
@@ -115,8 +117,38 @@ function BoltonPagesEditor() {
     }
 
     return (
-        <main className="min-h-screen bg-[#050505]">
-            <Navbar />
+        <AuthGuard landing={<div>Redirigiendo...</div>} category="SEM">
+            {(user: any, subscriptionStatus: string) => {
+                if (subscriptionStatus === 'EXPIRED') {
+                    return (
+                        <main className="min-h-screen">
+                            <Navbar />
+                            <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 5rem)' }}>
+                                <div className="glass" style={{ padding: '4rem', borderRadius: '32px', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
+                                    <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'rgba(244, 63, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
+                                        <DollarSign size={40} color="#f43f5e" />
+                                    </div>
+                                    <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Suscripción requerida</h2>
+                                    <p style={{ color: 'var(--fg-muted)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>
+                                        El editor de landing pages es exclusivo de nuestro plan **SEM**. Suscríbete para empezar a crear sitios de alta conversión.
+                                    </p>
+                                    <button 
+                                        onClick={() => router.push('/onboarding')}
+                                        className="btn-primary" 
+                                        style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}
+                                    >
+                                        Ver Planes de Suscripción
+                                    </button>
+                                </div>
+                            </div>
+                        </main>
+                    );
+                }
+
+                return (
+                    <main className="min-h-screen bg-[#050505]">
+                        <Navbar />
+                        {/* El resto del código del editor aquí */}
 
             {/* Header del Editor */}
             <div style={{
@@ -315,6 +347,9 @@ function BoltonPagesEditor() {
                 </section>
             </div>
         </main>
+                );
+            }}
+        </AuthGuard>
     );
 }
 
