@@ -206,7 +206,7 @@ function BoltonPagesEditor() {
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     {siteId && (
                         <a 
-                            href={`/s/${siteId}`}
+                            href={`/boltonpages/${siteId}`}
                             target="_blank"
                             rel="noreferrer"
                             style={{ color: 'var(--accent-primary)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
