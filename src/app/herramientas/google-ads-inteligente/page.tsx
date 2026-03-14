@@ -22,7 +22,9 @@ import {
     Info,
     AlertTriangle,
     Link as LinkIcon,
-    LogIn
+    LogIn,
+    Send,
+    User
 } from 'lucide-react';
 import AuthGuard from '@/components/AuthGuard';
 
@@ -42,6 +44,13 @@ export default function GoogleAdsInteligentePage() {
     const [aiAnalysis, setAiAnalysis] = useState<string>("Analizando tus campañas...");
     const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    
+    // Chat Interactivo
+    const [chatHistory, setChatHistory] = useState<any[]>([
+        { role: 'assistant', content: '¿Qué tal? Soy Claudio. Ya analicé tus números, ¿tienes alguna duda específica sobre una campaña o keyword?' }
+    ]);
+    const [userInput, setUserInput] = useState("");
+    const [isSending, setIsSending] = useState(false);
     
     // Jerarquía de selección
     const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
@@ -108,6 +117,35 @@ export default function GoogleAdsInteligentePage() {
             setAiAnalysis("No pude conectar con el cerebro de Claudio. Revisa tu conexión.");
         } finally {
             setIsAnalyzing(false);
+        }
+    };
+
+    const handleSendMessage = async () => {
+        if (!userInput.trim() || isSending) return;
+
+        const newMsg = { role: 'user', content: userInput };
+        setChatHistory(prev => [...prev, newMsg]);
+        setUserInput("");
+        setIsSending(true);
+
+        try {
+            const res = await fetch('/api/ads/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    messages: [...chatHistory, newMsg],
+                    context: { campaigns, adGroups, ads, keywords, period, viewLevel }
+                })
+            });
+            const data = await res.json();
+            if (data.reply) {
+                setChatHistory(prev => [...prev, { role: 'assistant', content: data.reply }]);
+            }
+        } catch (error) {
+            console.error("Chat error:", error);
+            setChatHistory(prev => [...prev, { role: 'assistant', content: "Lo siento, tuve un problema de conexión. ¿Me lo repites?" }]);
+        } finally {
+            setIsSending(false);
         }
     };
 
@@ -467,24 +505,94 @@ export default function GoogleAdsInteligentePage() {
                                             </div>
                                             <p style={{ fontSize: '0.8rem', color: 'var(--fg-muted)' }}>Estrategia personalizada de Claudio</p>
                                         </div>
-                                        <div style={{ padding: '1.5rem', minHeight: '300px' }}>
-                                            <div style={{ 
-                                                background: 'rgba(99, 102, 241, 0.05)', 
-                                                padding: '1.25rem', 
-                                                borderRadius: '16px', 
-                                                borderLeft: '3px solid var(--accent-primary)', 
-                                                fontSize: '0.95rem', 
-                                                lineHeight: 1.6,
-                                                minHeight: '200px',
-                                                transition: 'opacity 0.3s ease'
-                                            }}>
-                                                {isAnalyzing ? (
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                                        <div className="animate-pulse" style={{ height: '1rem', width: '90%', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}></div>
-                                                        <div className="animate-pulse" style={{ height: '1rem', width: '80%', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}></div>
-                                                        <div className="animate-pulse" style={{ height: '1rem', width: '95%', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}></div>
+                                        <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', maxHeight: '400px', scrollbarWidth: 'thin' }}>
+                                            {chatHistory.map((msg, i) => (
+                                                <div key={i} style={{ 
+                                                    display: 'flex', 
+                                                    gap: '0.75rem', 
+                                                    flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
+                                                    alignItems: 'flex-start'
+                                                }}>
+                                                    <div style={{ 
+                                                        width: '32px', 
+                                                        height: '32px', 
+                                                        borderRadius: '10px', 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        justifyContent: 'center',
+                                                        background: msg.role === 'user' ? 'rgba(255,255,255,0.05)' : 'rgba(99, 102, 241, 0.1)',
+                                                        color: msg.role === 'user' ? 'white' : 'var(--accent-primary)'
+                                                    }}>
+                                                        {msg.role === 'user' ? <User size={16} /> : <Sparkles size={16} />}
                                                     </div>
-                                                ) : aiAnalysis}
+                                                    <div style={{ 
+                                                        background: msg.role === 'user' ? 'var(--accent-primary)' : 'rgba(255,255,255,0.03)',
+                                                        padding: '0.75rem 1rem',
+                                                        borderRadius: '16px',
+                                                        borderTopRightRadius: msg.role === 'user' ? '4px' : '16px',
+                                                        borderTopLeftRadius: msg.role === 'user' ? '16px' : '4px',
+                                                        fontSize: '0.9rem',
+                                                        lineHeight: 1.5,
+                                                        maxWidth: '80%',
+                                                        color: msg.role === 'user' ? 'white' : 'inherit'
+                                                    }}>
+                                                        {msg.content}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {isSending && (
+                                                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                                                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Sparkles size={16} className="animate-spin" />
+                                                    </div>
+                                                    <div style={{ fontStyle: 'italic', fontSize: '0.8rem', color: 'var(--fg-muted)' }}>Claudio está redactando...</div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Input area */}
+                                        <div style={{ padding: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <div style={{ position: 'relative' }}>
+                                                <input 
+                                                    type="text"
+                                                    value={userInput}
+                                                    onChange={(e) => setUserInput(e.target.value)}
+                                                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                                                    placeholder="Pregúntale a Claudio..."
+                                                    style={{ 
+                                                        width: '100%', 
+                                                        background: 'rgba(255,255,255,0.05)', 
+                                                        border: '1px solid rgba(255,255,255,0.1)', 
+                                                        borderRadius: '12px', 
+                                                        padding: '0.75rem 3rem 0.75rem 1rem',
+                                                        fontSize: '0.9rem',
+                                                        color: 'white',
+                                                        outline: 'none'
+                                                    }}
+                                                />
+                                                <button 
+                                                    onClick={handleSendMessage}
+                                                    disabled={isSending || !userInput.trim()}
+                                                    style={{ 
+                                                        position: 'absolute', 
+                                                        right: '8px', 
+                                                        top: '50%', 
+                                                        transform: 'translateY(-50%)',
+                                                        background: 'var(--accent-primary)',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '8px',
+                                                        width: '32px',
+                                                        height: '32px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        cursor: 'pointer',
+                                                        opacity: (isSending || !userInput.trim()) ? 0.5 : 1
+                                                    }}
+                                                >
+                                                    <Send size={16} />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
