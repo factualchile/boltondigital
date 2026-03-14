@@ -31,12 +31,31 @@ export default function RegisterPage() {
         setError(null);
 
         try {
+            // 1. Verificación proactiva de email duplicado
+            const { data: existingUser, error: checkError } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('email', email.trim().toLowerCase())
+                .maybeSingle();
+
+            if (checkError) {
+                console.error("Error checking existing user:", checkError);
+            }
+
+            if (existingUser) {
+                setError("Este correo electrónico ya está registrado. Por favor, inicia sesión.");
+                setLoading(false);
+                return;
+            }
+
+            // 2. Proceder con el registro oficial
             const { data, error: signUpError } = await supabase.auth.signUp({
-                email,
+                email: email.trim().toLowerCase(),
                 password,
                 options: {
                     data: {
                         full_name: fullName,
+                        email: email.trim().toLowerCase(), // Guardar email en metadata también
                     },
                     emailRedirectTo: `${window.location.origin}/onboarding`
                 }
