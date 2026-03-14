@@ -38,6 +38,11 @@ export default function GoogleAdsInteligentePage() {
     const [period, setPeriod] = useState<PeriodScope>('LAST_30_DAYS');
     const [subscriptionStatus, setSubscriptionStatus] = useState<'ACTIVE' | 'GRACE' | 'EXPIRED' | 'NONE'>('NONE');
     
+    // IA Inteligente
+    const [aiAnalysis, setAiAnalysis] = useState<string>("Analizando tus campañas...");
+    const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    
     // Jerarquía de selección
     const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
     const [selectedAdGroupId, setSelectedAdGroupId] = useState<string | null>(null);
@@ -73,13 +78,38 @@ export default function GoogleAdsInteligentePage() {
                 
                 if (data && data.length > 0) {
                     setIsConnected(true);
-                    fetchCampaigns(authUser.id, period);
+                    await fetchCampaigns(authUser.id, period);
                 }
             }
             setIsLoading(false);
         };
         loadInitialData();
     }, [period]);
+
+    useEffect(() => {
+        if (isConnected && campaigns.length > 0) {
+            fetchAIAnalysis();
+        }
+    }, [isConnected, campaigns]);
+
+    const fetchAIAnalysis = async () => {
+        setIsAnalyzing(true);
+        try {
+            const res = await fetch('/api/ads/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ metrics: { campaigns, period, viewLevel } })
+            });
+            const data = await res.json();
+            if (data.analysis) setAiAnalysis(data.analysis);
+            if (data.suggestions) setAiSuggestions(data.suggestions);
+        } catch (error) {
+            console.error("AI Analysis error:", error);
+            setAiAnalysis("No pude conectar con el cerebro de Claudio. Revisa tu conexión.");
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
 
     const fetchCampaigns = async (userId: string, p: PeriodScope) => {
         const { data } = await supabase
@@ -314,14 +344,23 @@ export default function GoogleAdsInteligentePage() {
                                             />
                                         </div>
 
-                                        {/* Panel de Optimización IA */}
-                                        <div className="glass" style={{ borderRadius: '28px', padding: '2rem', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
-                                                <Sparkles size={24} className="text-gradient" />
-                                                <h3 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Sugerencias de Optimización</h3>
+                                        <div className="glass" style={{ borderRadius: '28px', padding: '2rem', border: '1px solid rgba(99, 102, 241, 0.2)', position: 'relative' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                    <Sparkles size={24} className="text-gradient" />
+                                                    <h3 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Sugerencias de Optimización</h3>
+                                                </div>
+                                                <button 
+                                                    onClick={fetchAIAnalysis}
+                                                    disabled={isAnalyzing}
+                                                    style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}
+                                                >
+                                                    <Clock size={16} className={isAnalyzing ? 'animate-spin' : ''} />
+                                                    {isAnalyzing ? 'Analizando...' : 'Refrescar Plan'}
+                                                </button>
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                                                {generateSugerencias().map((s, i) => (
+                                                {aiSuggestions.length > 0 ? aiSuggestions.map((s, i) => (
                                                     <SuggestionAction 
                                                         key={i}
                                                         title={s.title}
@@ -329,7 +368,11 @@ export default function GoogleAdsInteligentePage() {
                                                         impact={s.impact}
                                                         onAccept={() => handleAcceptSuggestion(s)}
                                                     />
-                                                ))}
+                                                )) : (
+                                                    <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--fg-muted)', fontSize: '0.9rem' }}>
+                                                        {isAnalyzing ? 'Claudio está pensando la mejor estrategia...' : 'No hay sugerencias automáticas por ahora.'}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 
@@ -425,10 +468,23 @@ export default function GoogleAdsInteligentePage() {
                                             <p style={{ fontSize: '0.8rem', color: 'var(--fg-muted)' }}>Estrategia personalizada de Claudio</p>
                                         </div>
                                         <div style={{ padding: '1.5rem', minHeight: '300px' }}>
-                                            <div style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '1.25rem', borderRadius: '16px', borderLeft: '3px solid var(--accent-primary)', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                                                {(viewLevel as string) === 'campaigns' && "Estoy analizando tus campañas globales. Detecto que la inversión total es de saludale, pero podemos optimizar el CTR."}
-                                                {(viewLevel as string) === 'adgroups' && "En este nivel podemos ver qué segmentos de público están funcionando mejor."}
-                                                {(viewLevel as string) === 'details' && "Revisa las keywords en rojo. Son palabras que gastan pero no venden."}
+                                            <div style={{ 
+                                                background: 'rgba(99, 102, 241, 0.05)', 
+                                                padding: '1.25rem', 
+                                                borderRadius: '16px', 
+                                                borderLeft: '3px solid var(--accent-primary)', 
+                                                fontSize: '0.95rem', 
+                                                lineHeight: 1.6,
+                                                minHeight: '200px',
+                                                transition: 'opacity 0.3s ease'
+                                            }}>
+                                                {isAnalyzing ? (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                                        <div className="animate-pulse" style={{ height: '1rem', width: '90%', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}></div>
+                                                        <div className="animate-pulse" style={{ height: '1rem', width: '80%', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}></div>
+                                                        <div className="animate-pulse" style={{ height: '1rem', width: '95%', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}></div>
+                                                    </div>
+                                                ) : aiAnalysis}
                                             </div>
                                         </div>
                                     </div>
