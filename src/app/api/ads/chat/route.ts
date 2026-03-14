@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { OpenAI } from 'openai';
+import { getOpenAIClient } from '@/lib/ads/openai';
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+
 
 const CHAT_PROMPT = `
 Eres la versión IA de Claudio, el estratega senior de Bolton Digital. Tu objetivo es ayudar al usuario a entender sus métricas de Google Ads y tomar decisiones ganadoras.
@@ -35,7 +33,7 @@ export async function POST(req: NextRequest) {
             content: CHAT_PROMPT.replace('{metrics_context}', JSON.stringify(context))
         };
 
-        const response = await openai.chat.completions.create({
+        const response = await getOpenAIClient().chat.completions.create({
             model: "gpt-4-turbo-preview",
             messages: [systemMessage, ...messages],
             temperature: 0.7,

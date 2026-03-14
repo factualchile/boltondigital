@@ -2,7 +2,7 @@ import { OpenAI } from 'openai';
 
 // Lazy initialization to avoid build-time crash when OPENAI_API_KEY is not set
 let openaiClient: OpenAI | null = null;
-function getOpenAIClient(): OpenAI {
+export function getOpenAIClient(): OpenAI {
   if (!openaiClient) {
     openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }

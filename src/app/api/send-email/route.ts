@@ -1,5 +1,5 @@
-import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
+import { getResendClient } from '@/lib/emails';
 import {
     getNewTicketEmail,
     getStaffNewTicketNotification,
@@ -7,7 +7,7 @@ import {
     getWorkLogEmail
 } from '@/lib/email-templates';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+
 
 export async function POST(req: Request) {
     try {
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'Tipo de correo no válido' }, { status: 400 });
         }
 
-        const { data: resendData, error } = await resend.emails.send({
+        const { data: resendData, error } = await getResendClient().emails.send({
             from: 'Notificaciones Bolton <notificaciones@boltondigital.cl>',
             to: to,
             bcc: bcc,
