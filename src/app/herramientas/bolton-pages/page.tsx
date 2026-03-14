@@ -248,22 +248,26 @@ function SiteCard({ site }: { site: any }) {
                     }}>
                         <Edit3 size={16} /> Editar
                     </Link>
-                    <a href={site.custom_domain ? `https://${site.custom_domain}` : '#'} target="_blank" rel="noopener noreferrer" style={{ 
-                        background: 'var(--accent-primary)', 
-                        color: 'white', 
-                        padding: '0.6rem', 
-                        borderRadius: '10px', 
-                        textAlign: 'center',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        opacity: site.custom_domain ? 1 : 0.5,
-                        pointerEvents: site.custom_domain ? 'auto' : 'none',
-                        textDecoration: 'none'
-                    }}>
+                    <a 
+                        href={site.custom_domain ? `https://${site.custom_domain}` : `/boltonpages/${site.id}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        style={{ 
+                            background: 'var(--accent-primary)', 
+                            color: 'white', 
+                            padding: '0.6rem', 
+                            borderRadius: '10px', 
+                            textAlign: 'center',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem',
+                            textDecoration: 'none',
+                            cursor: 'pointer'
+                        }}
+                    >
                         <ExternalLink size={16} /> Ver Sitio
                     </a>
                 </div>
