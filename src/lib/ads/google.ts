@@ -1,13 +1,19 @@
 import { GoogleAdsApi, enums } from "google-ads-api";
 
-const client = new GoogleAdsApi({
-    client_id: process.env.GOOGLE_ADS_CLIENT_ID || "",
-    client_secret: process.env.GOOGLE_ADS_CLIENT_SECRET || "",
-    developer_token: process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "",
-});
+let googleAdsClient: GoogleAdsApi | null = null;
+function getGoogleAdsClient(): GoogleAdsApi {
+    if (!googleAdsClient) {
+        googleAdsClient = new GoogleAdsApi({
+            client_id: process.env.GOOGLE_ADS_CLIENT_ID || "",
+            client_secret: process.env.GOOGLE_ADS_CLIENT_SECRET || "",
+            developer_token: process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "",
+        });
+    }
+    return googleAdsClient;
+}
 
 export async function getGoogleAdsMetrics(refreshToken: string, customerId: string, startDate: string, endDate: string) {
-    const customer = client.Customer({
+    const customer = getGoogleAdsClient().Customer({
         customer_id: customerId,
         refresh_token: refreshToken,
     });
