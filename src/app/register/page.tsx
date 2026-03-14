@@ -54,15 +54,6 @@ export default function RegisterPage() {
         }
     };
 
-    const handleGoogleLogin = async () => {
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: `${window.location.origin}/onboarding`
-            }
-        });
-        if (error) setError(error.message);
-    };
 
     return (
         <main style={{ minHeight: '100vh', display: 'flex', background: 'var(--bg-deep)' }}>
@@ -113,32 +104,6 @@ export default function RegisterPage() {
                         </div>
                     ) : (
                         <>
-                            <button 
-                                onClick={handleGoogleLogin}
-                                className="glass"
-                                style={{ 
-                                    width: '100%', 
-                                    padding: '0.8rem', 
-                                    borderRadius: '12px', 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'center', 
-                                    gap: '0.75rem',
-                                    cursor: 'pointer',
-                                    color: 'white',
-                                    marginBottom: '1.5rem',
-                                    fontWeight: 600,
-                                    transition: 'var(--transition-smooth)'
-                                }}
-                            >
-                                <Chrome size={20} /> Registrarme con Google
-                            </button>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', opacity: 0.3 }}>
-                                <div style={{ flex: 1, height: '1px', background: 'white' }}></div>
-                                <span style={{ fontSize: '0.8rem' }}>O CON EMAIL</span>
-                                <div style={{ flex: 1, height: '1px', background: 'white' }}></div>
-                            </div>
 
                             <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                                 <div className="form-group">
