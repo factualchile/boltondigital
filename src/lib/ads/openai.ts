@@ -1,8 +1,13 @@
 import { OpenAI } from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization to avoid build-time crash when OPENAI_API_KEY is not set
+let openaiClient: OpenAI | null = null;
+function getOpenAIClient(): OpenAI {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openaiClient;
+}
 
 export const ANALYZE_PROMPT = `
 Eres la voz estratégica de Claudio en Bolton Digital. Tu misión es analizar métricas de Google Ads y dar consejos tácticos directos, sin rodeos, pero con visión de negocio.
@@ -45,7 +50,7 @@ export async function analyzeMetrics(metrics: any) {
     }
 
     try {
-        const response = await openai.chat.completions.create({
+        const response = await getOpenAIClient().chat.completions.create({
             model: "gpt-4-turbo-preview",
             messages: [
                 { role: "system", content: "Eres el consultor de IA de Bolton Digital." },
