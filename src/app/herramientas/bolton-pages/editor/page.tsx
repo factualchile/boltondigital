@@ -24,6 +24,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import { DollarSign } from 'lucide-react';
+import LandingRenderer from '@/components/LandingRenderer';
 
 export default function BoltonPagesEditorPage() {
     return (
@@ -202,17 +203,26 @@ function BoltonPagesEditor() {
                             <p style={{ fontSize: '0.8rem', color: 'var(--fg-muted)' }}>Editando: {siteData.title}</p>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                        <button 
-                            onClick={handleSave}
-                            disabled={isSaving}
-                            className="btn-primary" 
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.5rem' }}
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    {siteId && (
+                        <a 
+                            href={`/s/${siteId}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ color: 'var(--accent-primary)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
                         >
-                            <Save size={18} />
-                            {isSaving ? 'Guardando...' : 'Guardar Cambios'}
-                        </button>
-                    </div>
+                            <LinkIcon size={16} /> Ver en vivo
+                        </a>
+                    )}
+                    <button 
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="btn-primary" 
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem' }}
+                    >
+                        <Save size={18} /> {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                    </button>
+                </div>
                 </div>
             </div>
 
@@ -400,163 +410,18 @@ function BoltonPagesEditor() {
                     {/* Simulación del Sitio (Plantilla Estratégica) */}
                     <div style={{ 
                         width: previewMode === 'desktop' ? '100%' : '375px',
-                        maxWidth: previewMode === 'desktop' ? '1000px' : '375px',
+                        maxWidth: previewMode === 'desktop' ? '1200px' : '375px',
                         minHeight: '600px',
                         background: 'white',
-                        borderRadius: '4px',
+                        borderRadius: '12px',
                         overflow: 'hidden',
                         boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
                         transition: 'var(--transition-smooth)',
                         border: '1px solid rgba(255,255,255,0.05)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        color: '#333',
-                        fontFamily: 'Inter, sans-serif',
                         position: 'relative'
                     }}>
-                        {/* Header Azul */}
-                        <div style={{ 
-                            background: siteData.primary_color, 
-                            color: 'white', 
-                            padding: '1rem 2rem', 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center' 
-                        }}>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{siteData.header_title}</div>
-                            <div style={{ fontSize: '1.2rem', fontWeight: 700, textDecoration: 'underline' }}>{siteData.phone}</div>
-                        </div>
-
-                        {/* Barra Secundaria */}
-                        <div style={{ display: 'flex', background: 'white' }}>
-                            <div style={{ 
-                                background: siteData.secondary_color, 
-                                color: 'white', 
-                                padding: '0.5rem 2rem', 
-                                fontSize: '0.9rem', 
-                                fontWeight: 600,
-                                clipPath: 'polygon(0% 0%, 95% 0%, 100% 100%, 0% 100%)' // Efecto inclinado
-                            }}>
-                                {siteData.location_text}
-                            </div>
-                        </div>
-
-                        {/* Contenido Principal */}
-                        <div style={{ padding: '2rem', flex: 1 }}>
-                            <h1 style={{ 
-                                color: siteData.primary_color, 
-                                fontSize: '2.5rem', 
-                                fontWeight: 800, 
-                                marginBottom: '2rem',
-                                textAlign: previewMode === 'mobile' ? 'center' : 'left'
-                            }}>
-                                {siteData.professional_name}
-                            </h1>
-
-                            <div style={{ 
-                                display: 'flex', 
-                                gap: '2rem', 
-                                flexDirection: previewMode === 'mobile' ? 'column' : 'row',
-                                alignItems: previewMode === 'mobile' ? 'center' : 'flex-start'
-                            }}>
-                                {/* Columna Izquierda: Foto y CTA 1 */}
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', minWidth: '200px' }}>
-                                    <div style={{ 
-                                        width: '180px', 
-                                        height: '180px', 
-                                        borderRadius: '50%', 
-                                        overflow: 'hidden',
-                                        border: `4px solid white`,
-                                        boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
-                                    }}>
-                                        <img 
-                                            src={siteData.profile_image} 
-                                            alt="Perfil" 
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                        />
-                                    </div>
-                                    <button style={{ 
-                                        background: 'transparent', 
-                                        border: `2px solid ${siteData.primary_color}`, 
-                                        color: siteData.primary_color,
-                                        padding: '0.6rem 1.5rem',
-                                        borderRadius: '50px',
-                                        fontWeight: 700,
-                                        fontSize: '0.9rem'
-                                    }}>
-                                        {siteData.cta_text_outline}
-                                    </button>
-                                </div>
-
-                                {/* Columna Central: Bio y Detalles */}
-                                <div style={{ flex: 1, fontSize: '0.95rem', lineHeight: 1.6 }}>
-                                    <p style={{ fontWeight: 700, marginBottom: '0.5rem' }}>{siteData.bio_summary}</p>
-                                    <p style={{ fontWeight: 600, marginBottom: '1rem' }}>{siteData.expert_subtitle}</p>
-                                    <p style={{ color: '#555', fontSize: '0.9rem' }}>
-                                        {siteData.areas_of_expertise}
-                                    </p>
-                                </div>
-
-                                {/* Columna Derecha: Garantía y CTA 2 */}
-                                <div style={{ 
-                                    display: 'flex', 
-                                    flexDirection: 'column', 
-                                    alignItems: previewMode === 'mobile' ? 'center' : 'flex-end', 
-                                    gap: '2rem',
-                                    minWidth: previewMode === 'mobile' ? '100%' : '250px'
-                                }}>
-                                    <div style={{ 
-                                        border: '2px solid #ccc', 
-                                        borderRadius: '50%', 
-                                        padding: '1.5rem', 
-                                        textAlign: 'center', 
-                                        maxWidth: '200px',
-                                        aspectRatio: '1.2 / 1',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'center',
-                                        fontSize: '0.8rem'
-                                    }}>
-                                        <p style={{ fontWeight: 800, marginBottom: '0.5rem', borderBottom: '1px solid #ddd' }}>GARANTÍA DE SATISFACCIÓN</p>
-                                        <p style={{ color: '#666' }}>{siteData.warranty_text}</p>
-                                    </div>
-
-                                    <button style={{ 
-                                        background: siteData.secondary_color, 
-                                        color: 'white', 
-                                        padding: '1rem 2rem', 
-                                        borderRadius: '12px', 
-                                        fontWeight: 800, 
-                                        fontSize: '1.1rem',
-                                        border: 'none',
-                                        boxShadow: '0 5px 15px rgba(0,0,0,0.2)'
-                                    }}>
-                                        {siteData.cta_text_filled}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* WhatsApp Flotante Simulado */}
-                        <div style={{ 
-                            position: 'absolute', 
-                            bottom: '20px', 
-                            right: '20px', 
-                            width: '50px', 
-                            height: '50px', 
-                            background: '#25D366', 
-                            borderRadius: '50%', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            color: 'white',
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                        }}>
-                           <Zap size={24} fill="white" />
-                        </div>
-                        
-                        <div style={{ padding: '1rem', textAlign: 'center', fontSize: '0.7rem', color: '#999', background: '#f9f9f9' }}>
-                            Power by Bolton Digital
+                        <div style={{ transform: previewMode === 'desktop' ? 'scale(0.8)' : 'scale(1)', transformOrigin: 'top center', height: '100%' }}>
+                            <LandingRenderer data={siteData} isMobile={previewMode === 'mobile'} />
                         </div>
                     </div>
                 </section>

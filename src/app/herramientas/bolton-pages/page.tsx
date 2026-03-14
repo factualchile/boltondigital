@@ -72,10 +72,10 @@ export default function BoltonPagesDashboard() {
 
                             {sites.length === 0 ? (
                                 <div className="glass" style={{ padding: '5rem', textAlign: 'center', borderRadius: '32px' }}>
-                                    <div style={{ 
-                                        width: '80px', 
-                                        height: '80px', 
-                                        borderRadius: '24px', 
+                                    <div style={{
+                                        width: '80px',
+                                        height: '80px',
+                                        borderRadius: '24px',
                                         background: 'rgba(99, 102, 241, 0.1)',
                                         display: 'flex',
                                         alignItems: 'center',
