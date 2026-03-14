@@ -1,10 +1,16 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient: Resend | null = null;
+function getResendClient(): Resend {
+    if (!resendClient) {
+        resendClient = new Resend(process.env.RESEND_API_KEY);
+    }
+    return resendClient;
+}
 
 export const sendWelcomeEmail = async (email: string, name: string) => {
     try {
-        await resend.emails.send({
+        await getResendClient().emails.send({
             from: 'Bolton Digital <hola@boltondigital.cl>',
             to: email,
             subject: '¡Bienvenido a Bolton Digital! - Primeros Pasos SEM',
@@ -31,7 +37,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
 
 export const sendStrategyEmail = async (email: string, name: string) => {
     try {
-        await resend.emails.send({
+        await getResendClient().emails.send({
             from: 'Claudio de Bolton <estrategia@boltondigital.cl>',
             to: email,
             subject: 'Día 2: Los 3 mandamientos de una campaña SEM ganadora',
@@ -64,7 +70,7 @@ export const sendUrgentSupportEmail = async (userData: {
     service: string;
 }) => {
     try {
-        await resend.emails.send({
+        await getResendClient().emails.send({
             from: 'Sistema Alertas <alertas@boltondigital.cl>',
             to: ['cfernandez.bolton@gmail.com', 'contactoboltondigital@gmail.com'],
             subject: 'URGENTE: Cliente nuevo no reconocido',
