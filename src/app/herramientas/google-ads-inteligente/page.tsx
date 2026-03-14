@@ -21,7 +21,8 @@ import {
     Sparkles,
     Info,
     AlertTriangle,
-    Link as LinkIcon
+    Link as LinkIcon,
+    LogIn
 } from 'lucide-react';
 
 type ViewLevel = 'campaigns' | 'adgroups' | 'details';
@@ -29,6 +30,7 @@ type PeriodScope = 'TODAY' | 'LAST_7_DAYS' | 'LAST_30_DAYS';
 
 export default function GoogleAdsInteligentePage() {
     const router = useRouter();
+    const [user, setUser] = useState<any>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [viewLevel, setViewLevel] = useState<ViewLevel>('campaigns');
@@ -47,8 +49,9 @@ export default function GoogleAdsInteligentePage() {
 
     useEffect(() => {
         const checkInitialState = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            setUser(authUser);
+            if (authUser) {
                 // 1. Verificar Suscripción
                 const { data: subData } = await supabase
                     .from('v_active_subscriptions')
@@ -211,6 +214,15 @@ export default function GoogleAdsInteligentePage() {
         );
     }
 
+    if (!user) {
+        return (
+            <main className="min-h-screen">
+                <Navbar />
+                <ToolLanding />
+            </main>
+        );
+    }
+
     if (subscriptionStatus === 'EXPIRED') {
         return (
             <main className="min-h-screen">
@@ -224,8 +236,12 @@ export default function GoogleAdsInteligentePage() {
                         <p style={{ color: 'var(--fg-muted)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>
                             Esta herramienta es parte del plan premium **Bolton SEM**. Tu acceso ha expirado o aún no has realizado tu primer pago.
                         </p>
-                        <button className="btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
-                            Pagar con MercadoPago (Chile)
+                        <button 
+                            onClick={() => router.push('/onboarding')}
+                            className="btn-primary" 
+                            style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}
+                        >
+                            Ver Planes de Suscripción
                         </button>
                     </div>
                 </div>
@@ -276,7 +292,7 @@ export default function GoogleAdsInteligentePage() {
                 </header>
 
                 {!isConnected ? (
-                    <ConnectionGuide UID="f786601a-5af0-4d29-84b6-7c6ba83d9e87" />
+                    <ConnectionGuide UID={user.id} />
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2rem' }}>
                         {/* Area de Trabajo Principal */}
@@ -590,21 +606,99 @@ function AdCard({ ad }: any) {
     );
 }
 
+function ToolLanding() {
+    const router = useRouter();
+    return (
+        <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 5rem)', paddingBottom: '8rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
+                <div className="animate-in slide-in-from-left duration-700">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass border border-white/10 text-xs font-bold tracking-widest uppercase text-indigo-400 mb-6">
+                        <Sparkles size={14} />
+                        Inteligencia Artificial Bolton
+                    </div>
+                    <h1 style={{ fontSize: '3.5rem', fontWeight: 800, marginBottom: '1.5rem', lineHeight: 1.1 }}>
+                        Optimización de <br />
+                        <span className="text-gradient">Google Ads</span> Pro.
+                    </h1>
+                    <p style={{ fontSize: '1.2rem', color: 'var(--fg-muted)', marginBottom: '2.5rem', lineHeight: 1.6 }}>
+                        Utiliza los lineamientos estratégicos de Claudio y el poder de la IA para auditar, optimizar y escalar tus campañas en tiempo real. 
+                    </p>
+                    
+                    <ul style={{ listStyle: 'none', padding: 0, marginBottom: '3rem' }}>
+                        {[
+                            'Auditoría de CTR y conversiones instantánea.',
+                            'Sugerencias tácticas basadas en datos reales.',
+                            'Cola de acciones automatizada para el Script.',
+                            'Análisis profundo de Keywords y Anuncios.'
+                        ].map((item, id) => (
+                            <li key={id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', color: 'rgba(255,255,255,0.8)' }}>
+                                <CheckCircle2 size={20} color="#10b981" />
+                                {item}
+                            </li>
+                        ))}
+                    </ul>
+
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        <button 
+                            onClick={() => router.push('/login')}
+                            className="btn-primary" 
+                            style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+                        >
+                            <LogIn size={20} /> Iniciar Sesión ahora
+                        </button>
+                        <button 
+                            onClick={() => router.push('/register')}
+                            className="glass" 
+                            style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', color: 'white', cursor: 'pointer' }}
+                        >
+                            Crear cuenta gratis
+                        </button>
+                    </div>
+                </div>
+
+                <div className="animate-in slide-in-from-right duration-700 relative">
+                    <div className="glass" style={{ padding: '2rem', borderRadius: '32px', border: '1px solid rgba(99, 102, 241, 0.2)', boxShadow: '0 30px 60px -12px rgba(99, 102, 241, 0.3)' }}>
+                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56' }}></div>
+                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }}></div>
+                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27c93f' }}></div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div style={{ height: '20px', width: '60%', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', marginBottom: '1rem' }}></div>
+                            <div style={{ height: '100px', background: 'rgba(99, 102, 241, 0.05)', borderRadius: '12px', marginBottom: '1.5rem', borderLeft: '3px solid var(--accent-primary)' }}></div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                                <div style={{ height: '60px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}></div>
+                                <div style={{ height: '60px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}></div>
+                                <div style={{ height: '60px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}></div>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Floating Glow */}
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '300px', height: '300px', background: 'var(--accent-primary)', filter: 'blur(100px)', opacity: 0.1, zIndex: -1 }}></div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function ConnectionGuide({ UID }: { UID: string }) {
     return (
-        <div className="glass" style={{ padding: '4rem', borderRadius: '32px', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
+        <div className="glass animate-in fade-in zoom-in duration-500" style={{ padding: '4rem', borderRadius: '32px', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
             <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
                 <LinkIcon size={40} className="text-gradient" />
             </div>
             <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Pendiente de sincronización</h2>
             <p style={{ color: 'var(--fg-muted)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>
-                Aún no estamos recibiendo datos para tu cuenta. Por favor, asegúrate de haber configurado el **Google Ads Script** avanzado correctamente con tu UID:
+                Aún no estamos recibiendo datos para tu cuenta. Por favor, asegúrate de haber configurado el **Google Ads Script** avanzado correctamente con tu User ID (UID):
             </p>
-            <code style={{ display: 'block', background: '#000', padding: '1rem', borderRadius: '12px', fontSize: '1.2rem', color: 'var(--accent-primary)', marginBottom: '2rem' }}>
-                {UID}
-            </code>
-            <p style={{ fontSize: '0.9rem', color: 'var(--fg-muted)' }}>
-                Una vez que el script se ejecute por primera vez, verás tus métricas aquí automáticamente.
+            <div style={{ position: 'relative', marginBottom: '2rem' }}>
+                <code style={{ display: 'block', background: '#000', padding: '1.25rem', borderRadius: '16px', fontSize: '1.1rem', color: 'var(--accent-primary)', border: '1px solid rgba(99, 102, 241, 0.3)', wordBreak: 'break-all' }}>
+                    {UID}
+                </code>
+            </div>
+            <p style={{ fontSize: '0.95rem', color: 'var(--fg-muted)', lineHeight: 1.6 }}>
+                Una vez que el script se ejecute por primera vez en tu cuenta de Google Ads, <br />
+                <strong>tus métricas aparecerán aquí automáticamente.</strong>
             </p>
         </div>
     );
