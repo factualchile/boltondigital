@@ -187,7 +187,10 @@ export default function GoogleAdsInteligentePage() {
         } else if (viewLevel === 'adgroups') {
             setViewLevel('campaigns');
             setSelectedCampaignId(null);
-           return (
+        }
+    };
+
+    return (
         <AuthGuard landing={<ToolLanding />} category="SEM">
             {(user, subscriptionStatus) => {
                 if (subscriptionStatus === 'EXPIRED') {
