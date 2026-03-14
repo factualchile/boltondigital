@@ -90,13 +90,13 @@ export default function HerramientasPage() {
         <main className="min-h-screen" style={{ background: 'var(--bg-deep)' }}>
             <Navbar />
             
-            <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 4rem)', paddingBottom: '8rem' }}>
-                <header style={{ textAlign: 'center', marginBottom: '4rem' }} className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-white/10 text-[10px] font-bold tracking-widest uppercase text-indigo-400 mb-6">
-                        <Sparkles size={14} />
+            <div className="container" style={{ paddingTop: 'calc(var(--header-height) + 2rem)', paddingBottom: '6rem' }}>
+                <header style={{ textAlign: 'center', marginBottom: '2.5rem' }} className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass border border-white/10 text-[9px] font-bold tracking-widest uppercase text-indigo-400 mb-4">
+                        <Sparkles size={12} />
                         Bolton Intelligence Hub
                     </div>
-                    <h1 style={{ fontSize: '4rem', fontWeight: 800, marginBottom: '1.5rem', lineHeight: 1.1 }}>
+                    <h1 style={{ fontSize: '2.8rem', fontWeight: 800, marginBottom: '0.75rem', lineHeight: 1.1 }}>
                         Tus herramientas <br /><span className="text-gradient">de alta gama.</span>
                     </h1>
                 </header>
@@ -105,11 +105,11 @@ export default function HerramientasPage() {
                 <div style={{ 
                     display: 'flex', 
                     flexDirection: 'column', 
-                    gap: '2rem', 
-                    marginBottom: '4rem',
+                    gap: '1.25rem', 
+                    marginBottom: '2.5rem',
                     background: 'rgba(255,255,255,0.02)',
-                    padding: '2rem',
-                    borderRadius: '32px',
+                    padding: '1.25rem',
+                    borderRadius: '24px',
                     border: '1px solid rgba(255,255,255,0.05)'
                 }}>
                     <div style={{ position: 'relative', width: '100%' }}>
@@ -121,12 +121,12 @@ export default function HerramientasPage() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                             style={{ 
                                 width: '100%', 
-                                padding: '1.25rem 1.25rem 1.25rem 3.5rem', 
+                                padding: '1rem 1.25rem 1rem 3.5rem', 
                                 background: 'rgba(5, 5, 5, 0.4)', 
                                 border: '1px solid rgba(255,255,255,0.1)', 
-                                borderRadius: '20px',
+                                borderRadius: '16px',
                                 color: 'white',
-                                fontSize: '1.1rem',
+                                fontSize: '1rem',
                                 outline: 'none',
                                 transition: 'var(--transition-smooth)'
                             }}
@@ -161,8 +161,8 @@ export default function HerramientasPage() {
                 {/* Grid of Tools */}
                 <div style={{ 
                     display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', 
-                    gap: '2.5rem' 
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+                    gap: '1.5rem' 
                 }}>
                     {filteredTools.map((tool, idx) => (
                         <ToolCard 
@@ -218,29 +218,29 @@ function ToolCard({ tool, idx, isProfileIncomplete }: { tool: any, idx: number, 
                 onMouseMove={handleMouseMove}
                 className="tool-card glow-card glass"
                 style={{ 
-                    padding: '2.5rem', 
-                    borderRadius: '32px', 
+                    padding: '1.5rem', 
+                    borderRadius: '24px', 
                     height: '100%', 
                     display: 'flex', 
                     flexDirection: 'column',
-                    gap: '1.5rem',
+                    gap: '1rem',
                     transition: 'var(--transition-smooth)',
                     border: '1px solid rgba(255,255,255,0.05)'
                 }}
             >
                 <div className="glow-overlay"></div>
                 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 1, marginBottom: '0.5rem' }}>
                     <div style={{ 
-                        width: '64px', 
-                        height: '64px', 
-                        borderRadius: '18px', 
+                        width: '48px', 
+                        height: '48px', 
+                        borderRadius: '14px', 
                         background: tool.color, 
                         display: 'flex', 
                         alignItems: 'center', 
                         justifyContent: 'center',
                         color: 'white',
-                        boxShadow: '0 10px 30px -5px rgba(0,0,0,0.3)'
+                        boxShadow: '0 8px 24px -5px rgba(0,0,0,0.3)'
                     }}>
                         {tool.icon}
                     </div>
@@ -262,11 +262,11 @@ function ToolCard({ tool, idx, isProfileIncomplete }: { tool: any, idx: number, 
                 </div>
 
                 <div style={{ zIndex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                        <h3 style={{ fontSize: '1.5rem', fontWeight: 800 }}>{tool.title}</h3>
-                        <ArrowUpRight size={20} className="arrow-icon" style={{ opacity: 0.2, transition: '0.3s' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>{tool.title}</h3>
+                        <ArrowUpRight size={18} className="arrow-icon" style={{ opacity: 0.2, transition: '0.3s' }} />
                     </div>
-                    <p style={{ color: 'var(--fg-muted)', fontSize: '1rem', lineHeight: 1.6 }}>
+                    <p style={{ color: 'var(--fg-muted)', fontSize: '0.9rem', lineHeight: 1.5 }}>
                         {tool.description}
                     </p>
                 </div>
