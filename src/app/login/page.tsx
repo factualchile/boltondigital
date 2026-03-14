@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Chrome } from 'lucide-react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -35,13 +36,26 @@ export default function LoginPage() {
                 return;
             }
 
-            // Redirection to tools marketplace
             router.push('/herramientas');
         } catch (err: any) {
             console.error("Login catch error:", err);
             setError("Error inesperado en el inicio de sesión.");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                },
+            });
+            if (error) throw error;
+        } catch (err: any) {
+            setError(err.message);
         }
     };
 
@@ -124,7 +138,6 @@ export default function LoginPage() {
                         />
                     </div>
 
-
                     <button
                         type="submit"
                         disabled={loading}
@@ -132,6 +145,32 @@ export default function LoginPage() {
                         style={{ marginTop: '1rem', padding: '1rem' }}
                     >
                         {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                    </button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', margin: '1rem 0' }}>
+                        <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--fg-muted)' }}>o</span>
+                        <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={handleGoogleLogin}
+                        className="glass"
+                        style={{ 
+                            padding: '1rem', 
+                            borderRadius: '12px', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            gap: '0.75rem',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: 'white',
+                            cursor: 'pointer',
+                            fontWeight: 600
+                        }}
+                    >
+                        <Chrome size={20} /> Continuar con Google
                     </button>
                 </form>
 
