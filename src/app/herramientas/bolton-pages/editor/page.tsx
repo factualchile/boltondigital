@@ -15,7 +15,8 @@ import {
     CheckCircle2,
     Monitor,
     Smartphone,
-    Link as LinkIcon
+    Link as LinkIcon,
+    Zap
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -37,12 +38,31 @@ function BoltonPagesEditor() {
     const searchParams = useSearchParams();
     const siteId = searchParams.get('id');
 
-    const [siteData, setSiteData] = useState({
-        title: 'Mi Landing Page',
-        description: 'Bienvenido a mi sitio web profesional.',
-        cta_text: 'Agendar Cita',
-        primary_color: '#6366F1',
+    const [siteData, setSiteData] = useState<any>({
+        // Estética
+        primary_color: '#2c5f7d',
+        secondary_color: '#001f3f',
         font_family: 'Inter',
+        
+        // Header & Info
+        header_title: 'Atención psicológica para parejas',
+        phone: '+56 9 7878 9839',
+        location_text: 'Consulta Ubicada en Concepción',
+        
+        // Perfil Professional
+        professional_name: 'Nombre del Profesional',
+        profile_image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400',
+        bio_summary: 'Psicólogo con más de 15 años de experiencia clínica.',
+        expert_subtitle: 'Experto en atención a parejas.',
+        areas_of_expertise: 'Áreas de experiencia: Problemas de comunicación - Falta de conexión emocional - Infidelidad y reconstrucción de la confianza - Celos y control - Problemas en la intimidad y sexualidad.',
+        warranty_text: 'Si la primera sesión no te parece GENIAL te devuelvo tu dinero',
+        
+        // Botones y Contacto
+        cta_text_outline: 'RESERVAR AHORA',
+        cta_text_filled: 'RESERVAR AHORA',
+        whatsapp_number: '56978789839',
+
+        title: 'Mi Landing Page', // Mantener por compatibilidad base
         subdomain: '',
         custom_domain: ''
     });
@@ -54,14 +74,25 @@ function BoltonPagesEditor() {
     useEffect(() => {
         const fetchSite = async () => {
             if (siteId) {
-                const { data, error } = await supabase
-                    .from('client_sites')
-                    .select('*')
-                    .eq('id', siteId)
-                    .single();
+                const { data: { user } } = await supabase.auth.getUser(); // Fetch user here
+                if (user) {
+                    const { data, error } = await supabase
+                        .from('client_sites')
+                        .select('*')
+                        .eq('id', siteId)
+                        .single();
 
-                if (!error && data) {
-                    setSiteData(data.site_config);
+                    if (!error && data) {
+                        setSiteData((prevSiteData: any) => ({
+                            ...prevSiteData, // Valores por defecto del estado inicial
+                            ...data.site_config,
+                            // Asegurar que si es un sitio antiguo, tenga los campos nuevos
+                            primary_color: data.site_config.primary_color || prevSiteData.primary_color,
+                            secondary_color: data.site_config.secondary_color || prevSiteData.secondary_color,
+                            whatsapp_number: data.site_config.whatsapp_number || prevSiteData.whatsapp_number,
+                            // Add other new fields with defaults if necessary
+                        }));
+                    }
                 }
             }
             setIsLoading(false);
@@ -201,26 +232,84 @@ function BoltonPagesEditor() {
 
                     {activeTab === 'content' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <Field label="Título de la Página">
+                            <Field label="Título de Cabecera">
                                 <input 
                                     type="text" 
-                                    value={siteData.title}
-                                    onChange={(e) => setSiteData({...siteData, title: e.target.value})}
+                                    value={siteData.header_title}
+                                    onChange={(e) => setSiteData({...siteData, header_title: e.target.value})}
                                     style={inputStyle}
                                 />
                             </Field>
-                            <Field label="Descripción / Intro">
-                                <textarea 
-                                    value={siteData.description}
-                                    onChange={(e) => setSiteData({...siteData, description: e.target.value})}
-                                    style={{...inputStyle, height: '100px', resize: 'none'}}
-                                />
-                            </Field>
-                            <Field label="Texto del Botón (CTA)">
+                            <Field label="Teléfono (Header)">
                                 <input 
                                     type="text" 
-                                    value={siteData.cta_text}
-                                    onChange={(e) => setSiteData({...siteData, cta_text: e.target.value})}
+                                    value={siteData.phone}
+                                    onChange={(e) => setSiteData({...siteData, phone: e.target.value})}
+                                    style={inputStyle}
+                                />
+                            </Field>
+                            <Field label="Ubicación / Subtítulo">
+                                <input 
+                                    type="text" 
+                                    value={siteData.location_text}
+                                    onChange={(e) => setSiteData({...siteData, location_text: e.target.value})}
+                                    style={inputStyle}
+                                />
+                            </Field>
+                            <hr style={{ border: 'none', borderBottom: '1px solid rgba(255,255,255,0.05)' }} />
+                            <Field label="Nombre del Profesional">
+                                <input 
+                                    type="text" 
+                                    value={siteData.professional_name}
+                                    onChange={(e) => setSiteData({...siteData, professional_name: e.target.value})}
+                                    style={inputStyle}
+                                />
+                            </Field>
+                            <Field label="Subtítulo de Experto">
+                                <input 
+                                    type="text" 
+                                    value={siteData.expert_subtitle}
+                                    onChange={(e) => setSiteData({...siteData, expert_subtitle: e.target.value})}
+                                    style={inputStyle}
+                                />
+                            </Field>
+                            <Field label="URL Imagen de Perfil">
+                                <input 
+                                    type="text" 
+                                    value={siteData.profile_image}
+                                    onChange={(e) => setSiteData({...siteData, profile_image: e.target.value})}
+                                    placeholder="https://..."
+                                    style={inputStyle}
+                                />
+                            </Field>
+                            <Field label="Resumen Bio">
+                                <input 
+                                    type="text" 
+                                    value={siteData.bio_summary}
+                                    onChange={(e) => setSiteData({...siteData, bio_summary: e.target.value})}
+                                    style={inputStyle}
+                                />
+                            </Field>
+                            <Field label="Especialidades">
+                                <textarea 
+                                    value={siteData.areas_of_expertise}
+                                    onChange={(e) => setSiteData({...siteData, areas_of_expertise: e.target.value})}
+                                    style={{...inputStyle, height: '120px', resize: 'none'}}
+                                />
+                            </Field>
+                            <Field label="Texto de Garantía">
+                                <textarea 
+                                    value={siteData.warranty_text}
+                                    onChange={(e) => setSiteData({...siteData, warranty_text: e.target.value})}
+                                    style={{...inputStyle, height: '80px', resize: 'none'}}
+                                />
+                            </Field>
+                            <Field label="Número WhatsApp (Internacional)">
+                                <input 
+                                    type="text" 
+                                    value={siteData.whatsapp_number}
+                                    onChange={(e) => setSiteData({...siteData, whatsapp_number: e.target.value})}
+                                    placeholder="56912345678"
                                     style={inputStyle}
                                 />
                             </Field>
@@ -229,7 +318,7 @@ function BoltonPagesEditor() {
 
                     {activeTab === 'design' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <Field label="Color Primario">
+                            <Field label="Color Primario (Header/Bordes)">
                                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                                     <input 
                                         type="color" 
@@ -240,12 +329,27 @@ function BoltonPagesEditor() {
                                     <input type="text" value={siteData.primary_color} readOnly style={{...inputStyle, flex: 1}} />
                                 </div>
                             </Field>
+                            <Field label="Color Secundario (Botón/Barra)">
+                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                    <input 
+                                        type="color" 
+                                        value={siteData.secondary_color}
+                                        onChange={(e) => setSiteData({...siteData, secondary_color: e.target.value})}
+                                        style={{ width: '40px', height: '40px', padding: 0, border: 'none', background: 'none' }}
+                                    />
+                                    <input type="text" value={siteData.secondary_color} readOnly style={{...inputStyle, flex: 1}} />
+                                </div>
+                            </Field>
                             <Field label="Tipografía">
-                                <select style={inputStyle}>
+                                <select 
+                                    value={siteData.font_family}
+                                    onChange={(e) => setSiteData({...siteData, font_family: e.target.value})}
+                                    style={inputStyle}
+                                >
                                     <option>Inter</option>
                                     <option>Roboto</option>
                                     <option>Outfit</option>
-                                    <option>Bento</option>
+                                    <option>Open Sans</option>
                                 </select>
                             </Field>
                         </div>
@@ -293,54 +397,165 @@ function BoltonPagesEditor() {
                         </button>
                     </div>
 
-                    {/* Simulación del Sitio */}
+                    {/* Simulación del Sitio (Plantilla Estratégica) */}
                     <div style={{ 
                         width: previewMode === 'desktop' ? '100%' : '375px',
                         maxWidth: previewMode === 'desktop' ? '1000px' : '375px',
                         minHeight: '600px',
-                        background: '#0a0a0a',
-                        borderRadius: '20px',
+                        background: 'white',
+                        borderRadius: '4px',
                         overflow: 'hidden',
                         boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
                         transition: 'var(--transition-smooth)',
                         border: '1px solid rgba(255,255,255,0.05)',
                         display: 'flex',
-                        flexDirection: 'column'
+                        flexDirection: 'column',
+                        color: '#333',
+                        fontFamily: 'Inter, sans-serif',
+                        position: 'relative'
                     }}>
-                        {/* Header Navbar Simulado */}
-                        <div style={{ padding: '1.5rem 3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>LOGO</div>
-                            <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)' }}>
-                                <span>Inicio</span>
-                                <span>Servicios</span>
-                                <span>Contacto</span>
+                        {/* Header Azul */}
+                        <div style={{ 
+                            background: siteData.primary_color, 
+                            color: 'white', 
+                            padding: '1rem 2rem', 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center' 
+                        }}>
+                            <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{siteData.header_title}</div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 700, textDecoration: 'underline' }}>{siteData.phone}</div>
+                        </div>
+
+                        {/* Barra Secundaria */}
+                        <div style={{ display: 'flex', background: 'white' }}>
+                            <div style={{ 
+                                background: siteData.secondary_color, 
+                                color: 'white', 
+                                padding: '0.5rem 2rem', 
+                                fontSize: '0.9rem', 
+                                fontWeight: 600,
+                                clipPath: 'polygon(0% 0%, 95% 0%, 100% 100%, 0% 100%)' // Efecto inclinado
+                            }}>
+                                {siteData.location_text}
                             </div>
                         </div>
 
-                        {/* Hero Simulado */}
-                        <div style={{ padding: '6rem 3rem', textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                            <h2 style={{ fontSize: '3.5rem', fontWeight: 800, marginBottom: '1.5rem', lineHeight: 1.1 }}>
-                                {siteData.title}
-                            </h2>
-                            <p style={{ fontSize: '1.25rem', color: 'rgba(255,255,255,0.5)', maxWidth: '600px', margin: '0 auto 2.5rem', lineHeight: 1.6 }}>
-                                {siteData.description}
-                            </p>
-                            <button style={{ 
-                                background: siteData.primary_color, 
-                                color: 'white', 
-                                border: 'none', 
-                                padding: '1rem 2.5rem', 
-                                borderRadius: '50px', 
-                                fontWeight: 700, 
-                                fontSize: '1.1rem',
-                                cursor: 'pointer',
-                                boxShadow: `0 10px 30px ${siteData.primary_color}33`
+                        {/* Contenido Principal */}
+                        <div style={{ padding: '2rem', flex: 1 }}>
+                            <h1 style={{ 
+                                color: siteData.primary_color, 
+                                fontSize: '2.5rem', 
+                                fontWeight: 800, 
+                                marginBottom: '2rem',
+                                textAlign: previewMode === 'mobile' ? 'center' : 'left'
                             }}>
-                                {siteData.cta_text}
-                            </button>
+                                {siteData.professional_name}
+                            </h1>
+
+                            <div style={{ 
+                                display: 'flex', 
+                                gap: '2rem', 
+                                flexDirection: previewMode === 'mobile' ? 'column' : 'row',
+                                alignItems: previewMode === 'mobile' ? 'center' : 'flex-start'
+                            }}>
+                                {/* Columna Izquierda: Foto y CTA 1 */}
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', minWidth: '200px' }}>
+                                    <div style={{ 
+                                        width: '180px', 
+                                        height: '180px', 
+                                        borderRadius: '50%', 
+                                        overflow: 'hidden',
+                                        border: `4px solid white`,
+                                        boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
+                                    }}>
+                                        <img 
+                                            src={siteData.profile_image} 
+                                            alt="Perfil" 
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                        />
+                                    </div>
+                                    <button style={{ 
+                                        background: 'transparent', 
+                                        border: `2px solid ${siteData.primary_color}`, 
+                                        color: siteData.primary_color,
+                                        padding: '0.6rem 1.5rem',
+                                        borderRadius: '50px',
+                                        fontWeight: 700,
+                                        fontSize: '0.9rem'
+                                    }}>
+                                        {siteData.cta_text_outline}
+                                    </button>
+                                </div>
+
+                                {/* Columna Central: Bio y Detalles */}
+                                <div style={{ flex: 1, fontSize: '0.95rem', lineHeight: 1.6 }}>
+                                    <p style={{ fontWeight: 700, marginBottom: '0.5rem' }}>{siteData.bio_summary}</p>
+                                    <p style={{ fontWeight: 600, marginBottom: '1rem' }}>{siteData.expert_subtitle}</p>
+                                    <p style={{ color: '#555', fontSize: '0.9rem' }}>
+                                        {siteData.areas_of_expertise}
+                                    </p>
+                                </div>
+
+                                {/* Columna Derecha: Garantía y CTA 2 */}
+                                <div style={{ 
+                                    display: 'flex', 
+                                    flexDirection: 'column', 
+                                    alignItems: previewMode === 'mobile' ? 'center' : 'flex-end', 
+                                    gap: '2rem',
+                                    minWidth: previewMode === 'mobile' ? '100%' : '250px'
+                                }}>
+                                    <div style={{ 
+                                        border: '2px solid #ccc', 
+                                        borderRadius: '50%', 
+                                        padding: '1.5rem', 
+                                        textAlign: 'center', 
+                                        maxWidth: '200px',
+                                        aspectRatio: '1.2 / 1',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'center',
+                                        fontSize: '0.8rem'
+                                    }}>
+                                        <p style={{ fontWeight: 800, marginBottom: '0.5rem', borderBottom: '1px solid #ddd' }}>GARANTÍA DE SATISFACCIÓN</p>
+                                        <p style={{ color: '#666' }}>{siteData.warranty_text}</p>
+                                    </div>
+
+                                    <button style={{ 
+                                        background: siteData.secondary_color, 
+                                        color: 'white', 
+                                        padding: '1rem 2rem', 
+                                        borderRadius: '12px', 
+                                        fontWeight: 800, 
+                                        fontSize: '1.1rem',
+                                        border: 'none',
+                                        boxShadow: '0 5px 15px rgba(0,0,0,0.2)'
+                                    }}>
+                                        {siteData.cta_text_filled}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* WhatsApp Flotante Simulado */}
+                        <div style={{ 
+                            position: 'absolute', 
+                            bottom: '20px', 
+                            right: '20px', 
+                            width: '50px', 
+                            height: '50px', 
+                            background: '#25D366', 
+                            borderRadius: '50%', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            color: 'white',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                        }}>
+                           <Zap size={24} fill="white" />
                         </div>
                         
-                        <div style={{ padding: '2rem', textAlign: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.2)', borderTop: '1px solid rgba(255,255,255,0.03)' }}>
+                        <div style={{ padding: '1rem', textAlign: 'center', fontSize: '0.7rem', color: '#999', background: '#f9f9f9' }}>
                             Power by Bolton Digital
                         </div>
                     </div>
