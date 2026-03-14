@@ -12,6 +12,7 @@
   /* Cyber Cyan */
   --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   --innovation-glow: rgba(99, 102, 241, 0.15);
+  --glow-color: rgba(99, 102, 241, 0.5);
 
   /* Spacing */
   --space-unit: 1rem;
@@ -184,4 +185,61 @@ section {
 
 .animate-fade-scale {
   animation: fadeInScale 0.4s ease-out forwards;
+}
+
+/* Marketplace Advanced Styles */
+.glow-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.glow-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    600px circle at var(--mouse-x) var(--mouse-y),
+    var(--glow-color),
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glow-card:hover .glow-overlay {
+  opacity: 0.1;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge-ia {
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.badge-new {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.tab-active {
+  background: var(--accent-gradient) !important;
+  color: white !important;
+  box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
 }
