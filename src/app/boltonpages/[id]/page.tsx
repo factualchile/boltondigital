@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 
 interface Props {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }
 
 async function getSiteData(id: string) {
@@ -19,7 +19,8 @@ async function getSiteData(id: string) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const site = await getSiteData(params.id);
+    const { id } = await params;
+    const site = await getSiteData(id);
     if (!site) return { title: 'Sitio no encontrado - Bolton Pages' };
     return {
         title: site.site_config?.header_title || site.name || 'Bolton Pages',
@@ -28,7 +29,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PublicBoltonPage({ params }: Props) {
-    const site = await getSiteData(params.id);
+    const { id } = await params;
+    const site = await getSiteData(id);
 
     if (!site) {
         return notFound();
