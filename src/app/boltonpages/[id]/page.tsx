@@ -38,7 +38,7 @@ export default async function PublicBoltonPage({ params }: Props) {
         .from('client_sites')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
     if (error) {
         console.error('Supabase error:', error.message);
