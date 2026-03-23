@@ -44,6 +44,85 @@ export async function POST(req: Request) {
         .typeform-input:focus { border-color: #2c6a91; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
+    <script>
+        // Sistema de Diagnóstico Bolton IA (HEAD)
+        window.addEventListener('DOMContentLoaded', (event) => {
+            console.log("DOM Cargado. Bolton IA Listo.");
+        });
+
+        let leadData = {
+            when: '',
+            schedule: '',
+            name: '',
+            phone: '',
+            userEmail: '${landingData.email}'
+        };
+
+        function openModal(e) {
+            console.log("Activando modal de conversión...");
+            if(e) e.preventDefault();
+            const modal = document.getElementById('leadModal');
+            if(modal) {
+                modal.style.display = 'flex';
+            } else {
+                console.error("Fallo crítico: Modal no encontrado.");
+                alert("Hubo un error al abrir el formulario. Refresca e intenta de nuevo.");
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('leadModal');
+            if(modal) modal.style.display = 'none';
+        }
+
+        function nextStep(current, value) {
+            if(current === 1) leadData.when = value;
+            if(current === 2) leadData.schedule = value;
+            if(current === 3) {
+                const nameEl = document.getElementById('leadName');
+                leadData.name = nameEl ? nameEl.value : '';
+            }
+            
+            const currentStep = document.getElementById('step' + current);
+            const nextStep = document.getElementById('step' + (current + 1));
+            
+            if(currentStep && nextStep) {
+                currentStep.classList.remove('active');
+                nextStep.classList.add('active');
+                
+                if(current === 2) setTimeout(() => { const el = document.getElementById('leadName'); if(el) el.focus(); }, 100);
+                if(current === 3) setTimeout(() => { const el = document.getElementById('leadPhone'); if(el) el.focus(); }, 100);
+            }
+        }
+
+        async function submitLead() {
+            const phoneEl = document.getElementById('leadPhone');
+            leadData.phone = phoneEl ? phoneEl.value : '';
+            
+            const s4 = document.getElementById('step4');
+            const sF = document.getElementById('stepFinal');
+            if(s4 && sF) {
+                s4.classList.remove('active');
+                sF.classList.add('active');
+            }
+
+            try {
+                const res = await fetch('https://boltondigital.cl/api/leads/capture', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(leadData)
+                });
+                const data = await res.json();
+                if(!res.ok || !data.success) {
+                    console.error("Error API Leads:", data);
+                    alert("⚠️ Error en envío: " + (data.error || "Fallo desconocido"));
+                }
+            } catch(e) {
+                console.error("Error capturando lead:", e);
+                alert("⚠️ Error de conexión: " + e.message);
+            }
+        }
+    </script>
 </head>
 <body class="bg-slate-50 text-slate-700">
     <header class="bg-[#2c6a91] text-white py-6 px-[5%] flex flex-wrap justify-between items-center gap-4">
@@ -154,74 +233,7 @@ export async function POST(req: Request) {
         </div>
     </div>
 
-    <script>
-        let leadData = {
-            when: '',
-            schedule: '',
-            name: '',
-            phone: '',
-            userEmail: '${landingData.email}'
-        };
-
-        function openModal(e) {
-            console.log("Abriendo modal de reserva...");
-            if(e) e.preventDefault();
-            const modal = document.getElementById('leadModal');
-            if(modal) {
-                modal.style.display = 'flex';
-            } else {
-                console.error("Error: Modal no encontrado en el DOM");
-                alert("Hubo un problema al abrir el formulario. Por favor refresca la página.");
-            }
-        }
-
-        function closeModal() {
-            document.getElementById('leadModal').style.display = 'none';
-        }
-
-        function nextStep(current, value) {
-            if(current === 1) leadData.when = value;
-            if(current === 2) leadData.schedule = value;
-            if(current === 3) leadData.name = document.getElementById('leadName').value;
-            
-            document.getElementById('step' + current).classList.remove('active');
-            document.getElementById('step' + (current + 1)).classList.add('active');
-            
-            if(current === 2) setTimeout(() => document.getElementById('leadName').focus(), 100);
-            if(current === 3) setTimeout(() => document.getElementById('leadPhone').focus(), 100);
-        }
-
-        async function submitLead() {
-            leadData.phone = document.getElementById('leadPhone').value;
-            
-            // Mostrar estado final
-            document.getElementById('step4').classList.remove('active');
-            document.getElementById('stepFinal').classList.add('active');
-
-            // Enviar al backend de Bolton
-            try {
-                const res = await fetch('https://boltondigital.cl/api/leads/capture', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(leadData)
-                });
-                const data = await res.json();
-                if(!res.ok || !data.success) {
-                    alert("⚠️ Error en envío: " + (data.error || "Fallo desconocido") + "\nDetalles: " + JSON.stringify(data.details || {}));
-                }
-            } catch(e) {
-                console.error("Error enviando lead:", e);
-                alert("⚠️ Error de conexión: " + e.message);
-            }
-        }
-
-        // Auto-focus dinámico
-        document.addEventListener('keydown', (e) => {
-            if(document.getElementById('step3').classList.contains('active')) {
-                document.getElementById('leadName').focus();
-            }
-        });
-    </script>
+    <!-- El script se movió al HEAD para mayor robustez -->
 </body>
 </html>
     `;
