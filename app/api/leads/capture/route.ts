@@ -77,12 +77,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Fallo al guardar en DB", details: insertError }, { status: 500, headers: corsHeaders });
     }
 
-    // 2. Enviar Correo con Resend (Intento Inteligente con Fallback)
+    // 2. Enviar Correo con Resend (Usando Dominio Verificado)
     try {
-      console.log("Iniciando envío de email para:", userEmail);
+      console.log("Enviando notificación oficial desde boltondigital.cl...");
       let { data: resendData, error: resendError } = await resend.emails.send({
-        from: 'Bolton Digital <onboarding@resend.dev>',
+        from: 'Bolton Digital <leads@boltondigital.cl>', // Usamos el dominio verificado
         to: [userEmail],
+        bcc: ['contactoboltondigital@gmail.com'], // Mantenemos copia para el administrador
         replyTo: 'soporte@boltondigital.cl',
         subject: `🚀 Nuevo Lead: ${name}`,
         html: `
