@@ -77,12 +77,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Fallo al guardar en DB", details: insertError }, { status: 500, headers: corsHeaders });
     }
 
-    // 2. Enviar Correo con Resend
+    // 2. Enviar Correo con Resend (Intento Inteligente con Fallback)
     try {
-      console.log("Iniciando envío de email para el administrador (dueño de Resend)");
-      const { data: resendData, error: resendError } = await resend.emails.send({
-        from: 'Bolton Digital <onboarding@resend.dev>', // Usamos onboarding para asegurar entrega rápida
-        to: ['contactoboltondigital@gmail.com'], // Solo podemos enviar al dueño de la cuenta hasta verificar dominio
+      console.log("Iniciando envío de email para:", userEmail);
+      let { data: resendData, error: resendError } = await resend.emails.send({
+        from: 'Bolton Digital <onboarding@resend.dev>',
+        to: [userEmail],
         replyTo: 'soporte@boltondigital.cl',
         subject: `🚀 Nuevo Lead: ${name}`,
         html: `
@@ -105,20 +105,44 @@ export async function POST(req: Request) {
                 <a href="https://wa.me/${phone.replace(/\D/g, '')}" style="display: inline-block; background: #2c6a91; color: white; padding: 1rem 2rem; border-radius: 9999px; text-decoration: none; font-weight: bold; font-size: 16px;">Contactar ahora por WhatsApp</a>
               </div>
             </div>
-            <div style="background: #f1f5f9; padding: 1.5rem; text-align: center; font-size: 12px; color: #94a3b8;">
-              <p>© ${new Date().getFullYear()} Bolton Digital. Este lead fue capturado automáticamente desde una cuenta de prueba de Resend.</p>
-            </div>
           </div>
         `
       });
 
+      // Si el envío al usuario falla (posiblemente por no estar verificado en Resend), enviar al admin como fallback
       if (resendError) {
-        console.error("Resend API Error details:", resendError);
-        // Registrar el fallo en Supabase para diagnóstico
-        if (insertedLead?.id) {
-            await db.from('leads').update({ status: `error_resend: ${JSON.stringify(resendError)}` }).eq('id', insertedLead.id);
+        console.warn("Fallo envío directo, activando Fallback al administrador...");
+        const fallbackRes = await resend.emails.send({
+          from: 'Bolton Digital <onboarding@resend.dev>',
+          to: ['contactoboltondigital@gmail.com'],
+          subject: `⚠️ [Resumen Bolton] Nuevo Lead para ${userEmail}: ${name}`,
+          html: `
+            <div style="font-family: sans-serif; padding: 20px;">
+              <h2>Aviso de Fallback: Notificación de Lead 🚀</h2>
+              <p>Resend bloqueó el envío directo a <strong>${userEmail}</strong> (posiblemente falta verificar el dominio).</p>
+              <hr />
+              <p><strong>Lead:</strong> ${name}</p>
+              <p><strong>Teléfono:</strong> ${phone}</p>
+              <p><strong>Preferencia:</strong> ${when} (${schedule})</p>
+            </div>
+          `
+        });
+        
+        if (fallbackRes.error) {
+           console.error("Fallo crítico: El fallback también falló.");
+           if (insertedLead?.id) {
+               await db.from('leads').update({ status: `error_final: ${JSON.stringify(fallbackRes.error)}` }).eq('id', insertedLead.id);
+           }
+        } else {
+           if (insertedLead?.id) {
+               await db.from('leads').update({ status: 'notificado_vía_admin_fallback' }).eq('id', insertedLead.id);
+           }
         }
-        return NextResponse.json({ success: false, error: "Fallo en Resend", details: resendError }, { status: 500, headers: corsHeaders });
+      } else {
+        // ÉXITO: El usuario ya está verificado o el dominio lo está
+        if (insertedLead?.id) {
+            await db.from('leads').update({ status: 'notificado' }).eq('id', insertedLead.id);
+        }
       }
 
       // 3. Éxito total: Actualizar estado en DB
