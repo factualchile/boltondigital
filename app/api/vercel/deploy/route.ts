@@ -110,7 +110,7 @@ export async function POST(req: Request) {
                 const res = await fetch('https://boltondigital.cl/api/leads/capture', {
                     method: 'POST',
                     mode: 'cors',
-                    headers: { 'Content-Type': 'text/plain' }, // Petición simple (No preflight)
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(leadData)
                 });
                 const data = await res.json();
