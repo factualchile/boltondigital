@@ -55,8 +55,8 @@ export async function POST(req: Request) {
 
     const db = supabaseAdmin || supabase;
 
-    // 1. Guardar el lead en la tabla 'leads'
-    const { error: insertError } = await db
+    // 1. Guardar el lead en la tabla 'leads' (Estado inicial: procesando)
+    const { data: insertedLead, error: insertError } = await db
       .from('leads')
       .insert([
         { 
@@ -64,10 +64,12 @@ export async function POST(req: Request) {
           lead_name: name,
           lead_phone: phone,
           preferred_time: schedule ? `${when} (${schedule})` : when,
-          status: 'nuevo',
+          status: 'procesando_notificacion',
           created_at: new Date().toISOString()
         }
-      ]);
+      ])
+      .select()
+      .single();
 
     if (insertError) {
       console.error("Error guardando lead en DB:", insertError);
@@ -111,16 +113,23 @@ export async function POST(req: Request) {
 
       if (resendError) {
         console.error("Resend API Error details:", resendError);
-        // Si hay error de Resend, lo devolvemos para debugear (solo en esta fase)
-        return NextResponse.json({ 
-            success: false, 
-            error: "Fallo en Resend", 
-            details: resendError 
-        }, { status: 500, headers: corsHeaders });
+        // Registrar el fallo en Supabase para diagnóstico
+        if (insertedLead?.id) {
+            await db.from('leads').update({ status: `error_resend: ${JSON.stringify(resendError)}` }).eq('id', insertedLead.id);
+        }
+        return NextResponse.json({ success: false, error: "Fallo en Resend", details: resendError }, { status: 500, headers: corsHeaders });
+      }
+
+      // 3. Éxito total: Actualizar estado en DB
+      if (insertedLead?.id) {
+          await db.from('leads').update({ status: 'notificado' }).eq('id', insertedLead.id);
       }
 
     } catch (mailError: any) {
       console.error("Error crítico enviando email:", mailError);
+      if (insertedLead?.id) {
+          await db.from('leads').update({ status: `excepcion_email: ${mailError.message}` }).eq('id', insertedLead.id);
+      }
       return NextResponse.json({ error: "Excepción en el envío de correo" }, { status: 500, headers: corsHeaders });
     }
 
