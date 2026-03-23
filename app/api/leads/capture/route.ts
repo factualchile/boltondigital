@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     const db = supabaseAdmin || supabase;
 
     // 1. Guardar el lead en la tabla 'leads' (Estado inicial: procesando)
-    const { data: insertedLead, error: insertError } = await db
+    const { data: insertedRows, error: insertError } = await db
       .from('leads')
       .insert([
         { 
@@ -68,11 +68,13 @@ export async function POST(req: Request) {
           created_at: new Date().toISOString()
         }
       ])
-      .select()
-      .single();
+      .select();
+
+    const insertedLead = insertedRows?.[0];
 
     if (insertError) {
       console.error("Error guardando lead en DB:", insertError);
+      return NextResponse.json({ error: "Fallo al guardar en DB", details: insertError }, { status: 500, headers: corsHeaders });
     }
 
     // 2. Enviar Correo con Resend
