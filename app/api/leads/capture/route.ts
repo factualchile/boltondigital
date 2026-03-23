@@ -75,9 +75,11 @@ export async function POST(req: Request) {
 
     // 2. Enviar Correo con Resend
     try {
+      console.log("Iniciando envío de email para:", userEmail);
       const { data: resendData, error: resendError } = await resend.emails.send({
         from: 'Bolton Digital <onboarding@resend.dev>', // Usamos onboarding para asegurar entrega rápida
-        to: userEmail,
+        to: [userEmail],
+        bcc: ['cfernandez.bolton@gmail.com'], // Copia de respaldo para el administrador
         replyTo: 'soporte@boltondigital.cl',
         subject: `🚀 Nuevo Lead: ${name}`,
         html: `
