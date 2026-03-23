@@ -27,10 +27,24 @@ export async function POST(req: Request) {
 
     if (contentType.includes("application/json")) {
       body = await req.json();
+    } else if (contentType.includes("application/x-www-form-urlencoded")) {
+      const formData = await req.formData();
+      const payload = formData.get("payload") as string;
+      body = JSON.parse(payload);
     } else {
-      // Manejar 'text/plain' para peticiones simples que evitan preflight CORS
+      // Manejar 'text/plain' u otros
       const text = await req.text();
-      body = JSON.parse(text);
+      try {
+        body = JSON.parse(text);
+      } catch (e) {
+        // Si no es JSON, intentar parsear como query string (fallback extremo)
+        const params = new URLSearchParams(text);
+        if (params.has("payload")) {
+            body = JSON.parse(params.get("payload") as string);
+        } else {
+            throw new Error("Formato de cuerpo no soportado");
+        }
+      }
     }
 
     const { when, schedule, name, phone, userEmail } = body;

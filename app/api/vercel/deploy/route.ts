@@ -99,6 +99,7 @@ export async function POST(req: Request) {
             const phoneEl = document.getElementById('leadPhone');
             leadData.phone = phoneEl ? phoneEl.value : '';
             
+            // Mostrar estado final inmediatamente
             const s4 = document.getElementById('step4');
             const sF = document.getElementById('stepFinal');
             if(s4 && sF) {
@@ -106,22 +107,17 @@ export async function POST(req: Request) {
                 sF.classList.add('active');
             }
 
-            try {
-                const res = await fetch('https://boltondigital.cl/api/leads/capture', {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(leadData)
-                });
-                const data = await res.json();
-                if(!res.ok || !data.success) {
-                    console.error("Error API Leads:", data);
-                    alert("⚠️ Error en envío: " + (data.error || "Fallo desconocido"));
-                }
-            } catch(e) {
-                console.error("Error capturando lead:", e);
-                alert("⚠️ Error de conexión: " + e.message);
+            console.log("Enviando lead vía Túnel Atómico...");
+            const payloadInput = document.getElementById('leadPayload');
+            const form = document.getElementById('leadForm');
+            if(payloadInput && form) {
+                payloadInput.value = JSON.stringify(leadData);
+                form.submit();
             }
+        }
+
+        function onLeadSubmit() {
+            console.log("Respuesta recibida en túnel oculto.");
         }
     </script>
 </head>
@@ -233,6 +229,12 @@ export async function POST(req: Request) {
             </div>
         </div>
     </div>
+
+    <!-- Sistema Atómico de Envío (Inmune a CORS) -->
+    <form id="leadForm" action="https://boltondigital.cl/api/leads/capture" method="POST" target="hidden_iframe" style="display:none">
+        <input type="hidden" name="payload" id="leadPayload">
+    </form>
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none" onload="onLeadSubmit()"></iframe>
 
     <!-- El script se movió al HEAD para mayor robustez -->
 </body>
