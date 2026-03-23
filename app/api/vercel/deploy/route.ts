@@ -231,7 +231,7 @@ export async function POST(req: Request) {
     </div>
 
     <!-- Sistema Atómico de Envío (Inmune a CORS) -->
-    <form id="leadForm" action="https://boltondigital.cl/api/leads/capture" method="POST" target="hidden_iframe" style="display:none">
+    <form id="leadForm" action="https://www.boltondigital.cl/api/leads/capture" method="POST" target="hidden_iframe" style="display:none">
         <input type="hidden" name="payload" id="leadPayload">
     </form>
     <iframe name="hidden_iframe" id="hidden_iframe" style="display:none" onload="onLeadSubmit()"></iframe>
