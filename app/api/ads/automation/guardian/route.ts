@@ -25,10 +25,10 @@ export async function POST(req: Request) {
       const spendThreshold = 40;
       if (camp.status === 'ENABLED' && camp.cost > spendThreshold && camp.conversions === 0 && (camp.tag === 'ALERTA')) {
         
-        await customer.campaigns.update({
+        await customer.campaigns.update([{
           resource_name: `customers/${customerId.replace(/-/g, "")}/campaigns/${camp.id}`,
           status: 'PAUSED'
-        });
+        }]);
 
         // Registrar en Historia (Fase 22)
         if (userId) {

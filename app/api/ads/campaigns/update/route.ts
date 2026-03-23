@@ -28,10 +28,10 @@ export async function POST(req: Request) {
     });
 
     // Ejecutar el cambio de estado en Google Ads
-    await customer.campaigns.update({
+    await customer.campaigns.update([{
       resource_name: `customers/${customerId.replace(/-/g, "")}/campaigns/${campaignId}`,
       status: status // 'PAUSED' o 'ENABLED'
-    });
+    }]);
 
     return NextResponse.json({ 
       success: true, 
