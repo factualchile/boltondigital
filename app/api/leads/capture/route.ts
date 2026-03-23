@@ -11,7 +11,13 @@ const corsHeaders = {
 };
 
 export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
+  return new Response(null, { 
+    status: 204,
+    headers: {
+        ...corsHeaders,
+        "Access-Control-Max-Age": "86400",
+    }
+  });
 }
 
 export async function POST(req: Request) {
