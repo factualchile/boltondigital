@@ -4,7 +4,9 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BarChart3, CheckCircle2, ChevronRight, Loader2, Info } from "lucide-react";
 
-export default function GoogleAdsConnect({ onConnected }: { onConnected: (id: string) => void }) {
+import { supabase } from "@/lib/supabase";
+
+export default function GoogleAdsConnect({ onConnected, userId }: { onConnected: (id: string) => void, userId?: string }) {
   const [customerId, setCustomerId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,10 +29,16 @@ export default function GoogleAdsConnect({ onConnected }: { onConnected: (id: st
     setError(null);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
       const response = await fetch("/api/ads/connect", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customerId }),
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ customerId, userId }),
       });
 
       const data = await response.json();

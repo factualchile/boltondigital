@@ -12,7 +12,6 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const customerId = searchParams.get("customerId");
-    const campaignId = searchParams.get("campaignId");
 
     if (!customerId) {
       return NextResponse.json({ error: "Customer ID is required" }, { status: 400 });
@@ -30,65 +29,61 @@ export async function GET(req: Request) {
       developer_token: DEVELOPER_TOKEN,
     });
 
-    const customer = client.Customer({
+    const customerOptions: any = {
       customer_id: cleanedId,
       refresh_token: REFRESH_TOKEN,
-      login_customer_id: MCC_ID,
-    });
+    };
+    
+    // Solo incluir login_customer_id si MCC_ID está definido y no es una cadena vacía
+    if (MCC_ID && MCC_ID.trim().length > 0) {
+      customerOptions.login_customer_id = MCC_ID.replace(/-/g, "");
+    }
 
-    // Fetch metrics for the last 30 days INCLUDING TODAY
+    const customer = client.Customer(customerOptions);
+
+    // Desglose por campaña en los últimos 30 días (Incluyendo hoy)
     const today = new Date().toISOString().split('T')[0].replace(/-/g, "");
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0].replace(/-/g, "");
 
     const query = `
       SELECT 
+        campaign.id,
+        campaign.name, 
+        campaign.status,
         metrics.clicks, 
         metrics.impressions, 
         metrics.cost_micros, 
         metrics.conversions,
-        metrics.average_cpc,
-        metrics.ctr
+        metrics.ctr,
+        metrics.average_cpc
       FROM campaign
-      WHERE segments.date BETWEEN '${thirtyDaysAgo}' AND '${today}'
-      ${campaignId ? `AND campaign.id = '${campaignId}'` : ""}
+      WHERE campaign.status != 'REMOVED'
     `;
 
-    console.log(`[METRICS] Querying customer ${cleanedId} from ${thirtyDaysAgo} to ${today}`);
+    console.log(`[CAMPAIGNS] Querying customer ${cleanedId} from ${thirtyDaysAgo} to ${today}`);
     const results = await customer.query(query);
 
-    if (!results || results.length === 0) {
-      return NextResponse.json({ 
-        success: true, 
-        metrics: { clicks: 0, impressions: 0, cost: 0, conversions: 0 } 
-      });
-    }
-
-    // Process results (Google Ads returns cost in micros)
-    const summary = results[0].metrics;
-    if (!summary) {
-      return NextResponse.json({ 
-        success: true, 
-        metrics: { clicks: 0, impressions: 0, cost: 0, conversions: 0 } 
-      });
-    }
-    const processedMetrics = {
-      clicks: summary.clicks || 0,
-      impressions: summary.impressions || 0,
-      cost: (summary.cost_micros || 0) / 1000000,
-      conversions: summary.conversions || 0,
-      ctr: (summary.ctr || 0) * 100,
-      averageCpc: (summary.average_cpc || 0) / 1000000
-    };
+    const campaigns = results.map((row: any) => ({
+      id: row.campaign.id,
+      name: row.campaign.name,
+      status: row.campaign.status,
+      clicks: row.metrics.clicks || 0,
+      impressions: row.metrics.impressions || 0,
+      cost: (row.metrics.cost_micros || 0) / 1000000,
+      conversions: row.metrics.conversions || 0,
+      ctr: (row.metrics.ctr || 0) * 100,
+      averageCpc: (row.metrics.average_cpc || 0) / 1000000
+    })).sort((a: any, b: any) => b.cost - a.cost); // Ordenar por mayor gasto primero
 
     return NextResponse.json({ 
       success: true, 
-      metrics: processedMetrics 
+      campaigns 
     });
 
   } catch (error: any) {
-    console.error("Google Ads Metrics Error:", error);
+    console.error("Google Ads Campaigns Error:", error);
     return NextResponse.json({ 
-      error: error.message || "Failed to fetch metrics",
+      error: error.message || "Failed to fetch campaigns",
       details: error.response?.data?.error?.message
     }, { status: 500 });
   }

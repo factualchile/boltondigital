@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { GoogleAdsApi, GoogleAdsNodeOptions } from "google-ads-api";
+import { GoogleAdsApi } from "google-ads-api";
+import { verifyUser } from "@/lib/auth-server";
 
 const CLIENT_ID = process.env.GOOGLE_ADS_CLIENT_ID!;
 const CLIENT_SECRET = process.env.GOOGLE_ADS_CLIENT_SECRET!;
@@ -9,10 +10,16 @@ const MCC_ID = process.env.GOOGLE_ADS_MCC_ID!;
 
 export async function POST(req: Request) {
   try {
-    const { customerId } = await req.json();
+    const { customerId, userId } = await req.json();
     
     if (!customerId) {
       return NextResponse.json({ error: "Customer ID is required" }, { status: 400 });
+    }
+
+    // FASE 2: SEGURIDAD DE CONEXIÓN
+    if (userId) {
+      const isOwner = await verifyUser(req, userId);
+      if (!isOwner) return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
     }
 
     const cleanedId = customerId.replace(/-/g, "");
@@ -50,9 +57,10 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("Google Ads Connection Error:", error);
+    const details = error.response?.data?.error?.message || error.message || "No details available";
     return NextResponse.json({ 
-      error: error.message || "Failed to connect to Google Ads",
-      details: error.response?.data?.error?.message
+      error: "Failed to connect to Google Ads",
+      details
     }, { status: 500 });
   }
 }

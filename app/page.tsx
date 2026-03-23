@@ -1,15 +1,43 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Zap, TrendingUp, Bot, ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AuthForm from "@/components/AuthForm";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
+import { Loader2, Zap, TrendingUp, Bot, ArrowRight, LogOut } from "lucide-react";
+import { motion } from "framer-motion";
+
+import Navbar from "@/components/Navbar";
 
 export default function LandingPage() {
   const [showAuth, setShowAuth] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [session, setSession] = useState<any>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      setChecking(false);
+    });
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    router.refresh();
+  };
+
+  if (checking) {
+    return (
+      <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--background)" }}>
+        <Loader2 className="animate-spin" size={40} color="var(--primary)" />
+      </div>
+    );
+  }
 
   return (
-    <main className="container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "4rem 1.5rem" }}>
+    <main className="container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "4rem 1.5rem", position: "relative" }}>
       {!showAuth ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}

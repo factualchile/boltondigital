@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "Bolton Digital | Crecimiento Inteligente",
@@ -26,7 +27,10 @@ export default function RootLayout({
         ` }} />
       </head>
       <body>
-        {children}
+        <Navbar />
+        <main style={{ paddingTop: "6rem" }}>
+          {children}
+        </main>
       </body>
     </html>
   );

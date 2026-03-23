@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/openai";
+import { verifyUser } from "@/lib/auth-server";
 
 export async function POST(req: Request) {
   try {
-    const { metrics } = await req.json();
+    const { metrics, userId } = await req.json();
+
+    // FASE 1: AUDITORÍA DE AISLAMIENTO
+    if (userId) {
+      const isOwner = await verifyUser(req, userId);
+      if (!isOwner) return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+    }
 
     if (!metrics) {
       return NextResponse.json({ error: "Metrics are required" }, { status: 400 });
@@ -12,12 +19,12 @@ export async function POST(req: Request) {
     const prompt = `
       Eres un experto en crecimiento de negocios digitales con un tono humano, claro y directo.
       Analiza los siguientes datos de Google Ads de los últimos 30 días de un profesional:
-      - Clics: ${metrics.clicks}
-      - Impresiones: ${metrics.impressions}
-      - Inversión: $${metrics.cost.toFixed(2)}
-      - Conversiones: ${metrics.conversions}
-      - CTR: ${metrics.ctr.toFixed(2)}%
-      - CPC Promedio: $${metrics.averageCpc.toFixed(2)}
+      - Clics: ${metrics.clicks || 0}
+      - Impresiones: ${metrics.impressions || 0}
+      - Inversión: $${(metrics.cost || 0).toFixed(2)}
+      - Conversiones: ${metrics.conversions || 0}
+      - CTR: ${(metrics.ctr || 0).toFixed(2)}%
+      - CPC Promedio: $${(metrics.averageCpc || 0).toFixed(2)}
 
       Genera una respuesta en formato JSON con la siguiente estructura:
       {
