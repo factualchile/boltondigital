@@ -46,10 +46,11 @@ export async function POST(req: Request) {
     `);
 
     if (results && results.length > 0) {
+      const customerInfo = results[0] as any;
       return NextResponse.json({ 
         success: true, 
-        name: results[0].customer.descriptive_name,
-        id: results[0].customer.id 
+        name: customerInfo.customer.descriptive_name,
+        id: customerInfo.customer.id 
       });
     }
 
