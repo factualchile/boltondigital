@@ -22,7 +22,17 @@ export async function OPTIONS() {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const contentType = req.headers.get("content-type") || "";
+    let body;
+
+    if (contentType.includes("application/json")) {
+      body = await req.json();
+    } else {
+      // Manejar 'text/plain' para peticiones simples que evitan preflight CORS
+      const text = await req.text();
+      body = JSON.parse(text);
+    }
+
     const { when, schedule, name, phone, userEmail } = body;
 
     if (!name || !phone || !userEmail) {
