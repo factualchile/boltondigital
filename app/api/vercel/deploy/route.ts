@@ -88,7 +88,7 @@ export async function POST(req: Request) {
                     <p class="font-extrabold text-sm text-[#2c6a91] uppercase mb-3 tracking-tighter">Garantía de Satisfacción</p>
                     <p class="text-sm leading-snug">Si la primera sesión no te parece <span class="text-[#2c6a91] font-bold">GENIAL</span> te devuelvo tu dinero</p>
                 </div>
-                <a href="https://wa.me/${landingData.phone.replace(/\D/g, '')}" class="w-full bg-[#0f172a] text-white py-5 px-8 rounded-xl font-bold text-xl text-center shadow-2xl hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                <a href="#" onclick="openModal(event)" class="w-full bg-[#0f172a] text-white py-5 px-8 rounded-xl font-bold text-xl text-center shadow-2xl hover:scale-105 transition-transform flex items-center justify-center gap-2">
                     RESERVAR AHORA ➔
                 </a>
             </div>
