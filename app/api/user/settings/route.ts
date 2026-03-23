@@ -28,7 +28,8 @@ export async function GET(req: Request) {
         campaignSurvey: data?.campaign_survey || null,
         currentCampaignId: data?.current_campaign_id || null,
         landingUrl: data?.landing_url || null,
-        customDomain: data?.custom_domain || null
+        customDomain: data?.custom_domain || null,
+        vercelProjectId: data?.vercel_project_id || null
     });
 
   } catch (error: any) {
@@ -49,10 +50,13 @@ export async function POST(req: Request) {
     const isOwner = await verifyUser(req, userId);
     if (!isOwner) return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
 
+    const body = await req.json();
     const updateData: any = { user_id: userId, updated_at: new Date().toISOString() };
     if (googleAdsId) updateData.google_ads_id = googleAdsId;
     if (campaignSurvey) updateData.campaign_survey = campaignSurvey;
-    if (req.body && (await req.clone().json()).landingUrl) updateData.landing_url = (await req.json()).landingUrl;
+    if (body.landingUrl) updateData.landing_url = body.landingUrl;
+    if (body.vercelProjectId) updateData.vercel_project_id = body.vercelProjectId;
+    if (body.customDomain) updateData.custom_domain = body.customDomain;
 
     const client = supabaseAdmin || supabase;
     const { data, error } = await client
@@ -90,6 +94,7 @@ export async function PATCH(req: Request) {
     if (updates.currentCampaignId) dbUpdates.current_campaign_id = updates.currentCampaignId;
     if (updates.landingUrl) dbUpdates.landing_url = updates.landingUrl;
     if (updates.customDomain) dbUpdates.custom_domain = updates.customDomain;
+    if (updates.vercelProjectId) dbUpdates.vercel_project_id = updates.vercelProjectId;
 
     const { data, error } = await client
       .from('user_settings')

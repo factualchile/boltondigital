@@ -144,6 +144,7 @@ export default function Dashboard() {
             
             if (data.landingUrl) setLandingUrl(data.landingUrl);
             if (data.customDomain) setCustomDomain(data.customDomain);
+            if (data.vercelProjectId) setVercelProjectId(data.vercelProjectId);
 
             const syncProgress = async () => {
               if (data.googleAdsId) {

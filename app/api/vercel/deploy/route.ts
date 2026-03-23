@@ -65,7 +65,7 @@ export async function POST(req: Request) {
                 <div class="w-full aspect-square rounded-full overflow-hidden border-8 border-white shadow-xl">
                     <img src="${landingData.imageUrl || 'https://images.unsplash.com/photo-1559839734-2b71f1536783?auto=format&fit=crop&w=400&h=400'}" class="w-full h-full object-cover">
                 </div>
-                <a href="#" onclick="openModal(event)" class="w-full py-4 border-2 border-[#2c6a91] text-[#2c6a91] font-bold rounded-full hover:bg-[#2c6a91] hover:text-white transition-all text-center">RESERVAR AHORA</a>
+                <a href="javascript:void(0)" onclick="openModal(event)" class="w-full py-4 border-2 border-[#2c6a91] text-[#2c6a91] font-bold rounded-full hover:bg-[#2c6a91] hover:text-white transition-all text-center">RESERVAR AHORA</a>
             </div>
 
             <!-- Columna Central (50%) -->
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
                     <p class="font-extrabold text-sm text-[#2c6a91] uppercase mb-3 tracking-tighter">Garantía de Satisfacción</p>
                     <p class="text-sm leading-snug">Si la primera sesión no te parece <span class="text-[#2c6a91] font-bold">GENIAL</span> te devuelvo tu dinero</p>
                 </div>
-                <a href="#" onclick="openModal(event)" class="w-full bg-[#0f172a] text-white py-5 px-8 rounded-xl font-bold text-xl text-center shadow-2xl hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                <a href="javascript:void(0)" onclick="openModal(event)" class="w-full bg-[#0f172a] text-white py-5 px-8 rounded-xl font-bold text-xl text-center shadow-2xl hover:scale-105 transition-transform flex items-center justify-center gap-2">
                     RESERVAR AHORA ➔
                 </a>
             </div>
@@ -164,8 +164,15 @@ export async function POST(req: Request) {
         };
 
         function openModal(e) {
+            console.log("Abriendo modal de reserva...");
             if(e) e.preventDefault();
-            document.getElementById('leadModal').style.display = 'flex';
+            const modal = document.getElementById('leadModal');
+            if(modal) {
+                modal.style.display = 'flex';
+            } else {
+                console.error("Error: Modal no encontrado en el DOM");
+                alert("Hubo un problema al abrir el formulario. Por favor refresca la página.");
+            }
         }
 
         function closeModal() {
