@@ -136,18 +136,22 @@ export default function Dashboard() {
 
           const res = await secureFetch(`/api/user/settings?userId=${session.user.id}`);
           const data = await res.json();
-          if (data.success && data.googleAdsId) {
-            setCustomerId(data.googleAdsId);
-            setCampaignId(data.currentCampaignId);
+          if (data.success) {
+            if (data.googleAdsId) {
+              setCustomerId(data.googleAdsId);
+              setCampaignId(data.currentCampaignId);
+            }
             
             if (data.landingUrl) setLandingUrl(data.landingUrl);
             if (data.customDomain) setCustomDomain(data.customDomain);
 
             const syncProgress = async () => {
-              await secureFetch("/api/user/progress", { 
-                method: "POST", headers: { "Content-Type": "application/json" }, 
-                body: JSON.stringify({ userId: session.user.id, category: 'clientes', instanceKey: 'motor', isCompleted: true }) 
-              });
+              if (data.googleAdsId) {
+                await secureFetch("/api/user/progress", { 
+                  method: "POST", headers: { "Content-Type": "application/json" }, 
+                  body: JSON.stringify({ userId: session.user.id, category: 'clientes', instanceKey: 'motor', isCompleted: true }) 
+                });
+              }
               
               if (data.landingUrl) {
                 await secureFetch("/api/user/progress", { 
@@ -166,13 +170,13 @@ export default function Dashboard() {
             };
             syncProgress();
 
-            if (data.currentCampaignId) {
+            if (data.currentCampaignId && data.googleAdsId) {
               setCurrentInstance('motor');
               setCurrentMacro('clientes');
               setCurrentView('overview');
               setStatus('fetching');
+              handleConnected(data.googleAdsId, true, data.currentCampaignId, session.user);
             }
-            handleConnected(data.googleAdsId, true, data.currentCampaignId, session.user);
           }
           fetchProgress(session.user.id);
         } else {

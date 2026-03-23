@@ -33,7 +33,19 @@ export default function LandingFormModal({ onClose, onConfirm, initialData }: La
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         className="glass"
-        style={{ width: "100%", maxWidth: "550px", padding: "3rem", position: "relative", border: "1px solid rgba(59, 130, 246, 0.3)", borderRadius: "2rem", background: "var(--background)" }}
+        style={{ 
+          width: "100%", 
+          maxWidth: "550px", 
+          maxHeight: "90vh",
+          overflowY: "auto",
+          padding: "3rem", 
+          position: "relative", 
+          border: "1px solid rgba(59, 130, 246, 0.3)", 
+          borderRadius: "2rem", 
+          background: "var(--background)",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none"
+        }}
       >
         <button onClick={onClose} style={{ position: "absolute", top: "1.5rem", right: "1.5rem", background: "transparent", border: "none", color: "white", cursor: "pointer", opacity: 0.5 }}><X size={24} /></button>
 
