@@ -12,6 +12,7 @@ import CampaignCreationModal from "@/components/CampaignCreationModal";
 import LandingFormModal from "@/components/LandingFormModal";
 import MainNavigation, { Pilar } from "@/components/MainNavigation";
 import { ClaudioClone } from "@/components/dashboard/ClaudioClone";
+import { AssistantsView } from "@/components/dashboard/AssistantsView";
 import { AcademyView } from "@/components/dashboard/AcademyView";
 import { InnovationLab } from "@/components/dashboard/InnovationLab";
 import { ProfileView } from "@/components/dashboard/ProfileView";
