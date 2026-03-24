@@ -16,16 +16,21 @@ export async function POST(req: Request) {
       throw new Error("Supabase Admin client not initialized");
     }
 
-    // 1. Verificar si ya se envió el correo de bienvenida para evitar duplicados
-    const { data: tokenData, error: tokenError } = await supabaseAdmin
+    // 1. Verificar y Marcar Atómicamente (Prevenir Reenvíos)
+    const { data: existingToken } = await supabaseAdmin
       .from('user_tokens')
       .select('welcome_sent')
       .eq('user_id', userId)
       .single();
 
-    if (tokenData?.welcome_sent) {
+    if (existingToken?.welcome_sent) {
       return NextResponse.json({ success: true, message: "Correo ya enviado anteriormente" });
     }
+
+    // Marcamos como enviado ANTES de enviar realmente para bloquear peticiones paralelas
+    await supabaseAdmin
+      .from('user_tokens')
+      .upsert({ user_id: userId, welcome_sent: true }, { onConflict: 'user_id' });
 
     // 2. Enviar Correo de Bienvenida y Verificación
     const { data: resendData, error: resendError } = await resend.emails.send({
@@ -80,11 +85,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Error en el envío del correo" }, { status: 500 });
     }
 
-    // 3. Marcar como enviado en la DB
-    await supabaseAdmin
-      .from('user_tokens')
-      .update({ welcome_sent: true })
-      .eq('user_id', userId);
+    // El marcado ya se hizo preventivamente al inicio del flujo para evitar colisiones
 
     return NextResponse.json({ success: true, message: "Correo de bienvenida enviado con éxito" });
 

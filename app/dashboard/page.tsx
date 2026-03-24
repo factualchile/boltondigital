@@ -902,8 +902,8 @@ export default function Dashboard() {
 
   if (loadingSettings) {
     return (
-      <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--background)" }}>
-        <Loader2 className="animate-spin" size={60} color="var(--primary)" style={{ opacity: 0.2 }} />
+      <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#050505" }}>
+        <Loader2 className="animate-spin" size={60} color="#3b82f6" style={{ opacity: 0.3 }} />
       </div>
     );
   }

@@ -30,8 +30,8 @@ export default function LandingPage() {
 
   if (checking) {
     return (
-      <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--background)" }}>
-        <Loader2 className="animate-spin" size={40} color="var(--primary)" />
+      <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#050505" }}>
+        <Loader2 className="animate-spin" size={40} color="#3b82f6" style={{ opacity: 0.4 }} />
       </div>
     );
   }

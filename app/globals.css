@@ -181,12 +181,8 @@ button {
   .container { padding: 0 1rem; }
   .btn { width: 100%; padding: 1rem; }
   
-  /* Conversión de Grids a Columnas */
-  [style*="display: grid"], 
-  [style*="display:grid"] {
-    grid-template-columns: 1fr !important;
-    gap: 1.5rem !important;
-  }
+  /* Conversión de Grids a Columnas - Desactivada para Troubleshooting */
+  /* Reemplazar con clases específicas si es necesario */
 
   /* Ajuste de Secciones de Dashboard */
   .dashboard-main { padding: 0 1rem 6rem !important; }
