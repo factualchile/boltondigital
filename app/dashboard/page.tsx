@@ -3,13 +3,18 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useState } from "react";
-import { LogOut, Radio, BarChart3, Bot, Zap, TrendingUp, MousePointer2, Eye, DollarSign, Target, Loader2, Sparkles, MessageSquare, ArrowRight, ArrowLeft, ShieldCheck, Activity, ThumbsUp, ThumbsDown, Lock, User as UserIcon, Layers, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, MinusCircle, Lightbulb, TrendingDown, Clock, Check, Edit3, MessageCircle, PenTool, Calculator, Calendar, Play, Pause, Filter, Users, Mail, Phone, ExternalLink, UserCheck, BrainCircuit, Star, BarChart, Trophy, Flame, Shield, ShieldAlert, ShieldCheck as ShieldOk, Globe, Layout, Palette, Copy, BookmarkCheck, History, ListRestart, Send, Rocket, LayoutDashboard, Brain, TestTube2, ScrollText, Settings, X as XIcon } from "lucide-react";
+import { LogOut, Radio, BarChart3, Bot, Zap, TrendingUp, MousePointer2, Eye, DollarSign, Target, Loader2, Sparkles, MessageSquare, ArrowRight, ArrowLeft, ShieldCheck, Activity, ThumbsUp, ThumbsDown, Lock, User as UserIcon, Layers, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, MinusCircle, Lightbulb, TrendingDown, Clock, Check, Edit3, MessageCircle, PenTool, Calculator, Calendar, Play, Pause, Filter, Users, Mail, Phone, ExternalLink, UserCheck, BrainCircuit, Star, BarChart, Trophy, Flame, Shield, ShieldAlert, ShieldCheck as ShieldOk, Globe, Layout, Palette, Copy, BookmarkCheck, History, ListRestart, Send, Rocket, LayoutDashboard, Brain, TestTube2, ScrollText, Settings, X as XIcon, Radar, GraduationCap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import GoogleAdsConnect from "@/components/GoogleAdsConnect";
 import CategoryPath from "@/components/CategoryPath";
 import MacroPortal from "@/components/MacroPortal";
 import CampaignCreationModal from "@/components/CampaignCreationModal";
 import LandingFormModal from "@/components/LandingFormModal";
+import MainNavigation, { Pilar } from "@/components/MainNavigation";
+import { ClaudioClone } from "@/components/dashboard/ClaudioClone";
+import { AssistantsView } from "@/components/dashboard/AssistantsView";
+import { AcademyView } from "@/components/dashboard/AcademyView";
+import { InnovationLab } from "@/components/dashboard/InnovationLab";
 
 type View = "overview" | "crm" | "creative" | "history";
 type MacroArea = "portal" | "clientes" | "control" | "desarrollo";
@@ -28,6 +33,47 @@ const FALLBACK_RECOMMENDATIONS = [
   { type: "AHORRO", title: "Eficiencia Target", description: "Asegurando que cada centavo se use en clics con alta probabilidad de contacto." }
 ];
 
+const CHALLENGES_DATA: Record<string, { video: string, tutorialText: string, links: { label: string, url: string }[] }> = {
+  motor: {
+    video: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Placeholder
+    tutorialText: "El Motor Comercial es el núcleo de Bolton. Al vincular tu ID de Google Ads (10 dígitos), permites que nuestra IA acceda a la telemetría en tiempo real para optimizar pujas y presupuestos.",
+    links: [
+      { label: "Cómo encontrar mi ID", url: "#" },
+      { label: "Seguridad de Datos", url: "#" }
+    ]
+  },
+  landing: {
+    video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    tutorialText: "Tu Landing Page es tu vendedor 24/7. Bolton construye una estructura de alta conversión basada en tu oferta. Una vez activa, puedes vincular tu propio dominio para máxima autoridad.",
+    links: [
+      { label: "Guía de Dominios", url: "#" },
+      { label: "Mejores Prácticas UI", url: "#" }
+    ]
+  },
+  creacion: {
+    video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    tutorialText: "Aquí es donde ocurre la magia. Definimos el avatar de tu cliente ideal, los ángulos de venta y la estructura de campaña que Google Ads ama. Bolton genera los anuncios por ti.",
+    links: [
+      { label: "Estructura Hagakure", url: "#" },
+      { label: "Avatar de Cliente", url: "#" }
+    ]
+  },
+  activacion: {
+    video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    tutorialText: "El momento de la verdad. Activar la campaña inicia el flujo de demanda. Bolton entrará en fase de aprendizaje durante las primeras 48-72 horas para estabilizar el algoritmo.",
+    links: [
+      { label: "Checklist de Lanzamiento", url: "#" }
+    ]
+  },
+  escalamiento: {
+    video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    tutorialText: "Una vez que tenemos tracción, usamos el escalamiento táctico. Bolton buscará nuevas oportunidades de mercado y ajustará la inversión donde el ROAS sea más alto.",
+    links: [
+      { label: "Escalado Vertical vs Horizontal", url: "#" }
+    ]
+  }
+};
+
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [customerId, setCustomerId] = useState<string | null>(null);
@@ -38,6 +84,12 @@ export default function Dashboard() {
   const [activeCategories, setActiveCategories] = useState<string[]>([]);
   const [progress, setProgress] = useState<any[]>([]);
   const [tempId, setTempId] = useState("");
+  
+  // BOLTON 3.0 NAVIGATION
+  const [activePilar, setActivePilar] = useState<Pilar>("desafios");
+  const [dashboardMode, setDashboardMode] = useState<"facil" | "avanzado" | "clon">("facil");
+  const [desafioTab, setDesafioTab] = useState<"actual" | "completados" | "futuros">("actual");
+
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
@@ -867,279 +919,494 @@ export default function Dashboard() {
         </header>
       )}
 
-      <main>
+      <main style={{ padding: "0 2rem 4rem" }}>
+        {/* NAVEGACIÓN MAESTRA BOLTON 3.0 */}
+        <MainNavigation activePilar={activePilar} onChange={setActivePilar} />
+
         <AnimatePresence mode="wait">
-          {currentMacro === "portal" ? (
-             <MacroPortal 
-               key="portal" 
-               activeCategories={activeCategories}
-               categoryProgress={calculateCategoryProgress()}
-               onEnterCategory={(cat) => {
-                 if (activeCategories.includes(cat) || cat === 'clientes') setCurrentMacro(cat as MacroArea);
-               }} 
-             />
-          ) : (
-            <motion.div key="macro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              {!currentInstance ? (
-                <>
-                  <CategoryPath 
-                    category={currentMacro} 
-                    instances={getInstances(currentMacro)} 
-                    onActivate={activateInstance}
-                    onUnlink={handleUnlink}
-                    onEnter={(k) => {
-                      if (k === 'motor') handleConnected(customerId!, true);
-                      setCurrentInstance(k);
-                    }}
-                    onGoToDashboard={() => {
-                      setCurrentInstance('motor');
-                      setCurrentView('overview');
-                    }}
-                    onDeployLanding={handleDeployLanding}
-                    deployingLanding={deployingLanding}
-                    landingUrl={landingUrl}
-                    customDomain={customDomain}
-                    onShowDns={() => setShowDnsModal(true)}
-                  />
-                </>
-              ) : (
-                <>
-                  {(status === "fetching" || status === "interpreting" || status === "connecting") && (
-                    <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: "center", margin: "10vh auto" }}>
-                       <Loader2 className="animate-spin" size={100} color="var(--primary)" style={{ opacity: 0.2, margin: "0 auto 2.5rem" }} />
-                       <h2 style={{ fontSize: "3rem", fontWeight: 950 }}>Iniciando {currentInstance?.toUpperCase()}</h2>
-                    </motion.div>
-                  )}
-                  
-                  {status === "dashboard" && currentInstance === 'motor' && (
-                    <motion.div key="dashboard-content" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-                       
-                       {currentView === "overview" && (
-                         <div key="overview">
-                             <div className="glass" style={{ padding: "3rem", marginBottom: "3rem", borderLeft: "6px solid var(--primary)", background: "linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%)", position: 'relative' }}>
-                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-                                  <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", color: "var(--primary)" }}><Zap size={22} /><span style={{ fontWeight: 900, fontSize: "0.85rem", letterSpacing: "2px" }}>DIAGNÓSTICO ESTRATÉGICO</span></div>
-                                   <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-                                       <p style={{ fontSize: "0.65rem", fontWeight: 950, color: "var(--muted-foreground)", background: "rgba(255,255,255,0.03)", padding: "0.4rem 0.8rem", borderRadius: "2rem", border: "1px solid rgba(255,255,255,0.05)", letterSpacing: "0.5px" }}>
-                                          IDENTIFICADOR: {campaigns.find(c => c.id.toString() === (campaignId || tempId)?.toString())?.name?.toUpperCase() || "CARGANDO..."}
-                                       </p>
-                                   </div>
-                               </div>
-                               <h1 style={{ fontSize: "3.2rem", fontWeight: 950, lineHeight: 1.1, marginBottom: "2.5rem" }}>
-                                 {insight?.diagnosis || FALLBACK_INSIGHT.diagnosis}
-                               </h1>
+          {activePilar === "desafios" && (
+            <motion.div key="desafios-pilar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+              <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
+                {/* CABECERA DE VINCULACIONES (Requerido por Claudio) */}
+                <div className="glass" style={{ padding: "1.5rem 2rem", marginBottom: "2.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", borderLeft: "4px solid #3b82f6" }}>
+                  <div style={{ display: "flex", gap: "2rem" }}>
+                    <div>
+                      <p style={{ fontSize: "0.6rem", color: "var(--muted)", fontWeight: 900, textTransform: "uppercase", marginBottom: "0.25rem" }}>GOOGLE ADS ID</p>
+                      <p style={{ fontWeight: 800, fontSize: "0.9rem" }}>{customerId || "NO VINCULADO"}</p>
+                    </div>
+                    {landingUrl && (
+                      <div>
+                        <p style={{ fontSize: "0.6rem", color: "var(--muted)", fontWeight: 900, textTransform: "uppercase", marginBottom: "0.25rem" }}>LANDING URL</p>
+                        <p style={{ fontWeight: 800, fontSize: "0.9rem", color: "#3b82f6" }}>{landingUrl}</p>
+                      </div>
+                    )}
+                    {campaignId && (
+                      <div>
+                        <p style={{ fontSize: "0.6rem", color: "var(--muted)", fontWeight: 900, textTransform: "uppercase", marginBottom: "0.25rem" }}>CAMPAÑA ACTIVA</p>
+                        <p style={{ fontWeight: 800, fontSize: "0.9rem" }}>{campaigns.find(c => c.id.toString() === campaignId.toString())?.name || campaignId}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-                               {/* BLOQUE DE VEREDICTO (SOLO VISIBLE MIENTRAS CARGA O SI NO HAY PLAN) */}
-                               <AnimatePresence mode="wait">
-                               {!isAiFinal ? (
-                                 <motion.div 
-                                   key="verdict-loading"
-                                   initial={{ opacity: 0, scale: 0.98 }}
-                                   animate={{ opacity: 1, scale: 1 }}
-                                   exit={{ opacity: 0, scale: 0.95 }}
-                                   className="glass" 
-                                   style={{ 
-                                     padding: "2.5rem", 
-                                     background: "rgba(59, 130, 246, 0.05)", 
-                                     border: "1px solid rgba(59, 130, 246, 0.2)",
-                                     boxShadow: "0 0 40px rgba(59, 130, 246, 0.15)",
-                                     marginBottom: "3rem", 
-                                     borderRadius: "1.5rem",
-                                     position: "relative",
-                                     overflow: "hidden"
-                                   }}
-                                 >
-                                    <div style={{ position: "absolute", top: "-50%", left: "-50%", width: "200%", height: "200%", background: "radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
-                                    <div style={{ display: "flex", gap: "1.5rem", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
-                                       <div style={{ position: "relative" }}>
-                                          <div className="glass" style={{ padding: "0.8rem", borderRadius: "1rem", background: "rgba(59, 130, 246, 0.1)", border: "1px solid rgba(59, 130, 246, 0.3)" }}>
-                                             <Bot size={32} color="#3b82f6" />
-                                          </div>
-                                          <motion.div 
-                                            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
-                                            transition={{ duration: 2, repeat: Infinity }}
-                                            style={{ position: "absolute", top: -4, right: -4, width: 10, height: 10, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 10px #10b981" }} 
-                                          />
-                                       </div>
-                                       <div style={{ flex: 1 }}>
-                                          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.8rem" }}>
-                                             <p style={{ fontSize: "0.75rem", fontWeight: 950, color: "#3b82f6", letterSpacing: "2px", textTransform: "uppercase" }}>VEREDICTO DE INTELIGENCIA ESTRATÉGICA</p>
-                                             <div style={{ height: "1px", flex: 1, background: "linear-gradient(90deg, rgba(59, 130, 246, 0.3), transparent)" }} />
-                                          </div>
-                                          <p style={{ fontSize: "1.25rem", fontWeight: 800, lineHeight: 1.6, color: "white", letterSpacing: "-0.5px" }}>
-                                             {battlePlan || insight?.battlePlan || FALLBACK_INSIGHT.battlePlan}
-                                          </p>
-                                          {/* TELEMETRÍA DE EMERGENCIA */}
-                                          <div style={{ marginTop: "1rem", padding: "0.5rem", background: "rgba(59, 130, 246, 0.05)", borderRadius: "0.5rem", border: "1px solid rgba(59, 130, 246, 0.1)" }}>
-                                             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                                <div style={{ width: 6, height: 6, borderRadius: "50%", background: aiError ? "#ef4444" : "#10b981", boxShadow: aiError ? "0 0 5px #ef4444" : "0 0 5px #10b981" }} />
-                                                <p style={{ fontSize: "0.6rem", color: aiError ? "#f87171" : "rgba(255,255,255,0.4)", fontWeight: 950, letterSpacing: "0.5px" }}>
-                                                   DEBUG: {aiError || "Conexión Estable"} | Status: {aiLoadingStatus}
-                                                </p>
-                                             </div>
-                                          </div>
-                                       </div>
+                {/* SUB-NAVEGACIÓN DESAFÍOS */}
+                <div style={{ display: "flex", gap: "2.5rem", marginBottom: "3rem", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                  {[
+                    { id: "actual", name: "En Curso" },
+                    { id: "completados", name: "Completados" },
+                    { id: "futuros", name: "Próximos Pasos" },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setDesafioTab(tab.id as any)}
+                      style={{
+                        padding: "1rem 0.5rem",
+                        color: desafioTab === tab.id ? "var(--primary)" : "var(--muted-foreground)",
+                        fontWeight: 900,
+                        fontSize: "0.85rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "1.5px",
+                        position: "relative",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer"
+                      }}
+                    >
+                      {tab.name}
+                      {desafioTab === tab.id && (
+                        <motion.div layoutId="desafioUnderline" style={{ position: "absolute", bottom: -1, left: 0, right: 0, height: "3px", background: "var(--primary)", boxShadow: "0 0 10px var(--primary)" }} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                <AnimatePresence mode="wait">
+                  {(() => {
+                    const allChallenges = getInstances("clientes");
+                    
+                    if (desafioTab === 'actual') {
+                      const actual = allChallenges.find(c => c.status !== 'completed' && c.status !== 'locked');
+                      if (!actual) return (
+                        <motion.div key="all-done" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: "center", padding: "8rem 0" }}>
+                          <div style={{ width: "100px", height: "100px", borderRadius: "50%", background: "rgba(16, 185, 129, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 2.5rem" }}>
+                            <Trophy size={50} color="#10b981" />
+                          </div>
+                          <h3 style={{ fontSize: "2.5rem", fontWeight: 950, marginBottom: "1rem" }}>¡Ruta Completada!</h3>
+                          <p style={{ opacity: 0.6, fontSize: "1.1rem" }}>Has desbloqueado todo el potencial comercial de esta fase.</p>
+                        </motion.div>
+                      );
+
+                      const tutorial = CHALLENGES_DATA[actual.key];
+
+                      return (
+                        <motion.div key="actual-view" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                          <CategoryPath 
+                            category="clientes" 
+                            instances={[actual]} 
+                            onActivate={activateInstance}
+                            onUnlink={handleUnlink}
+                            onEnter={(k) => {
+                              if (k === 'motor') handleConnected(customerId!, true);
+                              setCurrentInstance(k);
+                            }}
+                            onGoToDashboard={() => setActivePilar("dashboard")}
+                            onDeployLanding={handleDeployLanding}
+                            deployingLanding={deployingLanding}
+                            landingUrl={landingUrl}
+                            customDomain={customDomain}
+                            onShowDns={() => setShowDnsModal(true)}
+                          />
+
+                          {/* SECCIÓN TUTORIAL PREMIUM */}
+                          {tutorial && (
+                            <div className="glass" style={{ maxWidth: "850px", margin: "4rem auto", padding: "0.5rem", borderRadius: "2.5rem", overflow: "hidden", border: "1px solid rgba(59, 130, 246, 0.2)" }}>
+                               <div style={{ padding: "3rem", background: "linear-gradient(180deg, rgba(59, 130, 246, 0.03) 0%, transparent 100%)" }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2.5rem" }}>
+                                    <div className="glass" style={{ padding: "0.75rem", borderRadius: "1rem", color: "var(--primary)" }}>
+                                      <BrainCircuit size={28} />
                                     </div>
-                                 </motion.div>
-                               ) : (
-                                 /* NUEVA FILA DE 5 RECUADROS ESTRATÉGICOS (HORIZONTAL GRID) */
-                                 <motion.div 
-                                    key="strategic-grid"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "1rem", marginBottom: "3rem" }}
-                                 >
-                                    {[
-                                      { 
-                                        label: "Estado", 
-                                        value: (() => {
-                                          const camp = campaigns.find(c => c.id.toString() === (campaignId || tempId)?.toString());
-                                          if (!camp) return '...';
-                                          // Detección Multi-Formato (Google Ads ENUMs: 2 = ENABLED, 3 = PAUSED)
-                                          const status = String(camp.status).toUpperCase();
-                                          return (status === 'ENABLED' || status === '2') ? 'ACTIVA' : 'PAUSADA';
-                                        })(),
-                                        color: (() => {
-                                          const camp = campaigns.find(c => c.id.toString() === (campaignId || tempId)?.toString());
-                                          if (!camp) return 'var(--muted)';
-                                          const status = String(camp.status).toUpperCase();
-                                          return (status === 'ENABLED' || status === '2') ? '#10b981' : '#f59e0b';
-                                        })()
-                                      },
-                                      { label: "Canal", value: "Google Ads", color: "#3b82f6" },
-                                      { label: "Inteligencia", value: "Bolton v1.2", color: "var(--accent)" },
-                                      { label: "Seguridad", value: "Blindado", color: "#10b981" },
-                                      { label: "Siguiente", value: "Optimizar", color: "white" }
-                                    ].map((box, i) => (
-                                      <div key={i} className="glass" style={{ padding: "1.5rem", textAlign: "center", borderTop: `3px solid ${box.color}`, background: "rgba(255,255,255,0.02)" }}>
-                                        <p style={{ fontSize: "0.6rem", color: "var(--muted)", fontWeight: 950, textTransform: "uppercase", marginBottom: "0.5rem", letterSpacing: "1px" }}>{box.label}</p>
-                                        <p style={{ fontSize: "1.1rem", fontWeight: 950, color: box.color }}>{box.value}</p>
-                                      </div>
-                                    ))}
-                                 </motion.div>
-                               )}
-                               </AnimatePresence>
+                                    <div>
+                                      <h3 style={{ fontSize: "1.8rem", fontWeight: 950, letterSpacing: "-0.5px" }}>Tutorial Maestro</h3>
+                                      <p style={{ fontSize: "0.85rem", opacity: 0.5, fontWeight: 700, textTransform: "uppercase" }}>Guía Estratégica Bolton OS</p>
+                                    </div>
+                                  </div>
 
-                               <div className="glass" style={{ display: "inline-flex", padding: "1rem 2rem", background: "rgba(255,255,255,0.02)", alignItems: "center", gap: "1rem" }}>
-                                  <Rocket size={24} color="var(--primary)" />
-                                  <div>
-                                     <p style={{ fontSize: "0.7rem", color: "var(--muted)" }}>PRÓXIMA MISIÓN</p>
-                                     <p style={{ fontWeight: 800, fontSize: "1.2rem" }}>{insight?.nextAction || FALLBACK_INSIGHT.nextAction}</p>
+                                  <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "3rem" }}>
+                                    <div style={{ position: "relative", borderRadius: "1.5rem", overflow: "hidden", boxShadow: "0 20px 40px rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                                      <div style={{ paddingTop: "56.25%", background: "#000" }}>
+                                        <iframe 
+                                          src={tutorial.video}
+                                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
+                                          frameBorder="0"
+                                          allowFullScreen
+                                        />
+                                      </div>
+                                    </div>
+                                    <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                                      <p style={{ fontSize: "1.1rem", lineHeight: 1.6, opacity: 0.7, marginBottom: "2.5rem", fontWeight: 500 }}>
+                                        {tutorial.tutorialText}
+                                      </p>
+                                      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+                                        {tutorial.links.map((link, idx) => (
+                                          <a 
+                                            key={idx} 
+                                            href={link.url}
+                                            target="_blank"
+                                            className="btn-secondary" 
+                                            style={{ display: "inline-flex", alignItems: "center", gap: "0.6rem", padding: "1rem 1.5rem", fontSize: "0.8rem", fontWeight: 900, borderRadius: "1rem" }}
+                                          >
+                                            {link.label.toUpperCase()} <ExternalLink size={14} />
+                                          </a>
+                                        ))}
+                                      </div>
+                                    </div>
                                   </div>
                                </div>
-                              </div>
-                            
-                             {showScaling && (
-                               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="glass" style={{ padding: "2.5rem", marginBottom: "3rem", background: "rgba(16, 185, 129, 0.05)", border: "1px solid rgba(16, 185, 129, 0.1)", overflow: 'hidden' }}>
-                                 <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem" }}>
-                                    <div style={{ padding: "0.5rem", borderRadius: "50%", background: "rgba(16, 185, 129, 0.1)" }}><Trophy color="#10b981" /></div>
-                                    <h3 style={{ fontSize: "1.5rem", fontWeight: 950 }}>Senda 2: Desafíos de Escalamiento</h3>
-                                 </div>
-                                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5rem" }}>
-                                    {[
-                                      { label: "Primeros 10 Leads", progress: leads.length, target: 10, icon: Users },
-                                      { label: "Optimización de ROAS", progress: 4.2, target: 5.0, icon: Zap },
-                                      { label: "Dominio del Mercado", progress: 65, target: 100, icon: Rocket },
-                                    ].map((task, i) => (
-                                      <div key={i} className="glass" style={{ padding: "1.5rem", background: "rgba(255,255,255,0.02)" }}>
-                                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}>
-                                            <task.icon size={18} color="#10b981" />
-                                            <span style={{ fontSize: "0.7rem", fontWeight: 900 }}>{Math.round((task.progress/task.target)*100)}%</span>
-                                         </div>
-                                         <p style={{ fontSize: "0.85rem", fontWeight: 800, marginBottom: "0.5rem" }}>{task.label}</p>
-                                         <div style={{ height: "4px", background: "rgba(255,255,255,0.05)", borderRadius: "2px", overflow: "hidden" }}>
-                                            <div style={{ width: `${(task.progress/task.target)*100}%`, height: "100%", background: "#10b981" }} />
-                                         </div>
-                                      </div>
-                                    ))}
-                                 </div>
-                               </motion.div>
-                             )}
-
-                             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5rem", marginBottom: "4rem" }}>
-                                 {(recommendations.length > 0 || !insight) && recommendations.slice(0, 3).map((rec, i) => (
-                                   <div key={i} className="glass" style={{ padding: "2rem", borderTop: `4px solid ${rec.type === 'AHORRO' ? '#ef4444' : rec.type === 'CRECIMIENTO' ? '#3b82f6' : '#10b981'}` }}>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                                         <span style={{ fontSize: '0.65rem', fontWeight: 900, padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>{rec.type}</span>
-                                         {rec.type === 'AHORRO' ? <Activity size={16} color="#ef4444" /> : rec.type === 'CRECIMIENTO' ? <Zap size={16} color="#3b82f6" /> : <ShieldCheck size={16} color="#10b981" />}
-                                      </div>
-                                      <h4 style={{ fontWeight: 900, fontSize: '1.2rem', marginBottom: '0.75rem' }}>{rec.title}</h4>
-                                      <p style={{ fontSize: '0.85rem', opacity: 0.6 }}>{rec.description}</p>
-                                   </div>
-                                 ))}
-                             </div>
-
-                             <div style={{ display: "grid", gridTemplateColumns: "1fr 0.45fr", gap: "2.5rem" }}>
-                                <div className="glass" style={{ padding: "2.5rem" }}>
-                                   <h3 style={{ fontSize: "1.5rem", fontWeight: 950, marginBottom: "2.5rem" }}>Mapa de Adquisición</h3>
-                                   <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-                                      {funnel.length > 0 ? funnel.map((step) => (
-                                         <div key={step.id}>
-                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.75rem" }}><span>{step.label}</span><b>{step.value.toLocaleString()}</b></div>
-                                            <div style={{ height: "45px", background: "rgba(255,255,255,0.02)", borderRadius: "0.6rem", overflow: "hidden" }}>
-                                               <motion.div initial={{ width: 0 }} animate={{ width: `${step.percentage}%` }} style={{ height: "100%", background: step.color, opacity: 0.8 }} />
-                                            </div>
-                                         </div>
-                                      )) : <div style={{ opacity: 0.3, textAlign: "center", padding: "2rem" }}>Cargando datos...</div>}
-                                   </div>
-                                </div>
-                                <div className="glass" style={{ padding: "2.5rem", background: "linear-gradient(rgba(59, 130, 246, 0.1), transparent)", textAlign: "center" }}>
-                                   <p style={{ fontSize: "0.8rem", color: "var(--muted)", fontWeight: 800 }}>EFICACIA TOTAL</p>
-                                   <span style={{ fontSize: "6rem", fontWeight: 950, color: "var(--primary)" }}>{insight?.growthScore || 0}</span>
-                                   <p style={{ fontSize: "0.85rem", color: "#10b981", fontWeight: 800 }}>{insight?.statusLabel || "ESTABLE"}</p>
-                                </div>
-                             </div>
-                         </div>
-                       )}
-
-                       {currentView === "crm" && (
-                         <div key="crm" className="glass" style={{ padding: "3rem" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "3rem" }}><Users size={32} color="var(--primary)" /><h3 style={{ fontSize: "2rem", fontWeight: 950 }}>Radar de Prioridad</h3></div>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "1.5rem" }}>
-                               {leads.map(lead => (
-                                 <div key={lead.id} className="glass" style={{ padding: "2rem", borderTop: `4px solid ${lead.score >= 70 ? '#10b981' : '#3b82f6'}` }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.5rem" }}>
-                                       <span style={{ fontSize: "0.7rem", fontWeight: 950, padding: "0.2rem 0.6rem", background: "rgba(255,255,255,0.05)", borderRadius: "10px" }}>{lead.trait?.toUpperCase() || "NUEVO"}</span>
-                                       <span style={{ fontWeight: 950, fontSize: "1.1rem" }}>{lead.score || 0}/100</span>
-                                    </div>
-                                    <h4 style={{ fontSize: "1.4rem", fontWeight: 950, marginBottom: "0.5rem" }}>{lead.name}</h4>
-                                    <p style={{ opacity: 0.6 }}>{lead.email}</p>
-                                 </div>
-                               ))}
                             </div>
-                         </div>
-                       )}
+                          )}
+                        </motion.div>
+                      );
+                    }
 
-                       {currentView === "creative" && (
-                         <div key="creative" className="glass" style={{ padding: "3rem" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "4rem" }}><Brain size={40} color="var(--primary)" /><h3 style={{ fontSize: "2.2rem", fontWeight: 950 }}>Laboratorio Creativo</h3></div>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
-                               {variants.map((v, i) => (
-                                 <div key={i} className="glass" style={{ padding: "2rem" }}>
-                                    <span style={{ fontSize: "0.75rem", fontWeight: 950, color: "var(--primary)" }}>{v.angle.toUpperCase()}</span>
-                                    <h4 style={{ fontSize: "1.4rem", fontWeight: 950, margin: "1.5rem 0" }}>{v.headline}</h4>
-                                    <p style={{ lineHeight: 1.6, opacity: 0.7 }}>{v.description}</p>
-                                 </div>
-                               ))}
+                    if (desafioTab === 'completados') {
+                      const completed = allChallenges.filter(c => c.status === 'completed');
+                      return (
+                        <motion.div key="completed-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                          {completed.length > 0 ? (
+                            <CategoryPath 
+                              category="clientes" 
+                              instances={completed} 
+                              onActivate={activateInstance}
+                              onUnlink={handleUnlink}
+                              onEnter={(k) => {
+                                if (k === 'motor') handleConnected(customerId!, true);
+                                setCurrentInstance(k);
+                              }}
+                              onGoToDashboard={() => setActivePilar("dashboard")}
+                              onDeployLanding={handleDeployLanding}
+                              deployingLanding={deployingLanding}
+                              landingUrl={landingUrl}
+                              customDomain={customDomain}
+                              onShowDns={() => setShowDnsModal(true)}
+                            />
+                          ) : (
+                            <div style={{ textAlign: "center", padding: "8rem 0", opacity: 0.4 }}>
+                              <History size={60} style={{ margin: "0 auto 2rem" }} />
+                              <h3 style={{ fontSize: "1.5rem", fontWeight: 950 }}>Historial Vacío</h3>
+                              <p>Completa tu primer desafío para verlo aquí.</p>
                             </div>
-                         </div>
-                       )}
+                          )}
+                        </motion.div>
+                      );
+                    }
 
-                       {currentView === "history" && (
-                         <div key="history" className="glass" style={{ padding: "3rem" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "4rem" }}><History size={32} color="var(--primary)" /><h3 style={{ fontSize: "2rem", fontWeight: 950 }}>Bitácora</h3></div>
-                            {history.map(event => (
-                              <div key={event.id} className="glass" style={{ padding: "2rem", marginBottom: "1.5rem", borderLeft: "4px solid var(--primary)" }}>
-                                 <h4 style={{ fontSize: "1.3rem", fontWeight: 950 }}>{event.action_title}</h4>
-                                 <p style={{ opacity: 0.7 }}>{event.impact_summary}</p>
-                              </div>
-                            ))}
-                         </div>
-                       )}
+                    if (desafioTab === 'futuros') {
+                      const futures = allChallenges.filter(c => c.status === 'locked');
+                      return (
+                        <motion.div key="futures-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                           <CategoryPath 
+                              category="clientes" 
+                              instances={futures} 
+                              onActivate={activateInstance}
+                              onUnlink={handleUnlink}
+                              onEnter={() => {}}
+                              onGoToDashboard={() => {}}
+                            />
+                        </motion.div>
+                      );
+                    }
+                    return null;
+                  })()}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
+
+          {activePilar === "dashboard" && (
+            <motion.div key="dashboard-pilar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+              <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+                {/* SUB-NAVEGACIÓN DASHBOARD */}
+                <div style={{ display: "flex", gap: "1.5rem", marginBottom: "3rem", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "1rem" }}>
+                  {[
+                    { id: "facil", name: "Fácil" },
+                    { id: "avanzado", name: "Avanzado" },
+                    { id: "clon", name: "Clon Claudio" },
+                  ].map((mode) => (
+                    <button
+                      key={mode.id}
+                      onClick={() => setDashboardMode(mode.id as any)}
+                      style={{
+                        padding: "0.5rem 1rem",
+                        color: dashboardMode === mode.id ? "#8b5cf6" : "var(--muted-foreground)",
+                        fontWeight: 800,
+                        fontSize: "0.9rem",
+                        position: "relative",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer"
+                      }}
+                    >
+                      {mode.name}
+                      {dashboardMode === mode.id && (
+                        <motion.div layoutId="dashboardUnderline" style={{ position: "absolute", bottom: -1, left: 0, right: 0, height: "2px", background: "#8b5cf6" }} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                <AnimatePresence mode="wait">
+                  {dashboardMode === "facil" && (
+                    <motion.div key="facil-view" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                       <div className="glass" style={{ padding: "4rem", marginBottom: "3rem", borderLeft: "8px solid var(--primary)", background: "linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, transparent 100%)", position: 'relative', overflow: 'hidden' }}>
+                          <div style={{ position: 'absolute', top: '-10%', right: '-5%', opacity: 0.03 }}><Bot size={400} /></div>
+                          
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+                             <div style={{ display: "flex", gap: "1rem", alignItems: "center", color: "var(--primary)" }}>
+                                <div style={{ padding: "0.5rem", background: "rgba(59, 130, 246, 0.1)", borderRadius: "0.5rem" }}><Zap size={24} /></div>
+                                <span style={{ fontWeight: 950, fontSize: "0.9rem", letterSpacing: "3px", textTransform: "uppercase" }}>Diagnóstico Estratégico AI</span>
+                             </div>
+                             <div className="glass" style={{ padding: "0.6rem 1.2rem", borderRadius: "2rem", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(0,0,0,0.2)" }}>
+                                <p style={{ fontSize: "0.7rem", fontWeight: 950, color: "var(--muted)", letterSpacing: "1px" }}>ESTRATEGIA: {campaigns.find(c => c.id.toString() === (campaignId || tempId)?.toString())?.name?.toUpperCase() || "CARGANDO..."}</p>
+                             </div>
+                          </div>
+
+                          <h1 style={{ fontSize: "3.5rem", fontWeight: 950, lineHeight: 1.1, marginBottom: "3rem", letterSpacing: "-1.5px", maxWidth: "900px" }}>
+                            {insight?.diagnosis || FALLBACK_INSIGHT.diagnosis}
+                          </h1>
+
+                          <div className="glass" style={{ padding: "3rem", background: "rgba(59, 130, 246, 0.05)", border: "1px solid rgba(59, 130, 246, 0.2)", borderRadius: "2rem", marginBottom: "3.5rem", position: 'relative', zIndex: 1 }}>
+                             <div style={{ display: "flex", gap: "2rem", alignItems: "flex-start" }}>
+                                <div className="glass" style={{ padding: "1rem", borderRadius: "1.2rem", background: "rgba(59, 130, 246, 0.15)", border: "1px solid rgba(59, 130, 246, 0.4)", boxShadow: "0 0 30px rgba(59, 130, 246, 0.1)" }}>
+                                   <Bot size={40} color="#3b82f6" />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                   <p style={{ fontSize: "0.8rem", fontWeight: 950, color: "#3b82f6", letterSpacing: "3px", textTransform: "uppercase", marginBottom: "1rem" }}>Veredicto de la Inteligencia</p>
+                                   <p style={{ fontSize: "1.4rem", fontWeight: 800, lineHeight: 1.6, color: "white" }}>
+                                      {battlePlan || insight?.battlePlan || FALLBACK_INSIGHT.battlePlan}
+                                   </p>
+                                </div>
+                             </div>
+                          </div>
+
+                          <div style={{ display: "flex", gap: "3rem", alignItems: "center" }}>
+                             <div className="glass" style={{ display: "inline-flex", padding: "1.2rem 2.5rem", background: "rgba(255,255,255,0.03)", alignItems: "center", gap: "1.25rem", borderRadius: "1.5rem" }}>
+                                <Rocket size={28} color="var(--primary)" />
+                                <div>
+                                   <p style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 800, textTransform: "uppercase" }}>Próxima Misión</p>
+                                   <p style={{ fontWeight: 900, fontSize: "1.3rem" }}>{insight?.nextAction || FALLBACK_INSIGHT.nextAction}</p>
+                                </div>
+                             </div>
+                             
+                             <div style={{ display: "flex", gap: "1rem" }}>
+                                <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 10px #10b981" }} />
+                                <p style={{ fontSize: "0.85rem", fontWeight: 800, opacity: 0.6 }}>SISTEMA OPERATIVO ACTIVO</p>
+                             </div>
+                          </div>
+                       </div>
+
+                       {/* RECOMENDACIONES ESTRATÉGICAS */}
+                       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2rem", marginBottom: "4rem" }}>
+                          {(recommendations.length > 0 || !insight) && recommendations.slice(0, 3).map((rec, i) => (
+                            <div key={i} className="glass" style={{ padding: "3rem", borderRadius: "2rem", borderTop: `6px solid ${rec.type === 'AHORRO' ? '#ef4444' : rec.type === 'CRECIMIENTO' ? '#3b82f6' : '#10b981'}`, background: "linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%)", transition: "transform 0.3s ease" }}>
+                               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                                  <span style={{ fontSize: '0.7rem', fontWeight: 950, padding: '0.4rem 1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '2rem', letterSpacing: "1.5px", color: rec.type === 'AHORRO' ? '#ef4444' : rec.type === 'CRECIMIENTO' ? '#3b82f6' : '#10b981' }}>{rec.type}</span>
+                                  {rec.type === 'AHORRO' ? <Activity size={20} color="#ef4444" /> : rec.type === 'CRECIMIENTO' ? <Zap size={20} color="#3b82f6" /> : <ShieldCheck size={20} color="#10b981" />}
+                               </div>
+                               <h4 style={{ fontWeight: 950, fontSize: "1.5rem", marginBottom: "1.2rem", lineHeight: 1.2 }}>{rec.title}</h4>
+                               <p style={{ fontSize: "1rem", opacity: 0.5, lineHeight: 1.7, fontWeight: 500 }}>{rec.description}</p>
+                            </div>
+                          ))}
+                       </div>
+
+                       <div style={{ display: "grid", gridTemplateColumns: "1fr 0.45fr", gap: "2.5rem" }}>
+                          {/* MAPA DE GANANCIAS */}
+                          <div className="glass" style={{ padding: "4rem", borderRadius: "2.5rem" }}>
+                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4rem" }}>
+                                <div>
+                                   <h3 style={{ fontSize: "2rem", fontWeight: 950, marginBottom: "0.5rem" }}>Mapa de Ganancias</h3>
+                                   <p style={{ opacity: 0.5, fontSize: "0.9rem", fontWeight: 600 }}>Visualización del flujo de conversión Bolton OS</p>
+                                </div>
+                                <div className="glass" style={{ padding: "0.75rem 1.5rem", borderRadius: "1rem", display: "flex", gap: "0.8rem", alignItems: "center" }}>
+                                   <MousePointer2 size={18} color="var(--primary)" />
+                                   <span style={{ fontSize: "0.85rem", fontWeight: 900 }}>EFICIENCIA 94%</span>
+                                </div>
+                             </div>
+                             <div style={{ display: "flex", flexDirection: "column", gap: "2.5rem" }}>
+                                {funnel.length > 0 ? funnel.map((step) => (
+                                   <div key={step.id}>
+                                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", fontSize: "0.95rem" }}>
+                                         <span style={{ fontWeight: 950, opacity: 0.4, letterSpacing: "2px" }}>{step.label.toUpperCase()}</span>
+                                         <b style={{ fontSize: "1.4rem", fontWeight: 950 }}>{step.value.toLocaleString()}</b>
+                                      </div>
+                                      <div style={{ height: "55px", background: "rgba(255,255,255,0.02)", borderRadius: "1.2rem", overflow: "hidden", border: "1px solid rgba(255,255,255,0.05)", padding: "4px" }}>
+                                         <motion.div 
+                                           initial={{ width: 0 }} 
+                                           animate={{ width: `${step.percentage}%` }} 
+                                           style={{ height: "100%", background: step.color, borderRadius: "0.9rem", opacity: 0.7, boxShadow: `0 0 30px ${step.color}40`, position: 'relative' }}
+                                         >
+                                            <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', fontSize: '0.75rem', fontWeight: 950, color: 'white' }}>{step.percentage}%</div>
+                                         </motion.div>
+                                      </div>
+                                   </div>
+                                )) : <div style={{ opacity: 0.3, textAlign: "center", padding: "4rem" }}>Sincronizando telemetría del embudo...</div>}
+                             </div>
+                          </div>
+
+                          {/* SCORE DE CRECIMIENTO */}
+                          <div className="glass" style={{ padding: "4rem", background: "radial-gradient(circle at top right, rgba(59, 130, 246, 0.15) 0%, transparent 100%)", textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center", borderRadius: "2.5rem" }}>
+                             <p style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 950, letterSpacing: "4px", marginBottom: "2rem", textTransform: "uppercase" }}>Índice de Dominio</p>
+                             <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto' }}>
+                                <motion.span 
+                                  initial={{ scale: 0.5, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1 }}
+                                  style={{ fontSize: "9rem", fontWeight: 950, color: "var(--primary)", lineHeight: 1, letterSpacing: "-5px", display: "block" }}
+                                >
+                                  {insight?.growthScore || 0}
+                                </motion.span>
+                                <div style={{ position: 'absolute', top: '10%', right: '-20%', background: 'var(--primary)', color: 'white', padding: '0.4rem 0.8rem', borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: 950 }}>AI</div>
+                             </div>
+                             <div style={{ marginTop: "3rem", display: "inline-block", padding: "0.8rem 2.5rem", borderRadius: "3rem", background: "rgba(16, 185, 129, 0.15)", border: "1px solid rgba(16, 185, 129, 0.3)", boxShadow: "0 0 40px rgba(16, 185, 129, 0.1)" }}>
+                                <p style={{ fontSize: "1.2rem", color: "#10b981", fontWeight: 950, letterSpacing: "1px" }}>{insight?.statusLabel || "ÓPTIMO"}</p>
+                             </div>
+                          </div>
+                       </div>
                     </motion.div>
                   )}
-                </>
-              )}
+
+                  {dashboardMode === "avanzado" && (
+                    <motion.div key="avanzado-view" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                       {/* MÉTRICAS TÉCNICAS PROFUNDAS */}
+                       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "1.5rem", marginBottom: "3.5rem" }}>
+                          {[
+                            { label: "ROAS (Target)", value: "5.2x", color: "#10b981", icon: DollarSign, trend: "+12%" },
+                            { label: "CPA (Efectivo)", value: "$3.850", color: "#3b82f6", icon: Target, trend: "-5%" },
+                            { label: "CTR Promedio", value: "3.4%", color: "var(--accent)", icon: MousePointer2, trend: "+0.8%" },
+                            { label: "Impresiones", value: metrics?.impressions.toLocaleString() || "0", color: "white", icon: Eye, trend: "Pico 14:00" },
+                            { label: "Leads Brutos", value: leads.length.toLocaleString(), color: "white", icon: Radio, trend: "L48h" }
+                          ].map((m, i) => (
+                            <div key={i} className="glass" style={{ padding: "2.5rem 1.5rem", textAlign: "center", borderTop: `5px solid ${m.color}`, background: "rgba(255,255,255,0.01)", borderRadius: "1.5rem" }}>
+                               <p style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 950, textTransform: "uppercase", marginBottom: "1.2rem", letterSpacing: "1.5px" }}>{m.label}</p>
+                               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
+                                  <m.icon size={18} color={m.color} />
+                                  <p style={{ fontSize: "2.2rem", fontWeight: 950, color: m.color, letterSpacing: "-1px" }}>{m.value}</p>
+                                </div>
+                                <p style={{ fontSize: "0.65rem", fontWeight: 900, color: m.trend.startsWith('+') ? '#10b981' : (m.trend.startsWith('-') ? '#3b82f6' : 'var(--muted)'), opacity: 0.6 }}>{m.trend}</p>
+                            </div>
+                          ))}
+                       </div>
+
+                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2.5rem", marginBottom: "4rem" }}>
+                          {/* LABORATORIO DE VARIANTES */}
+                          <div className="glass" style={{ padding: "3.5rem", borderRadius: "2.5rem" }}>
+                             <div style={{ display: "flex", alignItems: "center", gap: "1.25rem", marginBottom: "3.5rem" }}>
+                                <div className="glass" style={{ padding: '0.6rem', borderRadius: '0.8rem', color: 'var(--primary)' }}><Brain size={32} /></div>
+                                <div>
+                                   <h3 style={{ fontSize: "1.8rem", fontWeight: 950 }}>Laboratorio Creativo</h3>
+                                   <p style={{ fontSize: '0.85rem', opacity: 0.5, fontWeight: 700 }}>Rendimiento por Ángulo de Venta</p>
+                                </div>
+                             </div>
+                             <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+                                {variants.map((v, i) => (
+                                  <div key={i} className="glass" style={{ padding: "2.5rem", background: "linear-gradient(rgba(255,255,255,0.03), transparent)", borderRadius: "1.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.5rem", alignItems: "center" }}>
+                                        <div style={{ display: 'flex', gap: '0.8rem' }}>
+                                           <span style={{ fontSize: "0.7rem", fontWeight: 950, color: "var(--primary)", background: "rgba(59, 130, 246, 0.1)", padding: "0.4rem 0.8rem", borderRadius: "2rem", letterSpacing: '1px' }}>{v.angle.toUpperCase()}</span>
+                                           <span style={{ fontSize: "0.7rem", fontWeight: 950, color: "#10b981", background: "rgba(16, 185, 129, 0.1)", padding: "0.4rem 0.8rem", borderRadius: "2rem", letterSpacing: '1px' }}>WINNER</span>
+                                        </div>
+                                        <div style={{ display: "flex", gap: "1.5rem", fontSize: "0.8rem", fontWeight: 900 }}>
+                                           <div style={{ textAlign: 'right' }}><p style={{ opacity: 0.4, fontSize: '0.6rem' }}>CTR</p><p>{(Math.random() * 2 + 3).toFixed(1)}%</p></div>
+                                           <div style={{ textAlign: 'right' }}><p style={{ opacity: 0.4, fontSize: '0.6rem' }}>LEADS</p><p>{Math.floor(Math.random() * 15) + 5}</p></div>
+                                        </div>
+                                     </div>
+                                     <h4 style={{ fontSize: "1.4rem", fontWeight: 950, marginBottom: "1.2rem", color: "white" }}>{v.headline}</h4>
+                                     <p style={{ lineHeight: 1.6, opacity: 0.6, fontSize: "1rem", fontWeight: 500 }}>{v.description}</p>
+                                  </div>
+                                ))}
+                             </div>
+                          </div>
+
+                          {/* RADAR DE AUDIENCIA */}
+                          <div className="glass" style={{ padding: "3.5rem", borderRadius: "2.5rem" }}>
+                             <div style={{ display: "flex", alignItems: "center", gap: "1.25rem", marginBottom: "3.5rem" }}>
+                                <div className="glass" style={{ padding: '0.6rem', borderRadius: '0.8rem', color: 'var(--primary)' }}><Users size={32} /></div>
+                                <div>
+                                   <h3 style={{ fontSize: "1.8rem", fontWeight: 950 }}>Radar de Audiencia</h3>
+                                   <p style={{ fontSize: '0.85rem', opacity: 0.5, fontWeight: 700 }}>Prospección en Tiempo Real</p>
+                                </div>
+                             </div>
+                             <div className="glass" style={{ maxHeight: "650px", overflowY: "auto", padding: "1rem", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "1.5rem", background: 'rgba(0,0,0,0.1)' }}>
+                                {leads.length > 0 ? leads.map(lead => (
+                                  <div key={lead.id} className="lead-row" style={{ padding: "1.8rem", borderBottom: "1px solid rgba(255,255,255,0.03)", display: "flex", justifyContent: "space-between", alignItems: "center", transition: 'all 0.2s' }}>
+                                     <div>
+                                        <p style={{ fontWeight: 950, fontSize: "1.2rem", marginBottom: '0.25rem' }}>{lead.name}</p>
+                                        <p style={{ fontSize: "0.8rem", opacity: 0.4, fontWeight: 700, letterSpacing: '0.5px' }}>{lead.email.toUpperCase()}</p>
+                                     </div>
+                                     <div style={{ textAlign: "right" }}>
+                                        <div style={{ display: 'inline-block', padding: '0.4rem 1rem', borderRadius: '1rem', background: lead.score >= 70 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)', border: `1px solid ${lead.score >= 70 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)'}` }}>
+                                           <div style={{ fontSize: "0.85rem", fontWeight: 950, color: lead.score >= 70 ? "#10b981" : "#3b82f6" }}>🔥 {lead.score}%</div>
+                                        </div>
+                                        <div style={{ fontSize: "0.65rem", fontWeight: 900, textTransform: "uppercase", opacity: 0.3, marginTop: '0.6rem', letterSpacing: '1px' }}>{lead.trait || "Potential Client"}</div>
+                                     </div>
+                                  </div>
+                                )) : <div style={{ textAlign: "center", padding: "5rem", opacity: 0.3 }}><Radar size={50} className="animate-pulse" style={{ margin: '0 auto 1.5rem' }} /><p style={{ fontWeight: 800 }}>Escaneando señales de conversión...</p></div>}
+                             </div>
+                          </div>
+                       </div>
+
+                       {/* BITÁCORA TÉCNICA */}
+                       <div className="glass" style={{ padding: "4rem", borderRadius: "2.5rem" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "1.25rem", marginBottom: "4rem" }}>
+                             <div className="glass" style={{ padding: '0.6rem', borderRadius: '0.8rem', color: 'var(--primary)' }}><History size={32} /></div>
+                             <h3 style={{ fontSize: "2rem", fontWeight: 950 }}>Bitácora de Optimización Bolton</h3>
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "2rem" }}>
+                             {history.map(event => (
+                               <div key={event.id} className="glass" style={{ padding: "2.5rem", borderLeft: "5px solid var(--primary)", background: "rgba(255,255,255,0.02)", borderRadius: "1.5rem", position: 'relative' }}>
+                                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.2rem", alignItems: 'center' }}>
+                                     <h4 style={{ fontSize: "1.4rem", fontWeight: 950, letterSpacing: '-0.5px' }}>{event.action_title}</h4>
+                                     <span style={{ fontSize: "0.75rem", opacity: 0.3, fontWeight: 900 }}>{new Date(event.timestamp).toLocaleDateString()}</span>
+                                  </div>
+                                  <p style={{ opacity: 0.6, fontSize: "1rem", lineHeight: 1.6, fontWeight: 500 }}>{event.impact_summary}</p>
+                                  <div style={{ position: 'absolute', right: '1.5rem', bottom: '1.5rem', opacity: 0.1 }}><ShieldCheck size={40} /></div>
+                               </div>
+                             ))}
+                          </div>
+                       </div>
+                    </motion.div>
+                  )}
+
+                  {dashboardMode === "clon" && (
+                    <motion.div key="clon-view" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
+                       <ClaudioClone 
+                          campaignData={{
+                            id: (campaignId || tempId)?.toString() || "Sin Campaña",
+                            metrics: metrics || FALLBACK_METRICS,
+                            insight: insight || FALLBACK_INSIGHT,
+                            funnel: funnel
+                          }}
+                       />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
+
+          {activePilar === "asistentes" && (
+            <motion.div key="asistentes-pilar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ maxWidth: "1400px", margin: "0 auto", paddingBottom: "10rem" }}>
+               <AssistantsView />
+            </motion.div>
+          )}
+
+          {activePilar === "laboratorio" && (
+            <motion.div key="lab-pilar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '10rem' }}>
+               <InnovationLab />
+            </motion.div>
+          )}
+
+          {activePilar === "aprende" && (
+            <motion.div key="aprende-pilar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '10rem' }}>
+               <AcademyView />
             </motion.div>
           )}
         </AnimatePresence>
@@ -1266,7 +1533,7 @@ export default function Dashboard() {
         <LandingFormModal 
           initialData={preLandingData}
           onClose={() => setShowLandingForm(false)}
-          onConfirm={(data) => handleDeployLanding(data)}
+          onConfirm={(data: any) => handleDeployLanding(data)}
         />
       )}
 

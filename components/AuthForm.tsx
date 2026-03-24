@@ -6,8 +6,16 @@ import { ArrowLeft, Mail, Lock, User, LogIn, UserPlus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
-export default function AuthForm({ onBack }: { onBack: () => void }) {
-  const [isLogin, setIsLogin] = useState(true);
+export default function AuthForm({ 
+  onBack, 
+  initialMode = "login",
+  backPath = "/" 
+}: { 
+  onBack?: () => void, 
+  initialMode?: "login" | "signup",
+  backPath?: string
+}) {
+  const [isLogin, setIsLogin] = useState(initialMode === "login");
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,7 +50,7 @@ export default function AuthForm({ onBack }: { onBack: () => void }) {
       className="glass"
       style={{ width: "100%", maxWidth: "450px", padding: "3rem 2.5rem", position: "relative" }}
     >
-      <button onClick={onBack} style={{ position: "absolute", top: "1.5rem", left: "1.5rem", color: "var(--muted-foreground)", display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.875rem" }}>
+      <button onClick={() => onBack ? onBack() : router.push(backPath)} style={{ position: "absolute", top: "1.5rem", left: "1.5rem", color: "var(--muted-foreground)", display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.875rem" }}>
         <ArrowLeft size={16} /> Volver
       </button>
 
