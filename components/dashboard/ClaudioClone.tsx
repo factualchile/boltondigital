@@ -88,9 +88,9 @@ export function ClaudioClone({ campaignData, userId }: ClaudioCloneProps) {
   };
 
   return (
-    <div className="glass" style={{ display: 'flex', flexDirection: 'column', height: '800px', maxWidth: '1000px', margin: '0 auto', borderRadius: '3rem', border: '1px solid rgba(59, 130, 246, 0.3)', overflow: 'hidden', background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(40px)' }}>
+    <div className="glass dashboard-main" style={{ display: 'flex', flexDirection: 'column', height: '800px', maxHeight: '85vh', maxWidth: '1000px', margin: '0 auto', borderRadius: '3rem', border: '1px solid rgba(59, 130, 246, 0.3)', overflow: 'hidden', background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(40px)' }}>
       {/* HEADER */}
-      <div style={{ padding: '2rem 3rem', background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.1), transparent)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="dashboard-header" style={{ padding: '2rem 3rem', background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.1), transparent)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <div className="glass" style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 30px rgba(59, 130, 246, 0.4)' }}>
             <Sparkles size={32} color="white" />

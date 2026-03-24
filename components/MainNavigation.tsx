@@ -20,7 +20,7 @@ const PILARS = [
 
 export default function MainNavigation({ activePilar, onChange }: MainNavigationProps) {
   return (
-    <div style={{ 
+    <div className="nav-pilar-container" style={{ 
       display: "flex", 
       justifyContent: "center", 
       marginBottom: "3rem", 
@@ -29,6 +29,7 @@ export default function MainNavigation({ activePilar, onChange }: MainNavigation
       borderRadius: "1.5rem",
       border: "1px solid rgba(255, 255, 255, 0.05)",
       width: "fit-content",
+      maxWidth: "100%",
       margin: "0 auto 4rem",
       backdropFilter: "blur(10px)",
       WebkitBackdropFilter: "blur(10px)",

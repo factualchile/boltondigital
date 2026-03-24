@@ -74,7 +74,7 @@ export function AcademyView() {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   return (
-    <div style={{ padding: "0 2rem" }}>
+    <div className="dashboard-main" style={{ padding: "0 2rem" }}>
       <AnimatePresence mode="wait">
         {!selectedCourse ? (
           <motion.div key="catalog" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -83,7 +83,7 @@ export function AcademyView() {
               <p style={{ fontSize: "1.3rem", color: "var(--muted-foreground)", maxWidth: "800px", margin: "0 auto" }}>Domina las artes del marketing digital y el retorno de inversión. De cero a experto con la metodología Bolton.</p>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "2.5rem", maxWidth: "1200px", margin: "0 auto" }}>
+            <div className="grid-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "2.5rem", maxWidth: "1200px", margin: "0 auto" }}>
               {COURSES.map((course) => (
                 <motion.div 
                   key={course.id}
@@ -131,7 +131,7 @@ export function AcademyView() {
               ))}
             </div>
 
-            <div className="glass" style={{ marginTop: "6rem", padding: "4rem", borderRadius: "3rem", display: "flex", gap: "3rem", alignItems: "center", background: "linear-gradient(135deg, rgba(88, 28, 135, 0.1) 0%, transparent 100%)" }}>
+            <div className="glass grid-responsive" style={{ marginTop: "6rem", padding: "4rem", borderRadius: "3rem", display: "flex", gap: "3rem", alignItems: "center", background: "linear-gradient(135deg, rgba(88, 28, 135, 0.1) 0%, transparent 100%)" }}>
                <div className="glass" style={{ width: "100px", height: "100px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--primary)", boxShadow: "0 0 40px rgba(59, 130, 246, 0.3)" }}>
                   <Trophy size={50} color="white" />
                </div>
@@ -151,7 +151,7 @@ export function AcademyView() {
               <ArrowRight size={20} style={{ transform: 'rotate(180deg)' }} /> VOLVER A LA ACADEMIA
             </button>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 0.35fr", gap: "3rem" }}>
+            <div className="grid-responsive" style={{ display: "grid", gridTemplateColumns: "1fr 0.35fr", gap: "3rem" }}>
               {/* VIDEO PLAYER AREA */}
               <div>
                 <div className="glass" style={{ width: '100%', aspectRatio: '16/9', borderRadius: '3rem', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', position: 'relative', background: 'black', marginBottom: '3rem' }}>

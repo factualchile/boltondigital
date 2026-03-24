@@ -62,13 +62,13 @@ export function AssistantsView() {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   return (
-    <div style={{ padding: "0 2rem" }}>
+    <div className="dashboard-main" style={{ padding: "0 2rem" }}>
       <div style={{ marginBottom: "5rem", textAlign: "center" }}>
         <h2 style={{ fontSize: "3.5rem", fontWeight: 1000, marginBottom: "1.5rem", letterSpacing: "-2px" }}>Marketplace de Talentos AI</h2>
         <p style={{ fontSize: "1.3rem", color: "var(--muted-foreground)", maxWidth: "800px", margin: "0 auto" }}>Habilita agentes especializados para potenciar cada etapa de tu ecosistema comercial. Tu propio equipo de élite digital.</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "2.5rem", maxWidth: "1200px", margin: "0 auto" }}>
+      <div className="grid-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "2.5rem", maxWidth: "1200px", margin: "0 auto" }}>
         {ASSISTANTS.map((as) => (
           <motion.div 
             key={as.id}
@@ -131,7 +131,7 @@ export function AssistantsView() {
         ))}
       </div>
 
-      <div className="glass" style={{ marginTop: "6rem", padding: "4rem", borderRadius: "3rem", display: "flex", justifyContent: "space-between", alignItems: "center", background: "linear-gradient(90deg, rgba(59, 130, 246, 0.05), transparent)" }}>
+      <div className="glass grid-responsive" style={{ marginTop: "6rem", padding: "4rem", borderRadius: "3rem", display: "flex", justifyContent: "space-between", alignItems: "center", background: "linear-gradient(90deg, rgba(59, 130, 246, 0.05), transparent)" }}>
         <div>
            <h4 style={{ fontSize: "1.5rem", fontWeight: 950, marginBottom: "0.5rem" }}>¿Buscas un Agente a medida?</h4>
            <p style={{ opacity: 0.6, fontWeight: 600 }}>Cualquier habilidad de Bolton puede ser encapsulada en un asistente personal.</p>

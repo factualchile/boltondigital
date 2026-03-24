@@ -65,7 +65,7 @@ export function InnovationLab() {
   };
 
   return (
-    <div style={{ padding: "0 2rem" }}>
+    <div className="dashboard-main" style={{ padding: "0 2rem" }}>
       <div style={{ marginBottom: "5rem", textAlign: "center" }}>
         <div style={{ display: 'inline-flex', padding: '1rem', borderRadius: '50%', background: 'rgba(245, 158, 11, 0.1)', marginBottom: '1.5rem', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
            <FlaskConical size={40} color="#f59e0b" className="animate-pulse" />
@@ -74,7 +74,7 @@ export function InnovationLab() {
         <p style={{ fontSize: "1.3rem", color: "var(--muted-foreground)", maxWidth: "800px", margin: "0 auto" }}>Prueba las herramientas de IA más potentes del ecosistema Bolton antes de su lanzamiento global. El futuro del ROI se escribe aquí.</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2rem", maxWidth: "1200px", margin: "0 auto" }}>
+      <div className="grid-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2rem", maxWidth: "1200px", margin: "0 auto" }}>
         {LAB_TOOLS.map((tool) => (
           <motion.div 
             key={tool.id}
@@ -140,7 +140,7 @@ export function InnovationLab() {
         ))}
       </div>
 
-      <div className="glass" style={{ marginTop: '6rem', padding: '5rem', borderRadius: '4rem', display: 'flex', position: 'relative', overflow: 'hidden', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+      <div className="glass dashboard-main" style={{ marginTop: '6rem', padding: '5rem', borderRadius: '4rem', display: 'flex', position: 'relative', overflow: 'hidden', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'radial-gradient(circle at center, rgba(59, 130, 246, 0.08) 0%, transparent 100%)' }} />
          
          <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'center' }}>

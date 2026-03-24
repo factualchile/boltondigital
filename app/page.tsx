@@ -37,7 +37,7 @@ export default function LandingPage() {
   }
 
   return (
-    <main className="container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "1.5rem 1.5rem", position: "relative" }}>
+    <main className="container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "6rem 1.5rem 4rem", position: "relative" }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

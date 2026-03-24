@@ -38,11 +38,13 @@ export function ProfileView({ user, onClose, onLogout }: ProfileViewProps) {
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
+      className="profile-sidebar glass"
       style={{ 
         position: 'fixed', top: 0, right: 0, bottom: 0, width: '450px', 
+        maxWidth: '100%',
         background: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(40px)',
         borderLeft: '1px solid rgba(255,255,255,0.1)', zIndex: 2000,
-        padding: '4rem', display: 'flex', flexDirection: 'column'
+        padding: '2rem', display: 'flex', flexDirection: 'column'
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4rem' }}>

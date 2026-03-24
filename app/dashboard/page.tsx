@@ -188,6 +188,15 @@ export default function Dashboard() {
           setLoadingSettings(false);
           clearTimeout(rescueTimer);
 
+          // DISPARADOR DE BIENVENIDA (Fase 10)
+          if (session.user.email_confirmed_at) {
+            fetch('/api/notify/welcome', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: session.user.email, userId: session.user.id })
+            }).catch(e => console.error("Welcome trigger failed:", e));
+          }
+
           const res = await secureFetch(`/api/user/settings?userId=${session.user.id}`);
           const data = await res.json();
           if (data.success) {
@@ -864,7 +873,7 @@ export default function Dashboard() {
   return (
     <div className="container" style={{ paddingTop: "2rem", minHeight: "100vh" }}>
       {currentMacro !== "portal" && (
-        <header className="glass" style={{ padding: "1rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "3rem", borderRadius: "1.2rem", background: "rgba(15, 23, 42, 0.8)" }}>
+        <header className="glass dashboard-header" style={{ padding: "1rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "3rem", borderRadius: "1.2rem", background: "rgba(15, 23, 42, 0.8)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <button 
               onClick={() => { setCurrentMacro("portal"); setCurrentInstance(null); }} 
@@ -932,7 +941,7 @@ export default function Dashboard() {
         </header>
       )}
 
-      <main style={{ padding: "0 2rem 4rem" }}>
+      <main className="dashboard-main" style={{ padding: "0 2rem 4rem" }}>
         {/* NAVEGACIÓN MAESTRA BOLTON 3.0 */}
         <MainNavigation activePilar={activePilar} onChange={setActivePilar} />
 
@@ -941,7 +950,7 @@ export default function Dashboard() {
             <motion.div key="desafios-pilar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
               <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
                 {/* CABECERA DE VINCULACIONES (Requerido por Claudio) */}
-                <div className="glass" style={{ padding: "1.5rem 2rem", marginBottom: "2.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", borderLeft: "4px solid #3b82f6" }}>
+                <div className="glass grid-responsive" style={{ padding: "1.5rem 2rem", marginBottom: "2.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", borderLeft: "4px solid #3b82f6" }}>
                   <div style={{ display: "flex", gap: "2rem" }}>
                     <div>
                       <p style={{ fontSize: "0.6rem", color: "var(--muted)", fontWeight: 900, textTransform: "uppercase", marginBottom: "0.25rem" }}>GOOGLE ADS ID</p>
@@ -963,7 +972,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* SUB-NAVEGACIÓN DESAFÍOS */}
-                <div style={{ display: "flex", gap: "2.5rem", marginBottom: "3rem", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                <div className="nav-pilar-container" style={{ display: "flex", gap: "2.5rem", marginBottom: "3rem", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                   {[
                     { id: "actual", name: "En Curso" },
                     { id: "completados", name: "Completados" },
@@ -1032,7 +1041,7 @@ export default function Dashboard() {
 
                           {/* SECCIÓN TUTORIAL PREMIUM */}
                           {tutorial && (
-                            <div className="glass" style={{ maxWidth: "850px", margin: "4rem auto", padding: "0.5rem", borderRadius: "2.5rem", overflow: "hidden", border: "1px solid rgba(59, 130, 246, 0.2)" }}>
+                            <div className="glass dashboard-main" style={{ maxWidth: "850px", margin: "4rem auto", padding: "0.5rem", borderRadius: "2.5rem", overflow: "hidden", border: "1px solid rgba(59, 130, 246, 0.2)" }}>
                                <div style={{ padding: "3rem", background: "linear-gradient(180deg, rgba(59, 130, 246, 0.03) 0%, transparent 100%)" }}>
                                   <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2.5rem" }}>
                                     <div className="glass" style={{ padding: "0.75rem", borderRadius: "1rem", color: "var(--primary)" }}>

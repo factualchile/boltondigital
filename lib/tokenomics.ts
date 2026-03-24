@@ -4,6 +4,7 @@ export interface TokenUsage {
   tokens_used: number;
   monthly_limit: number;
   last_reset: string;
+  welcome_sent: boolean;
 }
 
 const DEFAULT_LIMIT = 500000;
@@ -13,7 +14,7 @@ export async function getUserTokens(userId: string): Promise<TokenUsage> {
 
   let { data, error } = await supabaseAdmin
     .from('user_tokens')
-    .select('tokens_used, monthly_limit, last_reset')
+    .select('tokens_used, monthly_limit, last_reset, welcome_sent')
     .eq('user_id', userId)
     .single();
 
@@ -21,7 +22,7 @@ export async function getUserTokens(userId: string): Promise<TokenUsage> {
     // Si no existe, lo creamos
     const { data: newData, error: createError } = await supabaseAdmin
       .from('user_tokens')
-      .insert({ user_id: userId, tokens_used: 0, monthly_limit: DEFAULT_LIMIT, last_reset: new Date().toISOString() })
+      .insert({ user_id: userId, tokens_used: 0, monthly_limit: DEFAULT_LIMIT, last_reset: new Date().toISOString(), welcome_sent: false })
       .select()
       .single();
     

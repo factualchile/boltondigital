@@ -48,7 +48,7 @@ export default function AuthForm({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       className="glass"
-      style={{ width: "100%", maxWidth: "450px", padding: "3rem 2.5rem", position: "relative" }}
+      style={{ width: "100%", maxWidth: "450px", padding: "3rem 2rem", position: "relative" }}
     >
       <button onClick={() => onBack ? onBack() : router.push(backPath)} style={{ position: "absolute", top: "1.5rem", left: "1.5rem", color: "var(--muted-foreground)", display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.875rem" }}>
         <ArrowLeft size={16} /> Volver
