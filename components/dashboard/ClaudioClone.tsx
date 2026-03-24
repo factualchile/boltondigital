@@ -11,6 +11,7 @@ interface Message {
 }
 
 interface ClaudioCloneProps {
+  userId: string;
   campaignData: {
     id: string;
     metrics: any;
@@ -26,7 +27,7 @@ const QUICK_ACTIONS = [
   "Optimiza mi presupuesto diario"
 ];
 
-export function ClaudioClone({ campaignData }: ClaudioCloneProps) {
+export function ClaudioClone({ campaignData, userId }: ClaudioCloneProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -58,6 +59,7 @@ export function ClaudioClone({ campaignData }: ClaudioCloneProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: text,
+          userId: userId,
           campaignContext: {
             id: campaignData.id,
             metrics: campaignData.metrics,

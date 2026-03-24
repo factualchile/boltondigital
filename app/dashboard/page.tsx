@@ -12,9 +12,9 @@ import CampaignCreationModal from "@/components/CampaignCreationModal";
 import LandingFormModal from "@/components/LandingFormModal";
 import MainNavigation, { Pilar } from "@/components/MainNavigation";
 import { ClaudioClone } from "@/components/dashboard/ClaudioClone";
-import { AssistantsView } from "@/components/dashboard/AssistantsView";
 import { AcademyView } from "@/components/dashboard/AcademyView";
 import { InnovationLab } from "@/components/dashboard/InnovationLab";
+import { ProfileView } from "@/components/dashboard/ProfileView";
 
 type View = "overview" | "crm" | "creative" | "history";
 type MacroArea = "portal" | "clientes" | "control" | "desarrollo";
@@ -89,6 +89,7 @@ export default function Dashboard() {
   const [activePilar, setActivePilar] = useState<Pilar>("desafios");
   const [dashboardMode, setDashboardMode] = useState<"facil" | "avanzado" | "clon">("facil");
   const [desafioTab, setDesafioTab] = useState<"actual" | "completados" | "futuros">("actual");
+  const [showProfile, setShowProfile] = useState(false);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ message, type });
@@ -250,6 +251,11 @@ export default function Dashboard() {
     };
     init();
   }, [router]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   const fetchProgress = async (userId?: string) => {
     const targetId = userId || user?.id;
@@ -913,8 +919,14 @@ export default function Dashboard() {
             </div>
           )}
 
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.2rem", visibility: "hidden" }}>
-             <button className="btn-secondary" style={{ padding: "0.6rem 1.2rem", fontSize: "0.8rem", height: "auto", display: "flex", alignItems: "center", gap: "0.5rem" }}>Salir</button>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+             <button 
+              onClick={() => setShowProfile(true)}
+              className="glass" 
+              style={{ width: "45px", height: "45px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", cursor: "pointer" }}
+             >
+                <UserIcon size={20} />
+             </button>
           </div>
         </header>
       )}
@@ -1378,6 +1390,7 @@ export default function Dashboard() {
                   {dashboardMode === "clon" && (
                     <motion.div key="clon-view" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
                        <ClaudioClone 
+                          userId={user?.id}
                           campaignData={{
                             id: (campaignId || tempId)?.toString() || "Sin Campaña",
                             metrics: metrics || FALLBACK_METRICS,
@@ -1557,6 +1570,15 @@ export default function Dashboard() {
           {toast.message}
         </motion.div>
       )}
+      <AnimatePresence>
+        {showProfile && (
+          <ProfileView 
+            user={user}
+            onClose={() => setShowProfile(false)}
+            onLogout={handleLogout}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

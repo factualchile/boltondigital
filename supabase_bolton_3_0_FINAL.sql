@@ -49,3 +49,22 @@ CREATE TABLE IF NOT EXISTS assistant_suggestions (
     suggestion TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+-- 5. TOKENOMICS (Gestión de cuotas de IA)
+CREATE TABLE IF NOT EXISTS user_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES auth.users(id) UNIQUE,
+    tokens_used INTEGER DEFAULT 0,
+    monthly_limit INTEGER DEFAULT 500000,
+    last_reset TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+-- FUNCIÓN PARA INCREMENTO ATÓMICO DE TOKENS
+CREATE OR REPLACE FUNCTION increment_tokens(u_id UUID, amount INTEGER)
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO user_tokens (user_id, tokens_used)
+    VALUES (u_id, amount)
+    ON CONFLICT (user_id)
+    DO UPDATE SET tokens_used = user_tokens.tokens_used + amount;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
