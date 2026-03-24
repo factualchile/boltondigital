@@ -12,6 +12,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email y UserId son requeridos" }, { status: 400 });
     }
 
+    if (!supabaseAdmin) {
+      throw new Error("Supabase Admin client not initialized");
+    }
+
     // 1. Verificar si ya se envió el correo de bienvenida para evitar duplicados
     const { data: tokenData, error: tokenError } = await supabaseAdmin
       .from('user_tokens')

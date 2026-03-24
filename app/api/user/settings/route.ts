@@ -40,7 +40,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { userId, googleAdsId, campaignSurvey } = await req.json();
+    const body = await req.json();
+    const { userId, googleAdsId, campaignSurvey, landingUrl, vercelProjectId, customDomain } = body;
 
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
@@ -50,13 +51,12 @@ export async function POST(req: Request) {
     const isOwner = await verifyUser(req, userId);
     if (!isOwner) return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
 
-    const body = await req.json();
     const updateData: any = { user_id: userId, updated_at: new Date().toISOString() };
     if (googleAdsId) updateData.google_ads_id = googleAdsId;
     if (campaignSurvey) updateData.campaign_survey = campaignSurvey;
-    if (body.landingUrl) updateData.landing_url = body.landingUrl;
-    if (body.vercelProjectId) updateData.vercel_project_id = body.vercelProjectId;
-    if (body.customDomain) updateData.custom_domain = body.customDomain;
+    if (landingUrl) updateData.landing_url = landingUrl;
+    if (vercelProjectId) updateData.vercel_project_id = vercelProjectId;
+    if (customDomain) updateData.custom_domain = customDomain;
 
     const client = supabaseAdmin || supabase;
     const { data, error } = await client
