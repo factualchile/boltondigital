@@ -35,6 +35,14 @@ const FALLBACK_RECOMMENDATIONS = [
 ];
 
 const CHALLENGES_DATA: Record<string, { video: string, tutorialText: string, links: { label: string, url: string }[] }> = {
+  crear_cuenta: {
+    video: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Placeholder
+    tutorialText: "El primer paso para dominar el mercado es tener tu propia infraestructura. Crea tu cuenta de Google Ads en modo experto para que Bolton pueda conectarse y empezar a trabajar por ti.",
+    links: [
+      { label: "Crear cuenta Google Ads", url: "https://ads.google.com" },
+      { label: "Guía de Registro Paso a Paso", url: "#" }
+    ]
+  },
   motor: {
     video: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Placeholder
     tutorialText: "El Motor Comercial es el núcleo de Bolton. Al vincular tu ID de Google Ads (10 dígitos), permites que nuestra IA acceda a la telemetría en tiempo real para optimizar pujas y presupuestos.",
@@ -607,6 +615,30 @@ export default function Dashboard() {
     }
   };
 
+  const handleManualComplete = async (instanceKey: string) => {
+    if (!user) return;
+    setStatus("fetching");
+    try {
+      const res = await secureFetch("/api/user/progress", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ userId: user.id, category: 'clientes', instanceKey, isCompleted: true }) 
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast("¡Hito completado!", "success");
+        await fetchProgress();
+        setSuccessMessage({ title: "¡Paso Superado!", body: "Has habilitado la infraestructura necesaria para Bolton." });
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 5000);
+      }
+    } catch (e) {
+      showToast("Error al sincronizar progreso estratégico.", "error");
+    } finally {
+      setStatus("dashboard");
+    }
+  };
+
   const handleDeployLanding = async (formData?: any) => {
     if (!user || deployingLanding) return;
 
@@ -802,10 +834,16 @@ export default function Dashboard() {
     if (category.toLowerCase() === 'clientes') {
       return [
         { 
+          key: 'crear_cuenta', 
+          name: '1. Crea tu cuenta Motor', 
+          description: 'Crea tu cuenta de Google Ads para habilitar la infraestructura Bolton.', 
+          status: isComp('crear_cuenta') ? 'completed' : 'unlocked' as any
+        },
+        { 
           key: 'motor', 
-          name: 'Motor', 
+          name: '2. Vincula Motor', 
           description: 'Vincula tu cuenta de Google Ads para activar el cerebro comercial.', 
-          status: (isComp('motor') || !!customerId) ? 'completed' : 'unlocked' as any,
+          status: isComp('crear_cuenta') ? ((isComp('motor') || !!customerId) ? 'completed' : 'unlocked') : 'locked' as any,
           value: customerId || undefined
         },
         { 
@@ -1068,7 +1106,7 @@ export default function Dashboard() {
                                       <p style={{ fontSize: "1.1rem", lineHeight: 1.6, opacity: 0.7, marginBottom: "2.5rem", fontWeight: 500 }}>
                                         {tutorial.tutorialText}
                                       </p>
-                                      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+                                      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "center" }}>
                                         {tutorial.links.map((link, idx) => (
                                           <a 
                                             key={idx} 
@@ -1080,6 +1118,15 @@ export default function Dashboard() {
                                             {link.label.toUpperCase()} <ExternalLink size={14} />
                                           </a>
                                         ))}
+                                        {currentInstance === 'crear_cuenta' && !progress.find(p => p.instance_key === 'crear_cuenta' && p.is_completed) && (
+                                          <button 
+                                            onClick={() => handleManualComplete('crear_cuenta')}
+                                            className="btn-primary" 
+                                            style={{ padding: "1rem 2rem", fontSize: "0.8rem", fontWeight: 950, borderRadius: "1rem", display: "flex", alignItems: "center", gap: "0.8rem", background: "#10b981", border: "none", color: "white" }}
+                                          >
+                                             MARCAR COMO COMPLETADO <Check size={18} />
+                                          </button>
+                                        )}
                                       </div>
                                     </div>
                                   </div>
