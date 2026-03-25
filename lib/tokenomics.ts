@@ -19,10 +19,16 @@ export async function getUserTokens(userId: string): Promise<TokenUsage> {
     .single();
 
   if (error || !data) {
-    // Si no existe, lo creamos
+    // Si no existe, lo creamos con valores seguros
     const { data: newData, error: createError } = await supabaseAdmin
       .from('user_tokens')
-      .insert({ user_id: userId, tokens_used: 0, monthly_limit: DEFAULT_LIMIT, last_reset: new Date().toISOString(), welcome_sent: false })
+      .insert({ 
+        user_id: userId, 
+        tokens_used: 0, 
+        monthly_limit: DEFAULT_LIMIT, 
+        last_reset: new Date().toISOString(), 
+        welcome_sent: false 
+      })
       .select()
       .single();
     
@@ -30,8 +36,16 @@ export async function getUserTokens(userId: string): Promise<TokenUsage> {
     return newData as TokenUsage;
   }
 
+  // Asegurar que no regresen nulos a la UI
+  const usage: TokenUsage = {
+    tokens_used: data.tokens_used ?? 0,
+    monthly_limit: data.monthly_limit ?? DEFAULT_LIMIT,
+    last_reset: data.last_reset ?? new Date().toISOString(),
+    welcome_sent: !!data.welcome_sent
+  };
+
   // Verificar si hay que resetear (nuevo mes)
-  const lastReset = new Date(data.last_reset);
+  const lastReset = new Date(usage.last_reset);
   const now = new Date();
   
   if (lastReset.getMonth() !== now.getMonth() || lastReset.getFullYear() !== now.getFullYear()) {
@@ -46,7 +60,7 @@ export async function getUserTokens(userId: string): Promise<TokenUsage> {
     return resetData as TokenUsage;
   }
 
-  return data as TokenUsage;
+  return usage;
 }
 
 export async function canConsume(userId: string): Promise<boolean> {
@@ -69,7 +83,7 @@ export async function consumeTokens(userId: string, amount: number) {
     });
 
     if (error) {
-       // Fallback si la RPC no existe aún
+       console.warn("RPC increment_tokens falló o no existe. Usando fallback no-atómico.", error);
        const { data } = await supabaseAdmin
         .from('user_tokens')
         .select('tokens_used')

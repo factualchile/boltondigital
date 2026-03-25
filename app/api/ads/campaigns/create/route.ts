@@ -3,6 +3,7 @@ import { supabase, supabaseAdmin } from "@/lib/supabase";
 import { GoogleAdsApi, enums } from "google-ads-api";
 import OpenAI from "openai";
 import { verifyUser } from "@/lib/auth-server";
+import { canConsume, consumeTokens } from "@/lib/tokenomics";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const client = new GoogleAdsApi({
@@ -39,6 +40,12 @@ export async function POST(req: Request) {
 
       console.log(`[AdsEngineer] Iniciando aprovisionamiento para ${surveyData.profession}`);
 
+      // 0. VERIFICACIÓN DE TOKENS
+      const hasTokens = await canConsume(userId);
+      if (!hasTokens) {
+        return NextResponse.json({ error: "Límite de tokens alcanzado. Contacta a soporte para expandir tu plan." }, { status: 403 });
+      }
+
       // 1. ANALÍTICA DE IA (ESTRATEGIA DE PRECISIÓN: KEYWORD + COPIES)
       const aiResponse = await openai.chat.completions.create({
         model: "gpt-4-turbo-preview",
@@ -59,6 +66,10 @@ export async function POST(req: Request) {
       });
 
       const copy = JSON.parse(aiResponse.choices[0].message?.content || "{}");
+      
+      // CONSUMO DE TOKENS IA
+      const totalTokens = aiResponse.usage?.total_tokens || 0;
+      await consumeTokens(userId, totalTokens);
       // LIMPIEZA DE POLÍTICAS: Google rechaza símbolos como "" [] ! en las keywords de concordancia de frase
       const rawKeyword = copy.keyword || `${surveyData.profession} ${surveyData.commune || 'Online'}`;
       const finalKeyword = rawKeyword.replace(/["'\[\]!@#$%^&*()_=+]/g, "").trim();

@@ -30,7 +30,9 @@ export function ProfileView({ user, onClose, onLogout }: ProfileViewProps) {
     fetchUsage();
   }, [user]);
 
-  const percent = usage ? Math.min(100, (usage.tokens_used / usage.monthly_limit) * 100) : 0;
+  const percent = usage && usage.monthly_limit > 0 
+    ? Math.min(100, (usage.tokens_used / usage.monthly_limit) * 100) 
+    : 0;
   const isLimitReached = percent >= 100;
 
   return (

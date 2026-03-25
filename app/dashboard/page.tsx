@@ -622,14 +622,14 @@ export default function Dashboard() {
     }
   };
 
-  const handleManualComplete = async (instanceKey: string) => {
+  const handleManualComplete = async (instanceKey: string, category: string = 'clientes') => {
     if (!user) return;
     setStatus("fetching");
     try {
       const res = await secureFetch("/api/user/progress", { 
         method: "POST", 
         headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ userId: user.id, category: 'clientes', instanceKey, isCompleted: true }) 
+        body: JSON.stringify({ userId: user.id, category, instanceKey, isCompleted: true }) 
       });
       const data = await res.json();
       if (data.success) {
@@ -1119,11 +1119,11 @@ export default function Dashboard() {
                                             {link.label.toUpperCase()} <ExternalLink size={14} />
                                           </a>
                                         ))}
-                                        {currentInstance === 'crear_cuenta' && !progress.find(p => p.instance_key === 'crear_cuenta' && p.is_completed) && (
+                                        {actual && actual.status !== 'completed' && actual.status !== 'locked' && (
                                           <button 
-                                            onClick={() => handleManualComplete('crear_cuenta')}
-                                            className="btn-primary" 
-                                            style={{ padding: "1rem 2rem", fontSize: "0.8rem", fontWeight: 950, borderRadius: "1rem", display: "flex", alignItems: "center", gap: "0.8rem", background: "#10b981", border: "none", color: "white" }}
+                                            onClick={() => handleManualComplete(actual.key, 'clientes')}
+                                            className="btn-primary hover-glow" 
+                                            style={{ padding: "1.2rem 2.5rem", fontSize: "0.85rem", fontWeight: 950, borderRadius: "1.5rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", background: "#10b981", border: "none", color: "white", boxShadow: "0 10px 30px rgba(16, 185, 129, 0.3)", transition: "all 0.3s ease" }}
                                           >
                                              MARCAR COMO COMPLETADO <Check size={18} />
                                           </button>
