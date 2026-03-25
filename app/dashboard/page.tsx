@@ -911,69 +911,57 @@ export default function Dashboard() {
   return (
     <div className="container" style={{ paddingTop: "2rem", minHeight: "100vh" }}>
       {currentMacro !== "portal" && (
-        <header className="glass dashboard-header" style={{ padding: "1rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "3rem", borderRadius: "1.2rem", background: "rgba(15, 23, 42, 0.8)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2.5rem", padding: "0 0.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
             <button 
               onClick={() => { setCurrentMacro("portal"); setCurrentInstance(null); }} 
-              style={{ background: "var(--primary)", padding: "0.6rem 1.2rem", borderRadius: "0.8rem", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem" }}
+              className="glass-pill"
+              style={{ display: "flex", alignItems: "center", gap: "0.6rem", cursor: "pointer", transition: "all 0.3s" }}
             >
-              <LayoutDashboard size={20} color="white" />
-              <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "white" }}>MENÚ</span>
+              <LayoutDashboard size={16} color="var(--primary)" />
+              <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "white", letterSpacing: "1px" }}>MENÚ</span>
             </button>
-            <h2 style={{ fontSize: "1.3rem", fontWeight: 950, letterSpacing: "-1px" }}>BOLTON / {currentMacro.toUpperCase()} {currentInstance ? `> ${currentInstance.toUpperCase()}` : ''}</h2>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '0.6rem', opacity: 0.4, fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase' }}>Sistema Bolton 3.5</span>
+              <h2 style={{ fontSize: "1.1rem", fontWeight: 950, letterSpacing: "-0.5px", marginTop: '-2px' }}>
+                {currentMacro.toUpperCase()} {currentInstance ? `> ${currentInstance.toUpperCase()}` : ''}
+              </h2>
+            </div>
           </div>
 
-          {customerId && currentMacro === 'clientes' && !currentInstance && (
-             <motion.button 
-               whileHover={{ scale: 1.05 }}
-               whileTap={{ scale: 0.95 }}
-               onClick={() => {
-                 setCurrentInstance('motor');
-                 setCurrentView('overview');
-               }}
-               className="glass"
-               style={{ 
-                 background: "linear-gradient(135deg, var(--primary) 0%, #10b981 100%)", 
-                 padding: "0.6rem 1.2rem", 
-                 borderRadius: "0.8rem", 
-                 border: "none", 
-                 color: "white", 
-                 fontWeight: 900, 
-                 fontSize: "0.75rem",
-                 cursor: "pointer",
-                 boxShadow: "0 10px 20px rgba(59, 130, 246, 0.2)",
-                 display: "flex",
-                 alignItems: "center",
-                 gap: "0.7rem",
-                 marginLeft: "1rem"
-               }}
-             >
-               <LayoutDashboard size={16} />
-               DASHBOARD IA
-             </motion.button>
-          )}
-          
-          {currentInstance && (
-            <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-              <button 
-                onClick={() => setCurrentInstance(null)}
-                style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.1)", padding: "0.6rem 1rem", borderRadius: "0.8rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem", transition: "all 0.3s" }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-              >
-                <ArrowLeft size={14} color="var(--muted-foreground)" />
-                <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--muted-foreground)" }}>FLUJO TÉCNICO</span>
-              </button>
-            </div>
-          )}
-
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+             {customerId && currentMacro === 'clientes' && !currentInstance && (
+               <motion.button 
+                 whileHover={{ scale: 1.05 }}
+                 whileTap={{ scale: 0.95 }}
+                 onClick={() => {
+                   setCurrentInstance('motor');
+                   setCurrentView('overview');
+                 }}
+                 className="btn-primary"
+                 style={{ padding: "0.5rem 1.2rem", fontSize: "0.7rem", borderRadius: "2rem", display: "flex", alignItems: "center", gap: "0.6rem" }}
+               >
+                 <Activity size={14} /> DASHBOARD IA
+               </motion.button>
+             )}
+             
+             {currentInstance && (
+                <button 
+                  onClick={() => setCurrentInstance(null)}
+                  className="glass-pill"
+                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}
+                >
+                  <ArrowLeft size={14} color="var(--primary)" />
+                  <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "white" }}>VOLVER</span>
+                </button>
+             )}
+
              <button 
               onClick={() => setShowProfile(true)}
               className="glass" 
-              style={{ width: "45px", height: "45px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", cursor: "pointer" }}
+              style={{ width: "40px", height: "40px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)", cursor: "pointer" }}
              >
-                <UserIcon size={20} />
+                <UserIcon size={18} color="var(--primary)" />
              </button>
           </div>
         </header>
@@ -988,29 +976,33 @@ export default function Dashboard() {
             <motion.div key="desafios-pilar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
               <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
                 {/* CABECERA DE VINCULACIONES (Requerido por Claudio) */}
-                <div className="glass grid-responsive" style={{ padding: "1.5rem 2rem", marginBottom: "2.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", borderLeft: "4px solid #3b82f6" }}>
-                  <div style={{ display: "flex", gap: "2rem" }}>
-                    <div>
-                      <p style={{ fontSize: "0.6rem", color: "var(--muted)", fontWeight: 900, textTransform: "uppercase", marginBottom: "0.25rem" }}>GOOGLE ADS ID</p>
-                      <p style={{ fontWeight: 800, fontSize: "0.9rem" }}>{customerId || "NO VINCULADO"}</p>
+                {/* SMART STATUS BAR (Reemplaza al cuadro grande) */}
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: "3rem" }}>
+                  <div className="glass" style={{ display: "flex", padding: "0.75rem 2rem", gap: "3rem", alignItems: "center", border: "1px solid rgba(59, 130, 246, 0.15)", background: "rgba(15, 23, 42, 0.3)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                      <Target size={14} color="var(--primary)" />
+                      <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "var(--muted-foreground)" }}>ADS ID:</span>
+                      <span style={{ fontSize: "0.8rem", fontWeight: 800, letterSpacing: '0.5px' }}>{customerId || "PENDIENTE"}</span>
                     </div>
                     {landingUrl && (
-                      <div>
-                        <p style={{ fontSize: "0.6rem", color: "var(--muted)", fontWeight: 900, textTransform: "uppercase", marginBottom: "0.25rem" }}>LANDING URL</p>
-                        <p style={{ fontWeight: 800, fontSize: "0.9rem", color: "#3b82f6" }}>{landingUrl}</p>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                        <Globe size={14} color="#10b981" />
+                        <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "var(--muted-foreground)" }}>LANDING:</span>
+                        <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "#3b82f6" }}>{landingUrl}</span>
                       </div>
                     )}
                     {campaignId && (
-                      <div>
-                        <p style={{ fontSize: "0.6rem", color: "var(--muted)", fontWeight: 900, textTransform: "uppercase", marginBottom: "0.25rem" }}>CAMPAÑA ACTIVA</p>
-                        <p style={{ fontWeight: 800, fontSize: "0.9rem" }}>{campaigns.find(c => c.id.toString() === campaignId.toString())?.name || campaignId}</p>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                        <Activity size={14} color="var(--accent)" />
+                        <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "var(--muted-foreground)" }}>CAMP:</span>
+                        <span style={{ fontSize: "0.8rem", fontWeight: 800 }}>{campaigns.find(c => c.id.toString() === campaignId.toString())?.name || campaignId}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* SUB-NAVEGACIÓN DESAFÍOS */}
-                <div className="nav-pilar-container" style={{ display: "flex", gap: "2.5rem", marginBottom: "3rem", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                <div className="nav-pilar-container" style={{ display: "flex", justifyContent: "center", gap: "3rem", marginBottom: "3.5rem" }}>
                   {[
                     { id: "actual", name: "En Curso" },
                     { id: "completados", name: "Completados" },
@@ -1020,21 +1012,23 @@ export default function Dashboard() {
                       key={tab.id}
                       onClick={() => setDesafioTab(tab.id as any)}
                       style={{
-                        padding: "1rem 0.5rem",
-                        color: desafioTab === tab.id ? "var(--primary)" : "var(--muted-foreground)",
+                        padding: "0.75rem 0.5rem",
+                        color: desafioTab === tab.id ? "white" : "var(--muted-foreground)",
                         fontWeight: 900,
-                        fontSize: "0.85rem",
+                        fontSize: "0.75rem",
                         textTransform: "uppercase",
                         letterSpacing: "1.5px",
                         position: "relative",
                         background: "none",
                         border: "none",
-                        cursor: "pointer"
+                        cursor: "pointer",
+                        opacity: desafioTab === tab.id ? 1 : 0.4,
+                        transition: "all 0.3s"
                       }}
                     >
                       {tab.name}
                       {desafioTab === tab.id && (
-                        <motion.div layoutId="desafioUnderline" style={{ position: "absolute", bottom: -1, left: 0, right: 0, height: "3px", background: "var(--primary)", boxShadow: "0 0 10px var(--primary)" }} />
+                        <motion.div layoutId="desafioUnderline" style={{ position: "absolute", bottom: -2, left: "15%", right: "15%", height: "2px", background: "var(--primary)", boxShadow: "0 0 15px var(--primary)" }} />
                       )}
                     </button>
                   ))}

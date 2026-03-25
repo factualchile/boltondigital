@@ -51,13 +51,13 @@ export default function Navbar() {
           left: 0, 
           right: 0, 
           zIndex: 1000,
-          padding: scrolled ? "0.75rem 2rem" : "1.2rem 2.5rem", 
+          padding: scrolled ? "0.5rem 2rem" : "0.75rem 2.5rem", 
           display: "flex", 
           justifyContent: "space-between", 
           alignItems: "center",
-          background: scrolled ? "rgba(10, 10, 15, 0.85)" : "rgba(10, 10, 15, 0.4)", 
-          backdropFilter: "blur(12px)",
-          borderBottom: scrolled ? "1px solid rgba(59, 130, 246, 0.2)" : "1px solid rgba(255, 255, 255, 0.05)",
+          background: scrolled ? "rgba(5, 5, 8, 0.9)" : "transparent", 
+          backdropFilter: scrolled ? "blur(12px)" : "none",
+          borderBottom: scrolled ? "1px solid rgba(255, 255, 255, 0.05)" : "none",
           transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
         }}
       >
@@ -79,17 +79,6 @@ export default function Navbar() {
               </div>
               <span style={{ fontFamily: "var(--font-outfit)", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.5px" }}>
                 BOLTON <span style={{ color: "var(--primary)" }}>DIGITAL</span>
-              </span>
-           </div>
-
-           <div style={{ width: "1px", height: "20px", background: "rgba(255,255,255,0.1)", margin: "0 0.5rem" }} />
-
-           <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", opacity: 0.8 }}>
-              <div style={{ padding: "0.3rem", borderRadius: "50%", background: "rgba(59, 130, 246, 0.1)", border: "1px solid rgba(59, 130, 246, 0.2)" }}>
-                <UserIcon size={14} color="var(--primary)" />
-              </div>
-              <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--muted-foreground)" }}>
-                {user.email}
               </span>
            </div>
         </div>
