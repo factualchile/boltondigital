@@ -229,6 +229,19 @@ button {
   }
   .nav-pilar-container::-webkit-scrollbar { display: none; }
   .nav-pilar-container button { padding: 0.6rem 1rem !important; white-space: nowrap; }
+
+  /* Smart Status Bar Responsiva */
+  .status-bar-responsive {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    padding: 1rem 1.5rem !important;
+    width: 100%;
+    align-items: flex-start !important;
+  }
+  .status-bar-responsive div {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 /* Animación de carga para móviles */

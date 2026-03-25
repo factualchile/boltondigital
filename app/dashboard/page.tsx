@@ -978,7 +978,7 @@ export default function Dashboard() {
                 {/* CABECERA DE VINCULACIONES (Requerido por Claudio) */}
                 {/* SMART STATUS BAR (Reemplaza al cuadro grande) */}
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: "3rem" }}>
-                  <div className="glass" style={{ display: "flex", padding: "0.75rem 2rem", gap: "3rem", alignItems: "center", border: "1px solid rgba(59, 130, 246, 0.15)", background: "rgba(15, 23, 42, 0.3)" }}>
+                  <div className="glass status-bar-responsive" style={{ display: "flex", padding: "0.75rem 2rem", gap: "3rem", alignItems: "center", border: "1px solid rgba(59, 130, 246, 0.15)", background: "rgba(15, 23, 42, 0.3)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                       <Target size={14} color="var(--primary)" />
                       <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "var(--muted-foreground)" }}>ADS ID:</span>
