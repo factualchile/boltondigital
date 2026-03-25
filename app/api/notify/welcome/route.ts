@@ -16,21 +16,43 @@ export async function POST(req: Request) {
       throw new Error("Supabase Admin client not initialized");
     }
 
-    // 1. Verificar y Marcar Atómicamente (Prevenir Reenvíos)
-    const { data: existingToken } = await supabaseAdmin
+    // 1. Marcar Atómicamente (Solo el primero que lo logre envía el correo)
+    // Intentamos actualizar una fila existente donde welcome_sent sea false.
+    // Si la fila no existe (primer ingreso), la insertamos directamente.
+    
+    // NOTA: Usamos UPDATE primero para el caso más común de reintentos rápidos
+    const { data: updateData, error: updateError } = await supabaseAdmin
       .from('user_tokens')
-      .select('welcome_sent')
+      .update({ welcome_sent: true })
       .eq('user_id', userId)
-      .single();
+      .eq('welcome_sent', false)
+      .select();
 
-    if (existingToken?.welcome_sent) {
-      return NextResponse.json({ success: true, message: "Correo ya enviado anteriormente" });
+    if (updateError) throw updateError;
+
+    // Si data tiene longitud, significa que nosotros cambiamos de false a true.
+    let shouldSend = (updateData && updateData.length > 0);
+
+    if (!shouldSend) {
+      // Si no hubo update, puede ser que el registro no existe aún.
+      // Intentamos insertarlo. Si falla por duplicidad de llave, es que alguien ya lo hizo.
+      const { error: insertError } = await supabaseAdmin
+        .from('user_tokens')
+        .insert({ user_id: userId, welcome_sent: true });
+
+      if (!insertError) {
+        shouldSend = true; // Inserción exitosa. DEBEMOS enviar.
+      } else if (insertError.code === '23505') {
+        // Violación de unicidad. Ya estaba allí (posiblemente como true o alguien nos ganó).
+        return NextResponse.json({ success: true, message: "Correo ya gestionado anteriormente" });
+      } else {
+        throw insertError;
+      }
     }
 
-    // Marcamos como enviado ANTES de enviar realmente para bloquear peticiones paralelas
-    await supabaseAdmin
-      .from('user_tokens')
-      .upsert({ user_id: userId, welcome_sent: true }, { onConflict: 'user_id' });
+    if (!shouldSend) {
+      return NextResponse.json({ success: true, message: "Correo omitido (ya en proceso o enviado)" });
+    }
 
     // 2. Enviar Correo de Bienvenida y Verificación
     const { data: resendData, error: resendError } = await resend.emails.send({

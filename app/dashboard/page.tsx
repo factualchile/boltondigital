@@ -197,12 +197,19 @@ export default function Dashboard() {
           clearTimeout(rescueTimer);
 
           // DISPARADOR DE BIENVENIDA (Fase 10)
-          if (session.user.email_confirmed_at) {
+          // 🛡️ CONTROL DE BIENVENIDA ÚNICA (Solo una vez por sesión de navegador)
+          const welcomeTriggered = sessionStorage.getItem(`welcome_sent_${session.user.id}`);
+          if (session.user.email_confirmed_at && !welcomeTriggered) {
+            sessionStorage.setItem(`welcome_sent_${session.user.id}`, 'true');
             fetch('/api/notify/welcome', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email: session.user.email, userId: session.user.id })
-            }).catch(e => console.error("Welcome trigger failed:", e));
+            }).catch(e => {
+              console.error("Welcome trigger failed:", e);
+              // Si falla el fetch por red, permitimos reintento eliminando la marca
+              sessionStorage.removeItem(`welcome_sent_${session.user.id}`);
+            });
           }
 
           const res = await secureFetch(`/api/user/settings?userId=${session.user.id}`);
