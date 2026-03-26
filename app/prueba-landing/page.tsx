@@ -27,7 +27,7 @@ export default function PreviewLanding() {
     <div className="landing-container" style={{ 
       fontFamily: "'Outfit', sans-serif", 
       color: "#1e293b", 
-      backgroundColor: "#f1f5f9", 
+      backgroundColor: "#f4f7fa", 
       minHeight: "100vh",
       height: "100vh", 
       display: "flex",
@@ -35,11 +35,11 @@ export default function PreviewLanding() {
     }}>
       <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet" />
 
-      {/* HEADER */}
+      {/* HEADER INTEGRADO */}
       <header className="header" style={{ 
         background: "white",
         borderBottom: "1px solid rgba(0,0,0,0.05)",
-        padding: "1rem 5%", 
+        padding: "0.8rem 5%", 
         display: "flex", 
         justifyContent: "space-between", 
         alignItems: "center",
@@ -74,50 +74,61 @@ export default function PreviewLanding() {
           width: "100%",
           maxWidth: "1400px",
           height: "82vh", 
-          borderRadius: "1.5rem",
+          borderRadius: "1.8rem",
           display: "grid",
-          gridTemplateColumns: "20% 60% 20%",
-          boxShadow: "0 40px 100px -20px rgba(0,0,0,0.08)",
+          gridTemplateColumns: "20% 65% 15%", // NUEVAS PROPORCIONES
+          boxShadow: "0 50px 100px -20px rgba(0,0,0,0.12)",
           overflow: "hidden",
           border: "1px solid rgba(255,255,255,0.8)"
         }}>
           
-          {/* COLUMNA IZQUIERDA (PERFIL) */}
+          {/* COLUMNA IZQUIERDA (PERFIL) - CON MAYOR INTENCIÓN VISUAL */}
           <div className="col-left" style={{ 
-            padding: "2rem 1.5rem", 
+            padding: "2.5rem 1.8rem", 
             backgroundColor: "#f8fafc", 
-            borderRight: "1px solid rgba(0,0,0,0.03)",
+            borderRight: "1px solid rgba(0,0,0,0.04)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center"
           }}>
-            <div className="profile-img-container" style={{ 
-                width: "160px", 
-                height: "160px", 
-                borderRadius: "50%", 
-                overflow: "hidden", 
-                margin: "0 auto 1.5rem",
-                border: "6px solid white",
-                boxShadow: "0 15px 30px rgba(0,0,0,0.1)"
+            <div className="inner-profile-card" style={{
+                background: "white",
+                padding: "2rem 1.2rem",
+                borderRadius: "1.5rem",
+                width: "100%",
+                boxShadow: "0 10px 25px rgba(0,0,0,0.03)",
+                border: "1px solid rgba(0,0,0,0.02)",
+                textAlign: "center"
             }}>
-                <img src={imageUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div className="profile-img-container" style={{ 
+                    width: "150px", 
+                    height: "150px", 
+                    borderRadius: "50%", 
+                    overflow: "hidden", 
+                    margin: "0 auto 1.5rem",
+                    border: "6px solid white",
+                    boxShadow: "0 20px 40px rgba(0,0,0,0.1)"
+                }}>
+                    <img src={imageUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+                <div className="profile-separator" style={{ height: "4px", width: "25px", background: "#3b82f6", margin: "0 auto 1.2rem", borderRadius: "2px" }} />
+                <p className="comp-phrase" style={{ fontSize: "0.85rem", color: "#475569", fontWeight: 600, lineHeight: 1.5, marginBottom: "1.5rem" }}>
+                    Comprometido con el bienestar de las parejas en Chile.
+                </p>
+                <button className="small-link-btn" style={{
+                    backgroundColor: "white",
+                    color: "#2c6a91",
+                    border: "1px solid #e2e8f0",
+                    padding: "0.5rem 1.2rem",
+                    borderRadius: "2rem",
+                    fontSize: "0.75rem",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    transition: "all 0.3s ease"
+                }}>
+                    CONOCER MÁS
+                </button>
             </div>
-            <div className="profile-separator" style={{ height: "4px", width: "25px", background: "#2c6a91", margin: "0 auto 1.2rem", borderRadius: "2px" }} />
-            <p className="comp-phrase" style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 600, lineHeight: 1.4, marginBottom: "1.5rem", textAlign: "center" }}>
-                Comprometido con el bienestar de las parejas en Chile.
-            </p>
-            <button className="small-link-btn" style={{
-                backgroundColor: "white",
-                color: "#2c6a91",
-                border: "1px solid #2c6a91",
-                padding: "0.4rem 1rem",
-                borderRadius: "2rem",
-                fontSize: "0.75rem",
-                fontWeight: 800,
-                cursor: "pointer"
-            }}>
-                RESERVAR AHORA
-            </button>
           </div>
 
           {/* COLUMNA CENTRAL (INFO PRINCIPAL) */}
@@ -125,168 +136,119 @@ export default function PreviewLanding() {
             padding: "3rem 4rem",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "flex-start",
-            paddingTop: "4rem"
+            justifyContent: "center",
           }}>
-            <h2 className="main-name" style={{ 
-                fontSize: "clamp(2rem, 3.5vw, 3.8rem)", 
-                color: "#1e293b", 
-                margin: "0 0 0.2rem", 
-                fontWeight: 950, 
-                letterSpacing: "-2px",
-                whiteSpace: "nowrap"
-            }}>{name}</h2>
-            
-            <p className="profession-text" style={{ 
-                fontSize: "1.3rem", 
-                fontWeight: 600, 
-                color: "#2c6a91", 
-                marginBottom: "3rem"
-            }}>{profession}</p>
-            
-            <div className="specialties-box" style={{ 
-                background: "#f8fafc", 
-                padding: "2rem", 
-                borderRadius: "1.2rem",
-                border: "1px solid rgba(0,0,0,0.02)"
-            }}>
-                <p style={{ fontWeight: 800, marginBottom: "1.2rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "2px", fontSize: "0.7rem" }}>
-                    Áreas de especialidad técnica
-                </p>
-                <div className="specialties-grid" style={{ 
-                    display: "grid", 
-                    gridTemplateColumns: "1fr 1fr", 
-                    gap: "0.7rem 2.5rem" 
+            <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+            >
+                <h2 className="main-name" style={{ 
+                    fontSize: "clamp(2rem, 3.8vw, 4rem)", 
+                    color: "#0f172a", 
+                    margin: "0 0 0.4rem", 
+                    fontWeight: 950, 
+                    letterSpacing: "-2.5px",
+                    whiteSpace: "nowrap"
+                }}>{name}</h2>
+                
+                <p className="profession-text" style={{ 
+                    fontSize: "1.45rem", // AUMENTADO
+                    fontWeight: 600, 
+                    color: "#3b82f6", 
+                    marginBottom: "2.8rem",
+                    letterSpacing: "-0.5px"
+                }}>{profession}</p>
+                
+                <div className="specialties-box" style={{ 
+                    background: "#ffffff", // MÁS BLANCO
+                    padding: "2.8rem", // MÁS PADDING
+                    borderRadius: "1.5rem",
+                    border: "1px solid #f1f5f9", // BORDE SUTIL
+                    boxShadow: "0 15px 40px rgba(0,0,0,0.02)", // SOMBRA LIGERA
+                    position: "relative"
                 }}>
-                    {specialties.map((item, idx) => (
-                    <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.8rem", fontSize: "0.9rem", fontWeight: 500 }}>
-                        <CheckCircle2 size={15} color="#10b981" />
-                        <span>{item}</span>
+                    <p style={{ fontWeight: 800, marginBottom: "1.5rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "2.5px", fontSize: "0.75rem" }}>
+                        Especialidades Clínicas
+                    </p>
+                    <div className="specialties-grid" style={{ 
+                        display: "grid", 
+                        gridTemplateColumns: "1fr 1fr", 
+                        gap: "1.2rem 3rem" // MEJOR INTERLINEADO
+                    }}>
+                        {specialties.map((item, idx) => (
+                        <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.8rem", fontSize: "0.95rem", fontWeight: 500, color: "#334155" }}>
+                            <CheckCircle2 size={16} color="#10b981" />
+                            <span>{item}</span>
+                        </div>
+                        ))}
                     </div>
-                    ))}
                 </div>
-            </div>
 
-            <p className="experience-text" style={{ marginTop: "2rem", color: "#64748b", fontSize: "1rem", lineHeight: 1.6, fontWeight: 400 }}>
-                {experience} Mi enfoque se basa en la comunicación asertiva y la reconexión profunda.
-            </p>
+                <p className="experience-text" style={{ marginTop: "2.8rem", color: "#64748b", fontSize: "1.1rem", lineHeight: 1.7, fontWeight: 400 }}>
+                    {experience} Mi enfoque se basa en la comunicación asertiva y la reconexión profunda.
+                </p>
+            </motion.div>
           </div>
 
-          {/* COLUMNA DERECHA (ACCIÓN ALINEADA) */}
+          {/* COLUMNA DERECHA (ACCIÓN) - GRADIENTE ELEGANTE Y MENOS ANCHO */}
           <div className="col-right" style={{ 
-            padding: "3rem 1.5rem", 
-            backgroundColor: "#1e293b", 
+            padding: "3rem 1.8rem", 
+            background: "linear-gradient(180deg, #1e3a5f 0%, #0f172a 100%)", // GRADIENTE SOFISTICADO
             color: "white",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            paddingTop: "4.5rem"
+            justifyContent: "center",
+            gap: "4rem"
           }}>
             <div className="guarantee-box" style={{ 
-              background: "rgba(255,255,255,0.03)", 
-              padding: "1.5rem 1.2rem",
-              borderRadius: "1.2rem",
-              border: "1px solid rgba(255,255,255,0.08)",
+              background: "rgba(255,255,255,0.05)", 
+              padding: "2rem 1.5rem",
+              borderRadius: "1.5rem",
+              border: "1px solid rgba(255,255,255,0.1)",
               width: "100%",
-              marginBottom: "4.5rem",
               textAlign: "center"
             }}>
-              <p style={{ fontWeight: 900, fontSize: "0.8rem", margin: "0 0 0.8rem", letterSpacing: "1px", color: "#94a3b8" }}>GARANTÍA</p>
-              <p style={{ fontSize: "0.8rem", opacity: 0.9, lineHeight: 1.4 }}>
-                Si la primera sesión no te parece <strong style={{color: "#60a5fa", fontWeight: 900}}>GENIAL</strong>, te devuelvo tu dinero.
+              <p style={{ fontWeight: 900, fontSize: "0.85rem", margin: "0 0 1rem", letterSpacing: "1.5px", color: "#60a5fa" }}>GARANTÍA</p>
+              <p style={{ fontSize: "0.85rem", opacity: 0.9, lineHeight: 1.5 }}>
+                Si la primera sesión no te parece <strong style={{color: "white", fontWeight: 950}}>EXCEPCIONAL</strong>, te devuelvo tu dinero.
               </p>
             </div>
 
             <motion.button 
               className="reserve-btn-main"
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, filter: "brightness(1.1)" }}
               whileTap={{ scale: 0.95 }}
               style={{
-                backgroundColor: "#3b82f6",
+                background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)", // GRADIENTE EN BOTÓN
                 color: "white",
                 border: "none",
-                padding: "1.2rem",
-                borderRadius: "1rem",
-                fontSize: "1.1rem",
+                padding: "1.6rem 1.2rem", // MÁS PADDING VERTICAL
+                borderRadius: "1.2rem",
+                fontSize: "1.2rem",
                 fontWeight: 900,
                 cursor: "pointer",
                 width: "100%",
-                boxShadow: "0 20px 40px rgba(59, 130, 246, 0.3)",
+                boxShadow: "0 20px 45px rgba(59, 130, 246, 0.45)", // SOMBRA BLUR GRANDE
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "0.6rem"
+                gap: "0.8rem",
+                transition: "all 0.3s ease"
               }}
             >
               RESERVAR
-              <ArrowRight size={18} />
+              <ArrowRight size={22} />
             </motion.button>
+
+            <p style={{ fontSize: "0.7rem", opacity: 0.3, letterSpacing: "0.5px" }}>
+              SESIÓN 100% GARANTIZADA
+            </p>
           </div>
 
         </div>
       </main>
-
-      <style>{`
-        /* RESPONSIVE MAGIC */
-        @media (max-width: 1024px) {
-          .landing-container { height: auto !important; overflow: auto !important; }
-          
-          /* HEADER COMPACTO (-33%) */
-          .header { 
-            padding: 0.5rem 5% !important; 
-            flex-direction: column; 
-            text-align: center; 
-            gap: 0.2rem !important; 
-          }
-          .service-title { font-size: 1.2rem !important; line-height: 1.2; }
-          .location-box { font-size: 0.7rem !important; margin-bottom: 0.2rem; }
-          .contact-label { display: none; }
-          .phone-box { font-size: 1rem !important; justify-content: center; }
-          .phone-box svg { width: 16px; height: 16px; }
-          
-          .main-content { padding: 0.5rem !important; display: block !important; }
-          .card-wrapper { 
-            grid-template-columns: 1fr !important; 
-            height: auto !important; 
-            display: flex !important;
-            flex-direction: column !important;
-          }
-          
-          .col-left, .col-center, .col-right { 
-            display: contents !important; 
-          }
-
-          /* CUSTOM ORDERING */
-          .main-name { 
-            order: 1 !important; 
-            text-align: center; 
-            padding: 1.5rem 1rem 0 !important; 
-            font-size: clamp(1.4rem, 6vw, 2rem) !important; /* DINÁMICO PARA UNA SOLA LÍNEA */
-            white-space: nowrap !important; /* UNA SOLA LÍNEA */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%; 
-            box-sizing: border-box; 
-          }
-          .profile-img-container { order: 2 !important; margin: 1rem auto !important; width: 120px !important; height: 120px !important; }
-          .profession-text { order: 3 !important; text-align: center; margin-bottom: 1.5rem !important; font-size: 0.95rem !important; padding: 0 1rem; }
-          .comp-phrase { order: 4 !important; text-align: center; padding: 0 1.5rem !important; margin-bottom: 1rem !important; font-size: 0.8rem !important; }
-          .small-link-btn { order: 5 !important; margin: 0 auto 1.5rem !important; display: flex !important; padding: 0.3rem 0.8rem !important; font-size: 0.7rem !important; }
-          .experience-text { order: 6 !important; padding: 0 1.5rem !important; text-align: center; font-size: 0.9rem !important; }
-          .specialties-box { order: 7 !important; margin: 1.5rem !important; padding: 1.2rem !important; text-align: left; }
-          .specialties-grid { grid-template-columns: 1fr !important; gap: 0.5rem !important; }
-          
-          .col-right { display: flex !important; flex-direction: column !important; order: 8 !important; padding: 0 1.5rem 2rem !important; background: #1e293b !important; }
-          .guarantee-box { order: 1 !important; margin: 1.5rem 0 !important; padding: 1rem !important; }
-          .reserve-btn-main { order: 2 !important; padding: 1rem !important; font-size: 1rem !important; }
-          
-          .profile-separator { display: none !important; }
-          .whatsapp-float { width: 50px !important; height: 50px !important; bottom: 1.2rem !important; right: 1.2rem !important; }
-        }
-
-        /* HOVERS */
-        .small-link-btn:hover { background: #2c6a91 !important; color: white !important; }
-      `}</style>
 
       {/* WHATSAPP */}
       <a 
@@ -294,22 +256,56 @@ export default function PreviewLanding() {
         href={`https://wa.me/${phone.replace(/\D/g, '')}`} 
         style={{
           position: "fixed",
-          bottom: "2rem",
-          right: "2rem",
+          bottom: "2.5rem",
+          right: "2.5rem",
           backgroundColor: "#25d366",
           color: "white",
-          width: "60px",
-          height: "60px",
+          width: "65px",
+          height: "65px",
           borderRadius: "50%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: "0 15px 30px rgba(37, 211, 102, 0.3)",
-          zIndex: 1000
+          boxShadow: "0 20px 40px rgba(37, 211, 102, 0.3)",
+          zIndex: 1000,
+          transition: "transform 0.3s ease"
         }}
+        onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.1)"}
+        onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
       >
-        <MessageCircle size={32} fill="currentColor" />
+        <MessageCircle size={35} fill="currentColor" />
       </a>
+
+      <style>{`
+        /* RESPONSIVE MAGIC */
+        @media (max-width: 1024px) {
+          .landing-container { height: auto !important; overflow: auto !important; }
+          .header { padding: 0.6rem 5% !important; flex-direction: column; text-align: center; gap: 0.3rem !important; }
+          .service-title { font-size: 1.3rem !important; }
+          .location-box { font-size: 0.75rem !important; margin-bottom: 0.2rem; }
+          .contact-label { display: none; }
+          .phone-box { font-size: 1.1rem !important; justify-content: center; }
+          
+          .main-content { padding: 0.5rem !important; display: block !important; }
+          .card-wrapper { grid-template-columns: 1fr !important; height: auto !important; display: flex !important; flex-direction: column !important; }
+          .col-left, .col-center, .col-right { display: contents !important; }
+
+          .main-name { order: 1 !important; text-align: center; padding: 2rem 1rem 0 !important; font-size: 1.8rem !important; white-space: nowrap !important; line-height: 1; }
+          .profile-img-container { order: 2 !important; margin: 1.5rem auto !important; width: 130px !important; height: 130px !important; }
+          .profession-text { order: 3 !important; text-align: center; margin-bottom: 2rem !important; font-size: 1.1rem !important; }
+          .comp-phrase { order: 4 !important; text-align: center; padding: 0 2rem !important; margin-bottom: 1rem !important; }
+          .small-link-btn { order: 5 !important; margin: 0 auto 2rem !important; display: flex !important; }
+          .experience-text { order: 6 !important; padding: 0 2rem !important; text-align: center; font-size: 0.95rem !important; }
+          .specialties-box { order: 7 !important; margin: 1.5rem !important; padding: 1.8rem !important; }
+          .specialties-grid { grid-template-columns: 1fr !important; gap: 0.8rem !important; }
+          
+          .col-right { order: 8 !important; padding: 3rem 2rem !important; display: flex !important; flex-direction: column !important; background: #0f172a !important; }
+          .guarantee-box { margin: 2rem 0 !important; }
+          .reserve-btn-main { padding: 1.4rem !important; }
+        }
+
+        .small-link-btn:hover { background: #f8fafc !important; border-color: #3b82f6 !important; color: #3b82f6 !important; }
+      `}</style>
     </div>
   );
 }
