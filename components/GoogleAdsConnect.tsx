@@ -44,7 +44,8 @@ export default function GoogleAdsConnect({ onConnected, userId }: { onConnected:
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || "No pudimos conectar con esta cuenta.");
+        const message = data.details ? `${data.error}: ${data.details}` : (data.error || "No pudimos conectar con esta cuenta.");
+        throw new Error(message);
       }
 
       setSuccess(true);
@@ -94,8 +95,8 @@ export default function GoogleAdsConnect({ onConnected, userId }: { onConnected:
               </div>
 
               {error && (
-                <div style={{ color: "var(--error)", fontSize: "0.875rem", background: "rgba(239, 68, 68, 0.1)", padding: "0.75rem", borderRadius: "0.5rem" }}>
-                  {error}
+                <div style={{ color: "#fca5a5", fontSize: "0.8rem", background: "rgba(239, 68, 68, 0.1)", padding: "1rem", borderRadius: "1rem", border: "1px solid rgba(239, 68, 68, 0.2)", lineHeight: "1.4" }}>
+                  <strong>Error detectado:</strong><br /> {error}
                 </div>
               )}
 

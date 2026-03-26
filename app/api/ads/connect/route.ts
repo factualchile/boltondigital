@@ -9,6 +9,16 @@ const REFRESH_TOKEN = process.env.GOOGLE_ADS_REFRESH_TOKEN!;
 const MCC_ID = process.env.GOOGLE_ADS_MCC_ID!;
 
 export async function POST(req: Request) {
+  // Verificación preventiva de infraestructura
+  if (!CLIENT_ID || !CLIENT_SECRET || !DEVELOPER_TOKEN || !REFRESH_TOKEN || !MCC_ID) {
+    console.error("Faltan variables de entorno críticas de Google Ads");
+    return NextResponse.json({ 
+        error: "Infraestructura Incompleta", 
+        details: "El servidor de Bolton no tiene configuradas todas las credenciales necesarias (ENV VARS)." 
+    }, { status: 500 });
+  }
+
+  let cleanedId = "";
   try {
     const { customerId, userId } = await req.json();
     
@@ -22,8 +32,8 @@ export async function POST(req: Request) {
       if (!isOwner) return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
     }
 
-    const cleanedId = customerId.replace(/-/g, "");
-
+    cleanedId = customerId.replace(/-/g, "");
+    
     // Initialize the Google Ads API client
     const client = new GoogleAdsApi({
       client_id: CLIENT_ID,
@@ -57,7 +67,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Could not find account" }, { status: 404 });
 
   } catch (error: any) {
-    console.error("Google Ads Connection Error:", error);
+    console.error("Google Ads Connection Error Details:", {
+      customerId: cleanedId,
+      mccId: MCC_ID,
+      errorResponse: error.response?.data,
+      errorMessage: error.message
+    });
     const details = error.response?.data?.error?.message || error.message || "No details available";
     return NextResponse.json({ 
       error: "Failed to connect to Google Ads",
