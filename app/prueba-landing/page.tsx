@@ -35,7 +35,7 @@ export default function PreviewLanding() {
     }}>
       <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet" />
 
-      {/* HEADER INTEGRADO */}
+      {/* HEADER */}
       <header className="header" style={{ 
         background: "white",
         borderBottom: "1px solid rgba(0,0,0,0.05)",
@@ -91,35 +91,33 @@ export default function PreviewLanding() {
             flexDirection: "column",
             alignItems: "center"
           }}>
-            <div style={{ width: "100%", textAlign: "center", marginTop: "1rem" }}>
-                <div className="profile-img-container" style={{ 
-                    width: "160px", 
-                    height: "160px", 
-                    borderRadius: "50%", 
-                    overflow: "hidden", 
-                    margin: "0 auto 1.5rem",
-                    border: "6px solid white",
-                    boxShadow: "0 15px 30px rgba(0,0,0,0.1)"
-                }}>
-                    <img src={imageUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                </div>
-                <div style={{ height: "4px", width: "25px", background: "#2c6a91", margin: "0 auto 1.2rem", borderRadius: "2px" }} />
-                <p style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 600, lineHeight: 1.4, marginBottom: "1.5rem" }}>
-                    Comprometido con el bienestar de las parejas en Chile.
-                </p>
-                <button className="small-link-btn" style={{
-                  backgroundColor: "white",
-                  color: "#2c6a91",
-                  border: "1px solid #2c6a91",
-                  padding: "0.4rem 1rem",
-                  borderRadius: "2rem",
-                  fontSize: "0.75rem",
-                  fontWeight: 800,
-                  cursor: "pointer"
-                }}>
-                  RESERVAR AHORA
-                </button>
+            <div className="profile-img-container" style={{ 
+                width: "160px", 
+                height: "160px", 
+                borderRadius: "50%", 
+                overflow: "hidden", 
+                margin: "0 auto 1.5rem",
+                border: "6px solid white",
+                boxShadow: "0 15px 30px rgba(0,0,0,0.1)"
+            }}>
+                <img src={imageUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
+            <div className="profile-separator" style={{ height: "4px", width: "25px", background: "#2c6a91", margin: "0 auto 1.2rem", borderRadius: "2px" }} />
+            <p className="comp-phrase" style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 600, lineHeight: 1.4, marginBottom: "1.5rem", textAlign: "center" }}>
+                Comprometido con el bienestar de las parejas en Chile.
+            </p>
+            <button className="small-link-btn" style={{
+                backgroundColor: "white",
+                color: "#2c6a91",
+                border: "1px solid #2c6a91",
+                padding: "0.4rem 1rem",
+                borderRadius: "2rem",
+                fontSize: "0.75rem",
+                fontWeight: 800,
+                cursor: "pointer"
+            }}>
+                RESERVAR AHORA
+            </button>
           </div>
 
           {/* COLUMNA CENTRAL (INFO PRINCIPAL) */}
@@ -130,58 +128,48 @@ export default function PreviewLanding() {
             justifyContent: "flex-start",
             paddingTop: "4rem"
           }}>
-            <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-            >
-                <h2 className="main-name" style={{ 
-                    fontSize: "clamp(2rem, 3.5vw, 3.8rem)", 
-                    color: "#1e293b", 
-                    margin: "0 0 0.2rem", 
-                    fontWeight: 950, 
-                    letterSpacing: "-2px",
-                    whiteSpace: "nowrap"
-                }}>
-                    {name}
-                </h2>
-                
-                <p className="profession-text" style={{ 
-                    fontSize: "1.3rem", 
-                    fontWeight: 600, 
-                    color: "#2c6a91", 
-                    marginBottom: "3rem"
-                }}>
-                    {profession}
+            <h2 className="main-name" style={{ 
+                fontSize: "clamp(2rem, 3.5vw, 3.8rem)", 
+                color: "#1e293b", 
+                margin: "0 0 0.2rem", 
+                fontWeight: 950, 
+                letterSpacing: "-2px",
+                whiteSpace: "nowrap"
+            }}>{name}</h2>
+            
+            <p className="profession-text" style={{ 
+                fontSize: "1.3rem", 
+                fontWeight: 600, 
+                color: "#2c6a91", 
+                marginBottom: "3rem"
+            }}>{profession}</p>
+            
+            <div className="specialties-box" style={{ 
+                background: "#f8fafc", 
+                padding: "2rem", 
+                borderRadius: "1.2rem",
+                border: "1px solid rgba(0,0,0,0.02)"
+            }}>
+                <p style={{ fontWeight: 800, marginBottom: "1.2rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "2px", fontSize: "0.7rem" }}>
+                    Áreas de especialidad técnica
                 </p>
-                
-                <div className="specialties-box" style={{ 
-                    background: "#f8fafc", 
-                    padding: "2rem", 
-                    borderRadius: "1.2rem",
-                    border: "1px solid rgba(0,0,0,0.02)"
+                <div className="specialties-grid" style={{ 
+                    display: "grid", 
+                    gridTemplateColumns: "1fr 1fr", 
+                    gap: "0.7rem 2.5rem" 
                 }}>
-                    <p style={{ fontWeight: 800, marginBottom: "1.2rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "2px", fontSize: "0.7rem" }}>
-                        Áreas de especialidad técnica
-                    </p>
-                    <div className="specialties-grid" style={{ 
-                        display: "grid", 
-                        gridTemplateColumns: "1fr 1fr", 
-                        gap: "0.7rem 2.5rem" 
-                    }}>
-                        {specialties.map((item, idx) => (
-                        <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.8rem", fontSize: "0.9rem", fontWeight: 500 }}>
-                            <CheckCircle2 size={15} color="#10b981" />
-                            <span>{item}</span>
-                        </div>
-                        ))}
+                    {specialties.map((item, idx) => (
+                    <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.8rem", fontSize: "0.9rem", fontWeight: 500 }}>
+                        <CheckCircle2 size={15} color="#10b981" />
+                        <span>{item}</span>
                     </div>
+                    ))}
                 </div>
+            </div>
 
-                <p className="experience-text" style={{ marginTop: "2rem", color: "#64748b", fontSize: "1rem", lineHeight: 1.6, fontWeight: 400 }}>
-                    {experience} Mi enfoque se basa en la comunicación asertiva y la reconexión profunda.
-                </p>
-            </motion.div>
+            <p className="experience-text" style={{ marginTop: "2rem", color: "#64748b", fontSize: "1rem", lineHeight: 1.6, fontWeight: 400 }}>
+                {experience} Mi enfoque se basa en la comunicación asertiva y la reconexión profunda.
+            </p>
           </div>
 
           {/* COLUMNA DERECHA (ACCIÓN ALINEADA) */}
@@ -238,6 +226,48 @@ export default function PreviewLanding() {
         </div>
       </main>
 
+      <style>{`
+        /* RESPONSIVE MAGIC */
+        @media (max-width: 1024px) {
+          .landing-container { height: auto !important; overflow: auto !important; }
+          .header { flex-direction: column; text-align: center; gap: 1rem; padding: 1.5rem 5% !important; }
+          .contact-info { text-align: center !important; }
+          
+          .main-content { padding: 1rem !important; display: block !important; }
+          .card-wrapper { 
+            grid-template-columns: 1fr !important; 
+            height: auto !important; 
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          
+          /* RESET COLUMNS TO FLOW CHILDREN */
+          .col-left, .col-center, .col-right { 
+            display: contents !important; 
+          }
+
+          /* CUSTOM ORDERING PER CLAUDIO'S REQUEST */
+          .main-name { order: 1 !important; text-align: center; padding: 2rem 1rem 0 !important; font-size: 2.2rem !important; white-space: normal !important; width: 100%; box-sizing: border-box; }
+          .profile-img-container { order: 2 !important; margin: 1.5rem auto !important; width: 140px !important; height: 140px !important; }
+          .profession-text { order: 3 !important; text-align: center; margin-bottom: 2rem !important; font-size: 1.1rem !important; }
+          .comp-phrase { order: 4 !important; text-align: center; padding: 0 2rem !important; margin-bottom: 1rem !important; }
+          .small-link-btn { order: 5 !important; margin: 0 auto 2rem !important; display: flex !important; }
+          .experience-text { order: 6 !important; padding: 0 2rem !important; text-align: center; }
+          .specialties-box { order: 7 !important; margin: 2rem !important; text-align: left; }
+          .specialties-grid { grid-template-columns: 1fr !important; }
+          
+          .col-right { display: flex !important; flex-direction: column !important; order: 8 !important; padding: 0 2rem 3rem !important; background: #1e293b !important; }
+          .guarantee-box { order: 1 !important; margin: 2rem 0 !important; }
+          .reserve-btn-main { order: 2 !important; }
+          
+          .profile-separator { display: none !important; }
+          .whatsapp-float { width: 50px !important; height: 50px !important; bottom: 1.5rem !important; right: 1.5rem !important; }
+        }
+
+        /* HOVERS */
+        .small-link-btn:hover { background: #2c6a91 !important; color: white !important; }
+      `}</style>
+
       {/* WHATSAPP */}
       <a 
         className="whatsapp-float"
@@ -260,47 +290,6 @@ export default function PreviewLanding() {
       >
         <MessageCircle size={32} fill="currentColor" />
       </a>
-
-      <style>{`
-        /* RESPONSIVE MAGIC */
-        @media (max-width: 1024px) {
-          .landing-container { height: auto !important; overflow: auto !important; }
-          .header { flex-direction: column; text-align: center; gap: 1rem; padding: 1.5rem 5% !important; }
-          .contact-info { text-align: center !important; }
-          .service-title { font-size: 1.5rem !important; }
-          
-          .main-content { padding: 1rem !important; display: block !important; }
-          .card-wrapper { 
-            grid-template-columns: 1fr !important; 
-            height: auto !important; 
-            border-radius: 1.5rem !important;
-            margin-bottom: 2rem;
-          }
-          
-          .col-left { border-right: none !important; border-bottom: 1px solid rgba(0,0,0,0.05); padding: 2rem !important; }
-          .profile-img-container { width: 140px !important; height: 140px !important; }
-          
-          .col-center { padding: 2rem !important; text-align: center; padding-top: 2rem !important; }
-          .main-name { font-size: 2.2rem !important; white-space: normal !important; line-height: 1.1; margin-bottom: 1rem !important; }
-          .profession-text { font-size: 1.1rem !important; margin-bottom: 2rem !important; }
-          .specialties-grid { grid-template-columns: 1fr !important; text-align: left; }
-          .specialties-box { padding: 1.5rem !important; }
-          
-          .col-right { border-radius: 0 0 1.5rem 1.5rem; padding: 3rem 2rem !important; padding-top: 2rem !important; }
-          .guarantee-box { margin-bottom: 2rem !important; }
-          
-          .whatsapp-float { width: 50px !important; height: 50px !important; bottom: 1.5rem !important; right: 1.5rem !important; }
-        }
-
-        /* PEQUEÑO AJUSTE PARA MÓVILES MUY PEQUEÑOS */
-        @media (max-width: 480px) {
-          .main-name { font-size: 1.8rem !important; }
-        }
-
-        /* HOVERS */
-        .small-link-btn:hover { background: #2c6a91 !important; color: white !important; }
-        .reserve-btn-main:hover { background: #2563eb !important; }
-      `}</style>
     </div>
   );
 }
