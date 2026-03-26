@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { GoogleAdsApi } from "google-ads-api";
+import { getSmartCustomer } from "@/lib/google-ads";
 import { verifyCustomer } from "@/lib/auth-server";
 
 const CLIENT_ID = process.env.GOOGLE_ADS_CLIENT_ID!;
@@ -24,17 +24,8 @@ export async function GET(req: Request) {
 
     const cleanedId = customerId.replace(/-/g, "");
 
-    const client = new GoogleAdsApi({
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-      developer_token: DEVELOPER_TOKEN,
-    });
-
-    const customer = client.Customer({
-      customer_id: cleanedId,
-      refresh_token: REFRESH_TOKEN,
-      login_customer_id: MCC_ID,
-    });
+    // USAR CLIENTE INTELIGENTE
+    const customer = await getSmartCustomer(cleanedId);
 
     // Fetch metrics for the last 30 days INCLUDING TODAY
     const today = new Date().toISOString().split('T')[0].replace(/-/g, "");

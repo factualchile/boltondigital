@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { verifyUser } from "@/lib/auth-server";
+import { supabaseAdmin, supabase } from "@/lib/supabase";
+
+const client_sb = supabaseAdmin || supabase;
 
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
 
@@ -269,6 +272,19 @@ export async function POST(req: Request) {
     if (!deployRes.ok) {
         console.error("Vercel API Detailed Error:", JSON.stringify(deployData, null, 2));
         throw new Error(deployData.error?.message || deployData.message || "Error al desplegar en Vercel");
+    }
+
+    // 📝 LOG DE ACTIVIDAD REAL
+    if (userId) {
+      await client_sb.from('user_activity_log').insert([{
+          user_id: userId,
+          action_type: 'DEPLOY_LANDING',
+          description: `Se desplegó landing personalizada para ${landingData.service} (${landingData.name})`,
+          meta_data: { 
+              project: projectName,
+              url: `https://${deployData.url}`
+          }
+      }]).catch((e: any) => console.error("Activity log failed:", e));
     }
 
     return NextResponse.json({ 

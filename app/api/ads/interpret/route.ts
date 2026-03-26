@@ -24,18 +24,18 @@ export async function POST(req: Request) {
       .eq('user_id', userId)
       .single();
 
-    // OBTENER HISTORIAL DE ACTIVIDAD (Para generar la línea de tiempo coherente)
-    const { data: pastActivity } = await client
-      .from('ai_audit_log')
-      .select('ai_response, created_at')
+    // OBTENER HISTORIAL DE ACTIVIDAD REAL (Para generar la línea de tiempo basada en hechos)
+    const { data: realActivity } = await client
+      .from('user_activity_log')
+      .select('action_type, description, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(3);
+      .limit(30);
 
-    const activityHistory = pastActivity?.map((a: any) => ({
+    const factHistory = realActivity?.map((a: any) => ({
       date: a.created_at,
-      action: a.ai_response?.system_status?.label,
-      log: a.ai_response?.system_log?.[0]
+      action: a.action_type,
+      detail: a.description
     })) || [];
 
     const survey = userSettings?.campaign_survey || {};
@@ -66,8 +66,8 @@ export async function POST(req: Request) {
       CONTEXTO PROFESIONAL:
       ${professionalProfile}
 
-      HISTORIAL RECIENTE DE BOLTON:
-      ${JSON.stringify(activityHistory)}
+      BITÁCORA TÉCNICA REAL (HECHOS):
+      ${JSON.stringify(factHistory)}
 
       DATOS DE RENDIMIENTO ACTUALES (ÚLTIMOS 30 DÍAS):
       - Alcance (Impresiones): ${metrics.impressions || 0}
@@ -76,26 +76,25 @@ export async function POST(req: Request) {
       - Gasto Real: $${(metrics.cost || 0).toFixed(0)} CLP
 
       INSTRUCCIONES DE COMUNICACIÓN Y ANÁLISIS:
-      1. ANÁLISIS CLAUDIO: Evalúa el CTR y las conversiones según las reglas de Claudio. Si las conversiones son 0 en 30 días, sé sincero pero propositivo.
+      1. ANÁLISIS CLAUDIO: Evalúa el CTR y las conversiones según las reglas de Claudio.
       2. PROYECCIÓN FINANCIERA: Calcula el "Ingreso Proyectado" basado en 10 sesiones por cada Paciente Potencial y el precio de sesión del usuario ($${survey.price || 30000}).
-      3. ACTIVIDAD DIARIA: Inventa 3 acciones estratégicas coherentes que Bolton ha "ejecutado" hoy (ej: "Analicé el tráfico del mediodía", "Ajusté la puja en tu zona", "Filtré términos de búsqueda irrelevantes").
+      3. HISTORIAL REAL: Resume la BITÁCORA TÉCNICA en hasta 10 instancias temporales (Hoy, Ayer, Martes, Lunes, Esta semana, Semana pasada, etc.). Agrupa eventos del mismo día en un párrafo breve de 2 líneas que explique el sentido estratégico.
       4. REFUERZO EMOCIONAL: Tono experto, humano, empático (Psicólogo-Empresa). Usa "Nosotros", "Tu sistema", "Bolton".
 
       ESTRUCTURA JSON OBLIGATORIA (PROHIBIDO EL LENGUAJE GENÉRICO):
       {
         "system_status": {
           "label": "Diagnóstico Técnico (ej: CTR 12% (Fantástico), Alerta: 0 Conversiones en 7 días, Campaña Limitada por Puja)",
-          "message": "Mensaje directo y métrico al estilo Claudio. (ej: 'Tus clics son de calidad pero tu landing no los retiene, revisemos la foto' o 'Vas por el carril rápido: CTR del 15% en Santiago')."
+          "message": "Mensaje directo y métrico al estilo Claudio."
         },
         "claudio_roi": {
-          "projected_revenue": "Monto total proyectado (Nº Pacientes * Precio * 10)",
-          "adherence_logic": "Por qué 10 sesiones (Adherencia).",
+          "projected_revenue": "Monto total proyectado",
+          "adherence_logic": "Explicación breve de 10 sesiones.",
           "status": "RENTABLE | EN CRECIMIENTO | EVALUANDO"
         },
         "activity_timeline": [
-          { "when": "Hoy", "action": "Ej: Analicé 40 términos de búsqueda en Las Condes" },
-          { "when": "Ayer", "action": "Ej: Verificando posición superior (97% de éxito)" },
-          { "when": "Reciente", "action": "Ej: Ajustando puja para maximizar clicks baratos" }
+          { "when": "Hoy", "action": "Resumen estratégico de lo que realmente se hizo hoy" },
+          { "when": "Ayer", "action": "Resumen estratégico de ayer" }
         ],
         "activity_signals": {
           "views": "Alcance real (Impresiones)",
@@ -110,17 +109,17 @@ export async function POST(req: Request) {
           "priority": "ALTA | MEDIA | INFO"
         },
         "system_log": [
-          "3 micro-acciones técnicas (ej: 'Puja ajustada a $1.400', 'Keyword negativa eliminada', 'Test de botón OK')."
+          "3 micro-acciones técnicas reales extraídas del historial bruto."
         ],
-        "progress_insight": "Mensaje final directo (ej: 'No pares ahora, estamos cerca del ROI óptimo').",
+        "progress_insight": "Mensaje final directo al estilo Claudio.",
         "growthScore": "0-100"
       }
     `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4-turbo-preview",
+      model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "ERES EL CLON ESTRATÉGICO DE CLAUDIO FERNÁNDEZ BOLTON. PROHIBIDO EL LENGUAJE POÉTICO O GENÉRICO. HABLA SIEMPRE CON MÉTRICAS Y DIAGNÓSTICOS TÉCNICOS." },
+        { role: "system", content: "ERES EL CLON ESTRATÉGICO DE CLAUDIO FERNÁNDEZ BOLTON. PROHIBIDO EL LENGUAJE POÉTICO O GENÉRICO. HABLA SIEMPRE CON MÉTRICAS Y DIAGNÓSTICOS TÉCNICOS BASADOS EN HECHOS REALES." },
         { role: "user", content: prompt }
       ],
       temperature: 0.5,
@@ -130,14 +129,23 @@ export async function POST(req: Request) {
 
     const aiResult = JSON.parse(response.choices[0].message.content || "{}");
 
-    // 🛡️ RESPALDO EN SUPABASE
+    // 🛡️ RESPALDO EN SUPABASE Y BITÁCORA TÉCNICA
     if (userId) {
+      // 1. Log para auditoría IA (Detallado)
       await client.from('ai_audit_log').insert([{
         user_id: userId,
         metrics_snapshot: metrics,
         ai_response: aiResult,
         context_type: 'constant_activity_system'
       }]).catch((e: any) => console.error("Audit log failed:", e));
+
+      // 2. Log para Historial Real (Resumen Técnico)
+      await client.from('user_activity_log').insert([{
+          user_id: userId,
+          action_type: 'AI_STRATEGY_AUDIT',
+          description: `Bolton realizó un análisis estratégico: ${aiResult.system_status?.label}`,
+          meta_data: { status: aiResult.system_status?.label, score: aiResult.growthScore }
+      }]).catch((e: any) => console.error("Activity log failed:", e));
     }
 
     return NextResponse.json({ success: true, ...aiResult });

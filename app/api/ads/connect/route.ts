@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { GoogleAdsApi } from "google-ads-api";
 import { verifyUser } from "@/lib/auth-server";
+import { supabaseAdmin, supabase } from "@/lib/supabase";
+
+const client_sb = supabaseAdmin || supabase;
 
 const CLIENT_ID = process.env.GOOGLE_ADS_CLIENT_ID!;
 const CLIENT_SECRET = process.env.GOOGLE_ADS_CLIENT_SECRET!;
@@ -91,6 +94,21 @@ export async function POST(req: Request) {
 
     if (customerInfo) {
       console.log(`[Bolton Engine] ¡Éxito! Conectado a: ${customerInfo.customer.descriptive_name} (Modo Standalone: ${fallbackUsed})`);
+      
+      // 📝 LOG DE ACTIVIDAD REAL
+      if (userId) {
+        await client_sb.from('user_activity_log').insert([{
+            user_id: userId,
+            action_type: 'LINK_CAMPAIGN',
+            description: `Se vinculó la campaña a la cuenta: ${customerInfo.customer.descriptive_name} (${cleanedId})`,
+            meta_data: { 
+                customer_id: cleanedId, 
+                customer_name: customerInfo.customer.descriptive_name,
+                standalone: fallbackUsed
+            }
+        }]).catch((e: any) => console.error("Activity log failed:", e));
+      }
+
       return NextResponse.json({ 
         success: true, 
         name: customerInfo.customer.descriptive_name,

@@ -97,8 +97,10 @@ export default function Dashboard() {
   // BOLTON 3.0 NAVIGATION
   const [activePilar, setActivePilar] = useState<Pilar>("desafios");
   const [dashboardMode, setDashboardMode] = useState<"facil" | "avanzado" | "clon">("facil");
-  const [desafioTab, setDesafioTab] = useState<"actual" | "completados" | "futuros">("actual");
   const [showProfile, setShowProfile] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [rawActivity, setRawActivity] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ message, type });
@@ -341,7 +343,29 @@ export default function Dashboard() {
     }
   }, [status, insight, recommendations]);
 
-  const handleConnected = async (id: string | number, alreadySaved = false, explicitCampaignId?: string, explicitUser?: any) => {
+  const fetchRawHistory = async () => {
+    if (!user?.id) return;
+    setLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from('user_activity_log')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      
+      if (error) throw error;
+      setRawActivity(data || []);
+      setShowHistoryModal(true);
+    } catch (err: any) {
+      console.error("Fallo al obtener historial real:", err);
+      showToast("No pudimos cargar el historial técnico.", "error");
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleConnected = async (id: any, alreadySaved: boolean = false, explicitCampaignId?: string, explicitUser?: any) => {
     const currentUser = explicitUser || user;
     if (!currentUser) {
       console.warn("[Bolton] Intento de conexión sin usuario detectado.");
@@ -1441,6 +1465,35 @@ export default function Dashboard() {
                                 ))}
                             </div>
 
+                            <motion.button
+                                whileHover={{ scale: 1.02, color: "var(--primary)" }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={fetchRawHistory}
+                                disabled={loadingHistory}
+                                style={{ 
+                                    marginTop: "2rem", 
+                                    background: "rgba(255,255,255,0.03)", 
+                                    border: "1px solid rgba(255,255,255,0.07)", 
+                                    color: "rgba(255,255,255,0.6)", 
+                                    padding: "0.8rem 1.2rem", 
+                                    borderRadius: "1rem", 
+                                    fontSize: "0.75rem", 
+                                    fontWeight: 900, 
+                                    display: "flex", 
+                                    alignItems: "center", 
+                                    justifyContent: "center", 
+                                    gap: "0.8rem", 
+                                    cursor: "pointer",
+                                    width: "100%"
+                                }}
+                            >
+                                {loadingHistory ? (
+                                    <>Sincronizando... <Loader2 size={14} className="animate-spin" /></>
+                                ) : (
+                                    <>VER DETALLES DEL HISTORIAL <ArrowRight size={14} /></>
+                                )}
+                            </motion.button>
+
                             <div style={{ marginTop: "2rem", padding: "1rem", borderRadius: "1rem", background: "rgba(59, 130, 246, 0.05)", border: "1px solid rgba(59, 130, 246, 0.1)" }}>
                                 <p style={{ fontSize: "0.75rem", opacity: 0.5, fontStyle: "italic", textAlign: "center" }}>
                                     Bolton monitorea y ajusta tu sistema de forma autónoma las 24 horas del día.
@@ -1694,6 +1747,72 @@ export default function Dashboard() {
             onClose={() => setShowProfile(false)}
             onLogout={handleLogout}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showHistoryModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.95)", backdropFilter: "blur(10px)", zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+              style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "2rem", width: "100%", maxWidth: "800px", maxHeight: "85vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 40px 100px rgba(0,0,0,0.8)" }}
+            >
+               <div style={{ padding: "2.5rem", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <h2 style={{ fontSize: "1.8rem", fontWeight: 950, display: "flex", alignItems: "center", gap: "1rem" }}>
+                      <ScrollText size={32} color="var(--primary)" /> Bitácora Técnica Real
+                    </h2>
+                    <p style={{ opacity: 0.5, fontSize: "0.9rem", marginTop: "0.5rem" }}>Eventos brutos registrados en el servidor de Bolton.</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowHistoryModal(false)}
+                    style={{ background: "rgba(255,255,255,0.05)", border: "none", color: "white", padding: "1rem", borderRadius: "1rem", cursor: "pointer" }}
+                  >
+                    <XIcon size={24} />
+                  </button>
+               </div>
+
+               <div style={{ flex: 1, overflowY: "auto", padding: "2.5rem" }} className="custom-scrollbar">
+                  {rawActivity.length > 0 ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+                      {rawActivity.map((log, i) => (
+                        <div key={log.id} style={{ display: "flex", gap: "1.5rem", padding: "1.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "1.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                           <div style={{ padding: "0.8rem", borderRadius: "1rem", background: "rgba(59, 130, 246, 0.1)", height: "fit-content" }}>
+                              <Activity size={20} color="var(--primary)" />
+                           </div>
+                           <div style={{ flex: 1 }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                                 <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "var(--primary)", textTransform: "uppercase", letterSpacing: "1px" }}>{log.action_type}</span>
+                                 <span style={{ fontSize: "0.7rem", opacity: 0.4 }}>{new Date(log.created_at).toLocaleString()}</span>
+                              </div>
+                              <p style={{ fontSize: "1rem", fontWeight: 500, lineHeight: 1.5, opacity: 0.9 }}>{log.description}</p>
+                              {log.meta_data && Object.keys(log.meta_data).length > 0 && (
+                                <pre style={{ fontSize: "0.65rem", background: "rgba(0,0,0,0.3)", padding: "1rem", borderRadius: "0.8rem", marginTop: "1rem", opacity: 0.5, overflow: "auto" }}>
+                                  {JSON.stringify(log.meta_data, null, 2)}
+                                </pre>
+                              )}
+                           </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: "center", padding: "5rem 0", opacity: 0.3 }}>
+                       <History size={60} style={{ margin: "0 auto 1.5rem" }} />
+                       <p>No hay eventos técnicos registrados aún.</p>
+                    </div>
+                  )}
+               </div>
+
+               <div style={{ padding: "2rem", background: "rgba(0,0,0,0.2)", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: "1.5rem" }}>
+                  <ChevronDown size={20} className="animate-bounce opacity-30" />
+                  <span style={{ fontSize: "0.8rem", opacity: 0.4, fontWeight: 700 }}>FIN DEL HISTORIAL DISPONIBLE</span>
+                  <ChevronDown size={20} className="animate-bounce opacity-30" />
+               </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
