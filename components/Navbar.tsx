@@ -12,6 +12,8 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
 
+  if (pathname === "/prueba-landing") return null;
+
   useEffect(() => {
     // Obtener sesión inicial
     supabase.auth.getSession().then(({ data: { session } }) => {
