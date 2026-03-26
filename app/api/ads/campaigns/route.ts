@@ -20,36 +20,37 @@ export async function GET(req: Request) {
     // USAR CLIENTE INTELIGENTE (MCC/Standalone Rescate)
     const customer = await getSmartCustomer(cleanedId);
 
-    // CONSULTA ULTRA-SIMPLIFICADA: Traemos todas (habilitadas o pausadas)
-    // No filtramos por métricas en la query para que SIEMPRE aparezcan.
+    // CONSULTA MÍNIMA DE DESCUBRIMIENTO: Solo ID y Nombre
+    // Quitamos métricas totalmente para evitar cualquier filtrado implícito de Google Ads
     const query = `
       SELECT 
-        campaign.id,
+        campaign.id, 
         campaign.name, 
-        campaign.status,
-        metrics.clicks, 
-        metrics.impressions, 
-        metrics.cost_micros, 
-        metrics.conversions
-      FROM campaign
+        campaign.status 
+      FROM campaign 
       WHERE campaign.status IN ('ENABLED', 'PAUSED')
     `;
 
-    console.log(`[CAMPAIGNS] LISTADO BRUTO: Querying customer ${cleanedId}`);
+    console.log(`[CAMPAIGNS] DISCOVERY MODE: Requesting from customer ${cleanedId}`);
     const results = await customer.query(query);
 
-    const campaigns = (results || []).map((row: any) => ({
+    if (!results || results.length === 0) {
+      console.warn(`[CAMPAIGNS] No results found for ${cleanedId}. Check account type.`);
+      return NextResponse.json({ success: true, campaigns: [] });
+    }
+
+    const campaigns = results.map((row: any) => ({
       id: row.campaign.id,
       name: row.campaign.name,
       status: row.campaign.status,
-      // Métricas por si acaso (podrían venir null si no hay datos)
-      clicks: row.metrics?.clicks || 0,
-      impressions: row.metrics?.impressions || 0,
-      cost: (row.metrics?.cost_micros || 0) / 1000000,
-      conversions: row.metrics?.conversions || 0,
-      ctr: (row.metrics?.ctr || 0) * 100,
-      averageCpc: (row.metrics?.average_cpc || 0) / 1000000
-    })).sort((a: any, b: any) => b.cost - a.cost);
+      // Valores por defecto para no romper el front
+      clicks: 0,
+      impressions: 0,
+      cost: 0,
+      conversions: 0,
+      ctr: 0,
+      averageCpc: 0
+    })).sort((a: any, b: any) => a.name.localeCompare(b.name));
 
     return NextResponse.json({ 
       success: true, 
