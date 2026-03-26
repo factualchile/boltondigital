@@ -81,38 +81,38 @@ export async function POST(req: Request) {
       3. ACTIVIDAD DIARIA: Inventa 3 acciones estratégicas coherentes que Bolton ha "ejecutado" hoy (ej: "Analicé el tráfico del mediodía", "Ajusté la puja en tu zona", "Filtré términos de búsqueda irrelevantes").
       4. REFUERZO EMOCIONAL: Tono experto, humano, empático (Psicólogo-Empresa). Usa "Nosotros", "Tu sistema", "Bolton".
 
-      ESTRUCTURA JSON OBLIGATORIA:
+      ESTRUCTURA JSON OBLIGATORIA (PROHIBIDO EL LENGUAJE GENÉRICO):
       {
         "system_status": {
-          "label": "Estado vivo (ej: Evaluando Resultados, Optimizando Visibilidad, Blindando Inversión)",
-          "message": "Mensaje de acompañamiento humano y emocionalmente positivo."
+          "label": "Diagnóstico Técnico (ej: CTR 12% (Fantástico), Alerta: 0 Conversiones en 7 días, Campaña Limitada por Puja)",
+          "message": "Mensaje directo y métrico al estilo Claudio. (ej: 'Tus clics son de calidad pero tu landing no los retiene, revisemos la foto' o 'Vas por el carril rápido: CTR del 15% en Santiago')."
         },
         "claudio_roi": {
           "projected_revenue": "Monto total proyectado (Nº Pacientes * Precio * 10)",
-          "adherence_logic": "Breve explicación de por qué calculamos 10 sesiones.",
+          "adherence_logic": "Por qué 10 sesiones (Adherencia).",
           "status": "RENTABLE | EN CRECIMIENTO | EVALUANDO"
         },
         "activity_timeline": [
-          { "when": "Hoy", "action": "Resumen de lo que Bolton hizo hoy" },
-          { "when": "Ayer", "action": "Resumen de lo que se ejecutó ayer" },
-          { "when": "Reciente", "action": "Hito previo importante" }
+          { "when": "Hoy", "action": "Ej: Analicé 40 términos de búsqueda en Las Condes" },
+          { "when": "Ayer", "action": "Ej: Verificando posición superior (97% de éxito)" },
+          { "when": "Reciente", "action": "Ej: Ajustando puja para maximizar clicks baratos" }
         ],
         "activity_signals": {
-          "views": "Alcance de tu mensaje",
-          "interest": "Personas interesadas hoy",
-          "leads": "Potenciales pacientes nuevos"
+          "views": "Alcance real (Impresiones)",
+          "interest": "Personas interesadas (Clicks)",
+          "leads": "Potenciales pacientes (Conversiones)"
         },
         "main_recommendation": {
           "interpretation": "Análisis clínico de Claudio sobre tu campaña.",
-          "why_it_matters": "Razonamiento estratégico de por qué es importante.",
+          "why_it_matters": "Razonamiento estratégico.",
           "action_text": "Instrucción clara.",
           "button_label": "Botón accionable",
           "priority": "ALTA | MEDIA | INFO"
         },
         "system_log": [
-          "3 micro-acciones técnicas explicadas de forma simple (máx 15 palabras cada una)."
+          "3 micro-acciones técnicas (ej: 'Puja ajustada a $1.400', 'Keyword negativa eliminada', 'Test de botón OK')."
         ],
-        "progress_insight": "Cierre motivador al estilo Claudio.",
+        "progress_insight": "Mensaje final directo (ej: 'No pares ahora, estamos cerca del ROI óptimo').",
         "growthScore": "0-100"
       }
     `;
@@ -120,10 +120,10 @@ export async function POST(req: Request) {
     const response = await openai.chat.completions.create({
       model: "gpt-4-turbo-preview",
       messages: [
-        { role: "system", content: "Eres la IA de Bolton impulsada por el 'Cerebro Claudio', especialista en marketing para psicólogos y profesionales de la salud." },
+        { role: "system", content: "ERES EL CLON ESTRATÉGICO DE CLAUDIO FERNÁNDEZ BOLTON. PROHIBIDO EL LENGUAJE POÉTICO O GENÉRICO. HABLA SIEMPRE CON MÉTRICAS Y DIAGNÓSTICOS TÉCNICOS." },
         { role: "user", content: prompt }
       ],
-      temperature: 0.7,
+      temperature: 0.5,
       max_tokens: 1500,
       response_format: { type: "json_object" }
     });
