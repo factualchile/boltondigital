@@ -1,12 +1,6 @@
 import { NextResponse } from "next/server";
-import { GoogleAdsApi } from "google-ads-api";
+import { getSmartCustomer } from "@/lib/google-ads";
 import { verifyCustomer } from "@/lib/auth-server";
-
-const CLIENT_ID = process.env.GOOGLE_ADS_CLIENT_ID!;
-const CLIENT_SECRET = process.env.GOOGLE_ADS_CLIENT_SECRET!;
-const DEVELOPER_TOKEN = process.env.GOOGLE_ADS_DEVELOPER_TOKEN!;
-const REFRESH_TOKEN = process.env.GOOGLE_ADS_REFRESH_TOKEN!;
-const MCC_ID = process.env.GOOGLE_ADS_MCC_ID!;
 
 export async function GET(req: Request) {
   try {
@@ -23,23 +17,8 @@ export async function GET(req: Request) {
 
     const cleanedId = customerId.replace(/-/g, "");
 
-    const client = new GoogleAdsApi({
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-      developer_token: DEVELOPER_TOKEN,
-    });
-
-    const customerOptions: any = {
-      customer_id: cleanedId,
-      refresh_token: REFRESH_TOKEN,
-    };
-    
-    // Solo incluir login_customer_id si MCC_ID está definido y no es una cadena vacía
-    if (MCC_ID && MCC_ID.trim().length > 0) {
-      customerOptions.login_customer_id = MCC_ID.replace(/-/g, "");
-    }
-
-    const customer = client.Customer(customerOptions);
+    // USAR CLIENTE INTELIGENTE (MCC/Standalone Rescate)
+    const customer = await getSmartCustomer(cleanedId);
 
     // Desglose por campaña en los últimos 30 días (Incluyendo hoy)
     const today = new Date().toISOString().split('T')[0].replace(/-/g, "");

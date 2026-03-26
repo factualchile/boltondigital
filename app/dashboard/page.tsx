@@ -97,6 +97,7 @@ export default function Dashboard() {
   // BOLTON 3.0 NAVIGATION
   const [activePilar, setActivePilar] = useState<Pilar>("desafios");
   const [dashboardMode, setDashboardMode] = useState<"facil" | "avanzado" | "clon">("facil");
+  const [desafioTab, setDesafioTab] = useState<"actual" | "completados" | "futuros">("actual");
   const [showProfile, setShowProfile] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [rawActivity, setRawActivity] = useState<any[]>([]);
