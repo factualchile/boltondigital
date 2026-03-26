@@ -20,10 +20,8 @@ export async function GET(req: Request) {
     // USAR CLIENTE INTELIGENTE (MCC/Standalone Rescate)
     const customer = await getSmartCustomer(cleanedId);
 
-    // Desglose por campaña en los últimos 30 días (Incluyendo hoy)
-    const today = new Date().toISOString().split('T')[0].replace(/-/g, "");
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0].replace(/-/g, "");
-
+    // CONSULTA ULTRA-SIMPLIFICADA: Traemos todas (habilitadas o pausadas)
+    // No filtramos por métricas en la query para que SIEMPRE aparezcan.
     const query = `
       SELECT 
         campaign.id,
@@ -32,27 +30,26 @@ export async function GET(req: Request) {
         metrics.clicks, 
         metrics.impressions, 
         metrics.cost_micros, 
-        metrics.conversions,
-        metrics.ctr,
-        metrics.average_cpc
+        metrics.conversions
       FROM campaign
-      WHERE campaign.status != 'REMOVED'
+      WHERE campaign.status IN ('ENABLED', 'PAUSED')
     `;
 
-    console.log(`[CAMPAIGNS] Querying customer ${cleanedId} from ${thirtyDaysAgo} to ${today}`);
+    console.log(`[CAMPAIGNS] LISTADO BRUTO: Querying customer ${cleanedId}`);
     const results = await customer.query(query);
 
-    const campaigns = results.map((row: any) => ({
+    const campaigns = (results || []).map((row: any) => ({
       id: row.campaign.id,
       name: row.campaign.name,
       status: row.campaign.status,
-      clicks: row.metrics.clicks || 0,
-      impressions: row.metrics.impressions || 0,
-      cost: (row.metrics.cost_micros || 0) / 1000000,
-      conversions: row.metrics.conversions || 0,
-      ctr: (row.metrics.ctr || 0) * 100,
-      averageCpc: (row.metrics.average_cpc || 0) / 1000000
-    })).sort((a: any, b: any) => b.cost - a.cost); // Ordenar por mayor gasto primero
+      // Métricas por si acaso (podrían venir null si no hay datos)
+      clicks: row.metrics?.clicks || 0,
+      impressions: row.metrics?.impressions || 0,
+      cost: (row.metrics?.cost_micros || 0) / 1000000,
+      conversions: row.metrics?.conversions || 0,
+      ctr: (row.metrics?.ctr || 0) * 100,
+      averageCpc: (row.metrics?.average_cpc || 0) / 1000000
+    })).sort((a: any, b: any) => b.cost - a.cost);
 
     return NextResponse.json({ 
       success: true, 
