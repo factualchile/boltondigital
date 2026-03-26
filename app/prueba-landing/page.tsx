@@ -24,22 +24,19 @@ export default function PreviewLanding() {
   const imageUrl = "https://images.unsplash.com/photo-1559839734-2b71f1536783?q=80&w=400&h=400&auto=format&fit=crop";
 
   return (
-    <div style={{ 
+    <div className="landing-container" style={{ 
       fontFamily: "'Outfit', sans-serif", 
       color: "#1e293b", 
       backgroundColor: "#f1f5f9", 
       minHeight: "100vh",
-      height: "100vh",
-      overflow: "hidden", 
-      margin: 0,
-      padding: 0,
+      height: "100vh", 
       display: "flex",
       flexDirection: "column"
     }}>
       <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet" />
 
       {/* HEADER INTEGRADO */}
-      <header style={{ 
+      <header className="header" style={{ 
         background: "white",
         borderBottom: "1px solid rgba(0,0,0,0.05)",
         padding: "1rem 5%", 
@@ -49,13 +46,13 @@ export default function PreviewLanding() {
         zIndex: 10
       }}>
         <div style={{ display: "flex", flexDirection: "column" }}>
-            <h1 style={{ margin: 0, fontSize: "1.8rem", fontWeight: 900, color: "#1e4b6b", letterSpacing: "-0.5px" }}>{service}</h1>
+            <h1 className="service-title" style={{ margin: 0, fontSize: "1.8rem", fontWeight: 900, color: "#1e4b6b", letterSpacing: "-0.5px" }}>{service}</h1>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#64748b", fontSize: "0.85rem", fontWeight: 600 }}>
                 <MapPin size={14} />
                 <span>{location}</span>
             </div>
         </div>
-        <div style={{ textAlign: "right" }}>
+        <div className="contact-info" style={{ textAlign: "right" }}>
             <p style={{ margin: 0, fontSize: "0.7rem", fontWeight: 900, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px" }}>Contacto Directo</p>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.2rem", fontWeight: 800, color: "#2c6a91" }}>
                 <Phone size={20} />
@@ -65,14 +62,14 @@ export default function PreviewLanding() {
       </header>
 
       {/* MAIN CONTAINER */}
-      <main style={{ 
+      <main className="main-content" style={{ 
         flex: 1,
         padding: "1rem 5%",
         display: "flex",
         alignItems: "center",
         justifyContent: "center"
       }}>
-        <div style={{ 
+        <div className="card-wrapper" style={{ 
           background: "white",
           width: "100%",
           maxWidth: "1400px",
@@ -85,8 +82,8 @@ export default function PreviewLanding() {
           border: "1px solid rgba(255,255,255,0.8)"
         }}>
           
-          {/* COLUMNA IZQUIERDA (20%) - PERFIL */}
-          <div style={{ 
+          {/* COLUMNA IZQUIERDA (PERFIL) */}
+          <div className="col-left" style={{ 
             padding: "2rem 1.5rem", 
             backgroundColor: "#f8fafc", 
             borderRight: "1px solid rgba(0,0,0,0.03)",
@@ -95,7 +92,7 @@ export default function PreviewLanding() {
             alignItems: "center"
           }}>
             <div style={{ width: "100%", textAlign: "center", marginTop: "1rem" }}>
-                <div style={{ 
+                <div className="profile-img-container" style={{ 
                     width: "160px", 
                     height: "160px", 
                     borderRadius: "50%", 
@@ -110,9 +107,7 @@ export default function PreviewLanding() {
                 <p style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 600, lineHeight: 1.4, marginBottom: "1.5rem" }}>
                     Comprometido con el bienestar de las parejas en Chile.
                 </p>
-                
-                {/* 1. BOTÓN PEQUEÑO Y DELGADO DE RESERVA AHORA */}
-                <button style={{
+                <button className="small-link-btn" style={{
                   backgroundColor: "white",
                   color: "#2c6a91",
                   border: "1px solid #2c6a91",
@@ -120,71 +115,62 @@ export default function PreviewLanding() {
                   borderRadius: "2rem",
                   fontSize: "0.75rem",
                   fontWeight: 800,
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.4rem"
+                  cursor: "pointer"
                 }}>
                   RESERVAR AHORA
                 </button>
             </div>
           </div>
 
-          {/* COLUMNA CENTRAL (60%) - INFO PRINCIPAL */}
-          <div style={{ 
+          {/* COLUMNA CENTRAL (INFO PRINCIPAL) */}
+          <div className="col-center" style={{ 
             padding: "3rem 4rem",
             display: "flex",
             flexDirection: "column",
             justifyContent: "flex-start",
-            paddingTop: "4rem" // Ajustamos para alinear con la derecha
+            paddingTop: "4rem"
           }}>
             <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
             >
-                {/* 3. NOMBRE EN UNA SOLA LINEA CON TAMAÑO DINÁMICO */}
-                <h2 style={{ 
+                <h2 className="main-name" style={{ 
                     fontSize: "clamp(2rem, 3.5vw, 3.8rem)", 
                     color: "#1e293b", 
                     margin: "0 0 0.2rem", 
                     fontWeight: 950, 
                     letterSpacing: "-2px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis"
+                    whiteSpace: "nowrap"
                 }}>
                     {name}
                 </h2>
                 
-                <p style={{ 
+                <p className="profession-text" style={{ 
                     fontSize: "1.3rem", 
                     fontWeight: 600, 
                     color: "#2c6a91", 
-                    marginBottom: "3rem",
-                    opacity: 0.9
+                    marginBottom: "3rem"
                 }}>
                     {profession}
                 </p>
                 
-                <div style={{ 
+                <div className="specialties-box" style={{ 
                     background: "#f8fafc", 
                     padding: "2rem", 
                     borderRadius: "1.2rem",
-                    border: "1px solid rgba(0,0,0,0.02)",
-                    position: "relative"
+                    border: "1px solid rgba(0,0,0,0.02)"
                 }}>
                     <p style={{ fontWeight: 800, marginBottom: "1.2rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "2px", fontSize: "0.7rem" }}>
                         Áreas de especialidad técnica
                     </p>
-                    <div style={{ 
+                    <div className="specialties-grid" style={{ 
                         display: "grid", 
                         gridTemplateColumns: "1fr 1fr", 
                         gap: "0.7rem 2.5rem" 
                     }}>
                         {specialties.map((item, idx) => (
-                        <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.7rem", fontSize: "0.9rem", fontWeight: 500 }}>
+                        <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.8rem", fontSize: "0.9rem", fontWeight: 500 }}>
                             <CheckCircle2 size={15} color="#10b981" />
                             <span>{item}</span>
                         </div>
@@ -192,30 +178,29 @@ export default function PreviewLanding() {
                     </div>
                 </div>
 
-                <p style={{ marginTop: "2rem", color: "#64748b", fontSize: "1rem", lineHeight: 1.6, fontWeight: 400 }}>
+                <p className="experience-text" style={{ marginTop: "2rem", color: "#64748b", fontSize: "1rem", lineHeight: 1.6, fontWeight: 400 }}>
                     {experience} Mi enfoque se basa en la comunicación asertiva y la reconexión profunda.
                 </p>
             </motion.div>
           </div>
 
-          {/* COLUMNA DERECHA (20%) - ACCIÓN ALINEADA */}
-          <div style={{ 
+          {/* COLUMNA DERECHA (ACCIÓN ALINEADA) */}
+          <div className="col-right" style={{ 
             padding: "3rem 1.5rem", 
             backgroundColor: "#1e293b", 
             color: "white",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            paddingTop: "4.5rem" // ALINEACIÓN PRECISA CON EL NOMBRE
+            paddingTop: "4.5rem"
           }}>
-            {/* 2. GARANTÍA A LA ALTURA DEL NOMBRE */}
-            <div style={{ 
+            <div className="guarantee-box" style={{ 
               background: "rgba(255,255,255,0.03)", 
               padding: "1.5rem 1.2rem",
               borderRadius: "1.2rem",
               border: "1px solid rgba(255,255,255,0.08)",
               width: "100%",
-              marginBottom: "4.5rem", // ESPACIO PARA ALINEAR EL BOTÓN ABAJO
+              marginBottom: "4.5rem",
               textAlign: "center"
             }}>
               <p style={{ fontWeight: 900, fontSize: "0.8rem", margin: "0 0 0.8rem", letterSpacing: "1px", color: "#94a3b8" }}>GARANTÍA</p>
@@ -224,8 +209,8 @@ export default function PreviewLanding() {
               </p>
             </div>
 
-            {/* 2. BOTÓN RESERVAR A LA ALTURA DE LA PROFESIÓN */}
             <motion.button 
+              className="reserve-btn-main"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               style={{
@@ -248,24 +233,14 @@ export default function PreviewLanding() {
               RESERVAR
               <ArrowRight size={18} />
             </motion.button>
-
-            <div style={{ marginTop: "auto", paddingBottom: "1rem", textAlign: "center" }}>
-                <p style={{ fontSize: "0.65rem", opacity: 0.4 }}>
-                    Reserva segura vía SSL
-                </p>
-            </div>
           </div>
 
         </div>
       </main>
 
-      {/* FOOTER */}
-      <footer style={{ padding: "0.8rem 8%", fontSize: "0.75rem", opacity: 0.4, textAlign: "center" }}>
-        Bolton Digital Ecosystem © 2026
-      </footer>
-
       {/* WHATSAPP */}
       <a 
+        className="whatsapp-float"
         href={`https://wa.me/${phone.replace(/\D/g, '')}`} 
         style={{
           position: "fixed",
@@ -287,15 +262,44 @@ export default function PreviewLanding() {
       </a>
 
       <style>{`
+        /* RESPONSIVE MAGIC */
         @media (max-width: 1024px) {
-          main { overflow-y: auto !important; height: auto !important; padding: 1rem !important; }
-          main > div { 
-            grid-template-columns: 1fr !important;
-            height: auto !important;
+          .landing-container { height: auto !important; overflow: auto !important; }
+          .header { flex-direction: column; text-align: center; gap: 1rem; padding: 1.5rem 5% !important; }
+          .contact-info { text-align: center !important; }
+          .service-title { font-size: 1.5rem !important; }
+          
+          .main-content { padding: 1rem !important; display: block !important; }
+          .card-wrapper { 
+            grid-template-columns: 1fr !important; 
+            height: auto !important; 
+            border-radius: 1.5rem !important;
+            margin-bottom: 2rem;
           }
-          header { padding: 1rem 5% !important; flex-direction: column; text-align: center; gap: 1rem; }
-          .col-right { padding-top: 2rem !important; }
+          
+          .col-left { border-right: none !important; border-bottom: 1px solid rgba(0,0,0,0.05); padding: 2rem !important; }
+          .profile-img-container { width: 140px !important; height: 140px !important; }
+          
+          .col-center { padding: 2rem !important; text-align: center; padding-top: 2rem !important; }
+          .main-name { font-size: 2.2rem !important; white-space: normal !important; line-height: 1.1; margin-bottom: 1rem !important; }
+          .profession-text { font-size: 1.1rem !important; margin-bottom: 2rem !important; }
+          .specialties-grid { grid-template-columns: 1fr !important; text-align: left; }
+          .specialties-box { padding: 1.5rem !important; }
+          
+          .col-right { border-radius: 0 0 1.5rem 1.5rem; padding: 3rem 2rem !important; padding-top: 2rem !important; }
+          .guarantee-box { margin-bottom: 2rem !important; }
+          
+          .whatsapp-float { width: 50px !important; height: 50px !important; bottom: 1.5rem !important; right: 1.5rem !important; }
         }
+
+        /* PEQUEÑO AJUSTE PARA MÓVILES MUY PEQUEÑOS */
+        @media (max-width: 480px) {
+          .main-name { font-size: 1.8rem !important; }
+        }
+
+        /* HOVERS */
+        .small-link-btn:hover { background: #2c6a91 !important; color: white !important; }
+        .reserve-btn-main:hover { background: #2563eb !important; }
       `}</style>
     </div>
   );
