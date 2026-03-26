@@ -97,16 +97,21 @@ export async function POST(req: Request) {
       
       // 📝 LOG DE ACTIVIDAD REAL
       if (userId) {
-        await client_sb.from('user_activity_log').insert([{
-            user_id: userId,
-            action_type: 'LINK_CAMPAIGN',
-            description: `Se vinculó la campaña a la cuenta: ${customerInfo.customer.descriptive_name} (${cleanedId})`,
-            meta_data: { 
-                customer_id: cleanedId, 
-                customer_name: customerInfo.customer.descriptive_name,
-                standalone: fallbackUsed
-            }
-        }]).catch((e: any) => console.error("Activity log failed:", e));
+        // 📝 LOG DE ACTIVIDAD REAL (BLINDADO)
+        try {
+            await client_sb.from('user_activity_log').insert([{
+                user_id: userId,
+                action_type: 'LINK_CAMPAIGN',
+                description: `Se vinculó la campaña a la cuenta: ${customerInfo.customer.descriptive_name} (${cleanedId})`,
+                meta_data: { 
+                    customer_id: cleanedId, 
+                    customer_name: customerInfo.customer.descriptive_name,
+                    standalone: fallbackUsed
+                }
+            }]);
+        } catch (logError) {
+            console.error("[Bolton Engine] No se pudo guardar el log de actividad, pero la conexión fue exitosa:", logError);
+        }
       }
 
       return NextResponse.json({ 
