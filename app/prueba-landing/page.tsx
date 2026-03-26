@@ -27,7 +27,7 @@ export default function PreviewLanding() {
     <div style={{ 
       fontFamily: "'Outfit', sans-serif", 
       color: "#1e293b", 
-      backgroundColor: "#f1f5f9", // Fondo base un poco más denso
+      backgroundColor: "#f1f5f9", 
       minHeight: "100vh",
       height: "100vh",
       overflow: "hidden", 
@@ -64,10 +64,10 @@ export default function PreviewLanding() {
         </div>
       </header>
 
-      {/* MAIN CONTAINER CON PROFUNDIDAD */}
+      {/* MAIN CONTAINER */}
       <main style={{ 
         flex: 1,
-        padding: "2rem 5%",
+        padding: "1rem 5%",
         display: "flex",
         alignItems: "center",
         justifyContent: "center"
@@ -76,10 +76,10 @@ export default function PreviewLanding() {
           background: "white",
           width: "100%",
           maxWidth: "1400px",
-          height: "85vh", // Limitamos altura para asegurar no-scroll
-          borderRadius: "2rem",
+          height: "82vh", 
+          borderRadius: "1.5rem",
           display: "grid",
-          gridTemplateColumns: "20% 60% 20%", // PROPORCIONES SOLICITADAS
+          gridTemplateColumns: "20% 60% 20%",
           boxShadow: "0 40px 100px -20px rgba(0,0,0,0.08)",
           overflow: "hidden",
           border: "1px solid rgba(255,255,255,0.8)"
@@ -87,118 +87,144 @@ export default function PreviewLanding() {
           
           {/* COLUMNA IZQUIERDA (20%) - PERFIL */}
           <div style={{ 
-            padding: "3rem 2rem", 
+            padding: "2rem 1.5rem", 
             backgroundColor: "#f8fafc", 
             borderRight: "1px solid rgba(0,0,0,0.03)",
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "space-between"
+            alignItems: "center"
           }}>
-            <div style={{ width: "100%", textAlign: "center" }}>
+            <div style={{ width: "100%", textAlign: "center", marginTop: "1rem" }}>
                 <div style={{ 
-                width: "180px", 
-                height: "180px", 
-                borderRadius: "50%", 
-                overflow: "hidden", 
-                margin: "0 auto 2rem",
-                border: "6px solid white",
-                boxShadow: "0 15px 30px rgba(0,0,0,0.1)"
+                    width: "160px", 
+                    height: "160px", 
+                    borderRadius: "50%", 
+                    overflow: "hidden", 
+                    margin: "0 auto 1.5rem",
+                    border: "6px solid white",
+                    boxShadow: "0 15px 30px rgba(0,0,0,0.1)"
                 }}>
-                <img src={imageUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img src={imageUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
-                <div style={{ height: "4px", width: "30px", background: "#2c6a91", margin: "0 auto 1.5rem", borderRadius: "2px" }} />
-                <p style={{ fontSize: "0.9rem", color: "#64748b", fontWeight: 600, lineHeight: 1.4 }}>
+                <div style={{ height: "4px", width: "25px", background: "#2c6a91", margin: "0 auto 1.2rem", borderRadius: "2px" }} />
+                <p style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 600, lineHeight: 1.4, marginBottom: "1.5rem" }}>
                     Comprometido con el bienestar de las parejas en Chile.
                 </p>
+                
+                {/* 1. BOTÓN PEQUEÑO Y DELGADO DE RESERVA AHORA */}
+                <button style={{
+                  backgroundColor: "white",
+                  color: "#2c6a91",
+                  border: "1px solid #2c6a91",
+                  padding: "0.4rem 1rem",
+                  borderRadius: "2rem",
+                  fontSize: "0.75rem",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.4rem"
+                }}>
+                  RESERVAR AHORA
+                </button>
             </div>
-            
-            <button className="btn-secondary" style={{
-              backgroundColor: "white",
-              color: "#2c6a91",
-              border: "1px solid #e2e8f0",
-              padding: "0.8rem",
-              borderRadius: "0.8rem",
-              fontSize: "0.8rem",
-              fontWeight: 800,
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              width: "100%"
-            }}>
-              MÁS INFORMACIÓN
-            </button>
           </div>
 
           {/* COLUMNA CENTRAL (60%) - INFO PRINCIPAL */}
           <div style={{ 
-            padding: "4rem 4rem",
+            padding: "3rem 4rem",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center"
+            justifyContent: "flex-start",
+            paddingTop: "4rem" // Ajustamos para alinear con la derecha
           }}>
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
             >
-                <h2 style={{ fontSize: "3.5rem", color: "#1e293b", margin: "0 0 0.5rem", fontWeight: 900, letterSpacing: "-1.5px" }}>{name}</h2>
-                <p style={{ fontSize: "1.4rem", fontWeight: 500, color: "#2c6a91", marginBottom: "2.5rem" }}>{profession}</p>
+                {/* 3. NOMBRE EN UNA SOLA LINEA CON TAMAÑO DINÁMICO */}
+                <h2 style={{ 
+                    fontSize: "clamp(2rem, 3.5vw, 3.8rem)", 
+                    color: "#1e293b", 
+                    margin: "0 0 0.2rem", 
+                    fontWeight: 950, 
+                    letterSpacing: "-2px",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis"
+                }}>
+                    {name}
+                </h2>
+                
+                <p style={{ 
+                    fontSize: "1.3rem", 
+                    fontWeight: 600, 
+                    color: "#2c6a91", 
+                    marginBottom: "3rem",
+                    opacity: 0.9
+                }}>
+                    {profession}
+                </p>
                 
                 <div style={{ 
                     background: "#f8fafc", 
-                    padding: "2.5rem", 
-                    borderRadius: "1.5rem",
+                    padding: "2rem", 
+                    borderRadius: "1.2rem",
                     border: "1px solid rgba(0,0,0,0.02)",
                     position: "relative"
                 }}>
-                    <p style={{ fontWeight: 800, marginBottom: "1.5rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "2px", fontSize: "0.75rem" }}>
+                    <p style={{ fontWeight: 800, marginBottom: "1.2rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "2px", fontSize: "0.7rem" }}>
                         Áreas de especialidad técnica
                     </p>
                     <div style={{ 
                         display: "grid", 
                         gridTemplateColumns: "1fr 1fr", 
-                        gap: "0.8rem 2.5rem" 
+                        gap: "0.7rem 2.5rem" 
                     }}>
                         {specialties.map((item, idx) => (
-                        <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.8rem", fontSize: "0.95rem", fontWeight: 500 }}>
-                            <CheckCircle2 size={16} color="#10b981" />
+                        <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.7rem", fontSize: "0.9rem", fontWeight: 500 }}>
+                            <CheckCircle2 size={15} color="#10b981" />
                             <span>{item}</span>
                         </div>
                         ))}
                     </div>
                 </div>
 
-                <p style={{ marginTop: "2.5rem", color: "#64748b", fontSize: "1.1rem", lineHeight: 1.6, fontWeight: 400 }}>
+                <p style={{ marginTop: "2rem", color: "#64748b", fontSize: "1rem", lineHeight: 1.6, fontWeight: 400 }}>
                     {experience} Mi enfoque se basa en la comunicación asertiva y la reconexión profunda.
                 </p>
             </motion.div>
           </div>
 
-          {/* COLUMNA DERECHA (20%) - ACCIÓN */}
+          {/* COLUMNA DERECHA (20%) - ACCIÓN ALINEADA */}
           <div style={{ 
-            padding: "3rem 2rem", 
+            padding: "3rem 1.5rem", 
             backgroundColor: "#1e293b", 
             color: "white",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
-            gap: "3rem",
-            textAlign: "center"
+            paddingTop: "4.5rem" // ALINEACIÓN PRECISA CON EL NOMBRE
           }}>
+            {/* 2. GARANTÍA A LA ALTURA DEL NOMBRE */}
             <div style={{ 
               background: "rgba(255,255,255,0.03)", 
-              padding: "2rem 1.5rem",
-              borderRadius: "1.5rem",
-              border: "1px solid rgba(255,255,255,0.05)",
-              width: "100%"
+              padding: "1.5rem 1.2rem",
+              borderRadius: "1.2rem",
+              border: "1px solid rgba(255,255,255,0.08)",
+              width: "100%",
+              marginBottom: "4.5rem", // ESPACIO PARA ALINEAR EL BOTÓN ABAJO
+              textAlign: "center"
             }}>
-              <p style={{ fontWeight: 900, fontSize: "0.9rem", margin: "0 0 1rem", letterSpacing: "1px" }}>GARANTÍA</p>
-              <p style={{ fontSize: "0.85rem", opacity: 0.8, lineHeight: 1.5 }}>
-                Si la primera sesión no te parece <strong style={{color: "#60a5fa"}}>GENIAL</strong>, te devuelvo tu dinero.
+              <p style={{ fontWeight: 900, fontSize: "0.8rem", margin: "0 0 0.8rem", letterSpacing: "1px", color: "#94a3b8" }}>GARANTÍA</p>
+              <p style={{ fontSize: "0.8rem", opacity: 0.9, lineHeight: 1.4 }}>
+                Si la primera sesión no te parece <strong style={{color: "#60a5fa", fontWeight: 900}}>GENIAL</strong>, te devuelvo tu dinero.
               </p>
             </div>
 
+            {/* 2. BOTÓN RESERVAR A LA ALTURA DE LA PROFESIÓN */}
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -206,9 +232,9 @@ export default function PreviewLanding() {
                 backgroundColor: "#3b82f6",
                 color: "white",
                 border: "none",
-                padding: "1.5rem",
-                borderRadius: "1.2rem",
-                fontSize: "1.2rem",
+                padding: "1.2rem",
+                borderRadius: "1rem",
+                fontSize: "1.1rem",
                 fontWeight: 900,
                 cursor: "pointer",
                 width: "100%",
@@ -216,37 +242,39 @@ export default function PreviewLanding() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "0.8rem"
+                gap: "0.6rem"
               }}
             >
               RESERVAR
-              <ArrowRight size={20} />
+              <ArrowRight size={18} />
             </motion.button>
 
-            <p style={{ fontSize: "0.7rem", opacity: 0.4, maxWidth: "150px" }}>
-              * Consulta sujeta a disponibilidad. Reservas 100% seguras.
-            </p>
+            <div style={{ marginTop: "auto", paddingBottom: "1rem", textAlign: "center" }}>
+                <p style={{ fontSize: "0.65rem", opacity: 0.4 }}>
+                    Reserva segura vía SSL
+                </p>
+            </div>
           </div>
 
         </div>
       </main>
 
-      {/* FOOTER MINIMALISTA INTEGRADO */}
-      <footer style={{ padding: "1rem 8%", fontSize: "0.8rem", opacity: 0.5, textAlign: "center" }}>
-        © 2026 Bolton Digital - Todos los derechos reservados
+      {/* FOOTER */}
+      <footer style={{ padding: "0.8rem 8%", fontSize: "0.75rem", opacity: 0.4, textAlign: "center" }}>
+        Bolton Digital Ecosystem © 2026
       </footer>
 
-      {/* WHATSAPP CONECTADO VISUALMENTE */}
+      {/* WHATSAPP */}
       <a 
         href={`https://wa.me/${phone.replace(/\D/g, '')}`} 
         style={{
           position: "fixed",
-          bottom: "2.5rem",
-          right: "2.5rem",
+          bottom: "2rem",
+          right: "2rem",
           backgroundColor: "#25d366",
           color: "white",
-          width: "65px",
-          height: "65px",
+          width: "60px",
+          height: "60px",
           borderRadius: "50%",
           display: "flex",
           alignItems: "center",
@@ -255,18 +283,18 @@ export default function PreviewLanding() {
           zIndex: 1000
         }}
       >
-        <MessageCircle size={35} fill="currentColor" />
+        <MessageCircle size={32} fill="currentColor" />
       </a>
 
       <style>{`
         @media (max-width: 1024px) {
-          main { overflow-y: auto !important; height: auto !important; }
+          main { overflow-y: auto !important; height: auto !important; padding: 1rem !important; }
           main > div { 
             grid-template-columns: 1fr !important;
             height: auto !important;
-            margin-top: 2rem;
           }
-          .no-scroll { overflow: auto !important; }
+          header { padding: 1rem 5% !important; flex-direction: column; text-align: center; gap: 1rem; }
+          .col-right { padding-top: 2rem !important; }
         }
       `}</style>
     </div>
