@@ -1,0 +1,349 @@
+Hora de inicio de la reunión: 2026-03-26 09:53 GMT-3
+Asistentes
+Claudio Fernández Bolton
+Transcripción
+Claudio Fernández Bolton: Muy bien, vamos a revisar algunas campañas para poder detectar cuáles son los patrones y los criterios que utilizo actualmente para eh optimizar, mejorar las distintas campañas y también ir creando distintos elementos.
+Claudio Fernández Bolton: Voy a comenzar aquí por la campaña que le vamos a llamar la campaña uno.
+Claudio Fernández Bolton: La campaña uno.
+Claudio Fernández Bolton: Vamos a ver.
+Claudio Fernández Bolton: Lo primero que voy a revisar es si la campaña está encendida o no encendida.
+Claudio Fernández Bolton: En este caso, la campaña está encendida.
+Claudio Fernández Bolton: Como está encendida, me pongo a revisar las métricas de los últimos 7 días para comprender el último contexto.
+Claudio Fernández Bolton: Simplemente estoy revisando que hasta aquí veo que hay 12 clics, una impresión de 84 impresiones, por lo tanto un CTR del de 14.29% con un costo promedio por click de 1403.
+Claudio Fernández Bolton: Hasta aquí la cantidad de clicks de los últimos 7 días me parece normal.
+Claudio Fernández Bolton: El CTR me parece fantástico.
+Claudio Fernández Bolton: Ya si estamos por sobre un 6% de CTR me parece bien.
+Claudio Fernández Bolton: En este caso tenemos 14, lo que es más del doble de lo aceptado.
+Claudio Fernández Bolton: El costo por click de 1403 pesos me parece coherente siempre y cuando estemos en una localidad que e que esté eh normal.
+Claudio Fernández Bolton: Por ejemplo, una localidad normal, en este caso es Santa Cruz, pero si estuviéramos en la comuna, por ejemplo, de Providencia en Santiago, las Condes, eh serían eh sería un un costo por clic bajo.
+Claudio Fernández Bolton: Ya en este caso, cualquier comuna no conocidísima o no sobrepoblada, donde haya harta harto dinero en las personas que habitan ahí, 1400es, está bien.
+Claudio Fernández Bolton: Ya, pero si fuera en las comunas más con un nivel socioeconómico más alto, 1400 pesos, sería barato el costo por clic.
+Claudio Fernández Bolton: ¿Ya?
+Claudio Fernández Bolton: Entonces, en total estos últimos 7 días en esta campaña, la campaña uno, se han gastado 16000 16,839 pesos.
+Claudio Fernández Bolton: Bien, ahora, ¿qué voy a medir?
+Claudio Fernández Bolton: Que la las conversiones, ¿cuántas conversiones van?
+Claudio Fernández Bolton: Y esto es muy importante porque en esta campaña que estoy viendo dice cero conversiones.
+Claudio Fernández Bolton: Por lo tanto, la primera sugerencia que le voy a hacer aquí a la persona, a este dueño de de esta campaña, es revisar el tema de las conversiones.
+Claudio Fernández Bolton: Tienen que estar bien configuradas.
+Claudio Fernández Bolton: Por lo tanto, ese es el primer tema que tenemos que tener, que las conversiones estén funcionando bien.
+Claudio Fernández Bolton: ¿Okay?
+Claudio Fernández Bolton: Y esto se transforma, por supuesto, en una en una sugerencia directa que el cliente, si es que está configurado en la plataforma debería poder habilitar y configurar las conversiones de forma rápida.
+Claudio Fernández Bolton: configurar conversiones, ya porque aquí hay dos opciones, o las configuración de las conversiones no se ha hecho correctamente o realmente no está teniendo conversiones.
+Claudio Fernández Bolton: Para eso voy a mirar las métricas de los últimos 30 días y veo que sí hubo conversiones.
+Claudio Fernández Bolton: En este caso hubo ocho conversiones.
+Claudio Fernández Bolton: ¿Qué me muestra esto?
+Claudio Fernández Bolton: sí están configuradas en el sitio.
+Claudio Fernández Bolton: Por lo tanto, la sugerencia de configurar conversiones no está eh no sería correcta.
+Claudio Fernández Bolton: Acá lo que habría que hacer es ir a determinar qué está ocurriendo en el sitio web, que se están generando pocas conversiones.
+Claudio Fernández Bolton: ¿Qué cosas podríamos sugerirle a la persona que vaya a ver al sitio web?
+Claudio Fernández Bolton: En este caso, yo voy a voy a entrar a su sitio web.
+00:05:00
+Claudio Fernández Bolton: y puedo ver de inmediato que la información de su página está correcta.
+Claudio Fernández Bolton: Por ejemplo, en el título de la página dice atención psicológica para adultos y adolescentes.
+Claudio Fernández Bolton: Ya.
+Claudio Fernández Bolton: Si el cliente la información que tenemos de él es que es psicólogo y atiende adultos, estaría correcto que el título dijera algo así como atención psicológica para adultos.
+Claudio Fernández Bolton: Bien, entonces aquí lo que habría que hacer, dijimos, es empezar a revisar la información de la página web, ¿cierto?
+Claudio Fernández Bolton: Revisar página web o podríamos llamarle revisar landing page, ¿cierto?
+Claudio Fernández Bolton: Vemos que está correcta la ortografía, ¿cierto?
+Claudio Fernández Bolton: aparece consulta ubicada aquí en Santa Cruz porque es la comuna que corresponde.
+Claudio Fernández Bolton: Por supuesto va a corresponder dependiendo de cada cliente de dónde es.
+Claudio Fernández Bolton: Aparece su nombre PS.
+Claudio Fernández Bolton: Ah, aquí importante cuando diga consulta ubicada en Santa Cruz no tiene que salir una dirección específica, no se sugiere eso.
+Claudio Fernández Bolton: Ya.
+Claudio Fernández Bolton: Por lo tanto, si se detecta que hay una una dirección específica, como por ejemplo calle Arturo, Prat 500, no, tiene que ser simplemente consulta ubicada en y que aparezca la comuna, nada más.
+Claudio Fernández Bolton: Ya vamos al nombre.
+Claudio Fernández Bolton: El nombre aquí dice el parte con PS que es el diminutivo de psicólogo.
+Claudio Fernández Bolton: PS punto, aparece el nombre, aparece el segundo nombre, aparece el apellido y aparece el segundo apellido.
+Claudio Fernández Bolton: Está perfecto eso, pero solamente en algunos nombres se sugiere ambos nombres.
+Claudio Fernández Bolton: Por ejemplo, si es José Miguel, es como un nombre que va como junto con el segundo nombre, ¿cierto?
+Claudio Fernández Bolton: José Miguel.
+Claudio Fernández Bolton: Pero si fuera en mi caso, por ejemplo, Claudio Andrés, mejor poner solamente Claudio, porque Claudio Andrés no es un nombre que realmente eh tenga que ir junto con el segundo nombre.
+Claudio Fernández Bolton: Bueno, segundo criterio con el tema del nombre.
+Claudio Fernández Bolton: Si vemos que el nombre de el psicólogo es un apellido como extranjero o bonito el primer apellido y el segundo apellido es más bien como español, común, típico,
+Claudio Fernández Bolton: se podría sugerir que el segundo apellido solamente quede con la inicial.
+Claudio Fernández Bolton: Ya, si fuera mi caso, por ejemplo, Claudio Fernández Bolton, tendrían que aparecer los dos apellidos porque el segundo es más bien como extranjero, ¿ya?
+Claudio Fernández Bolton: Pero si yo me llamara Claudio Bolton Fernández, se sugeriría que el segundo apellido quedara solo con la F. Punto.
+Claudio Fernández Bolton: Nada más.
+Claudio Fernández Bolton: Ya.
+Claudio Fernández Bolton: Para que resalte el apellido extranjero.
+Claudio Fernández Bolton: Bien.
+Claudio Fernández Bolton: Si es un apellido extranjero muy extraño, como algo así medio ruso, Storkovic, ya sería importante ver si el segundo apellido es más bien español o chileno o dependiendo del país que sea el cliente para eh que no se vea
+Claudio Fernández Bolton: tan extranjero para la persona para las personas latinas.
+Claudio Fernández Bolton: Entonces ahí habría que poner el segundo apellido también.
+Claudio Fernández Bolton: Ya vamos a la siguiente línea.
+Claudio Fernández Bolton: Acá el psicólogo describe, dice, "Psicólogo clínico con más de 16 años de experiencia, magíst en neuropsicología clínica, diplomado en liderazgo social." Ya,
+Claudio Fernández Bolton: eso me parece mucho.
+Claudio Fernández Bolton: Ya.
+Claudio Fernández Bolton: La idea es que en esa línea simplemente aparezca profesión, ocupación y años de experiencia, siempre y cuando tenga más de 10 o de 12 años de experiencia.
+Claudio Fernández Bolton: ¿Ya?
+Claudio Fernández Bolton: Entonces, en este caso, yo sugeriría que diga psicólogo y psicoterapeuta con más de 16 años de experiencia clínica nada más.
+Claudio Fernández Bolton: Ya.
+Claudio Fernández Bolton: Cualquier referencia a posttítulos, diplomados o en qué universidad estudió, no es necesario.
+Claudio Fernández Bolton: Bien, abajito aparece una línea que dice atención psicológica para adultos, adolescentes y parejas.
+Claudio Fernández Bolton: ¿Está correcto?
+Claudio Fernández Bolton: En el caso de los adultos en general, yo sugiero que no diga tanto.
+Claudio Fernández Bolton: O sea, ojalá una cosa, por ejemplo, atención psicológica para adultos o que diga atención psicológica para adolescentes o que diga atención psicológica para parejas.
+Claudio Fernández Bolton: Pero tantas, no, tiene que ser una, máximo dos.
+Claudio Fernández Bolton: Bien, cuando vemos las áreas de experiencia, aparece aquí ansiedad, depresión, trauma complejo, herida de infancia, trastorno de personalidad, etcétera, aparecen muchas cositas.
+Claudio Fernández Bolton: está bastante bien.
+Claudio Fernández Bolton: Tienen que haber por lo menos 15 temas que sean, ojo, no técnicos en lenguaje psicológico, o sea, no como como poner trastorno crítico de la ansiedad deprimida, no, es lenguaje popular, ansiedad,
+00:10:00
+Claudio Fernández Bolton: depresión, eh trastorno obsesivo, compulsivo, eso se entiende comúnmente, pero tan técnicos, ¿no?
+Claudio Fernández Bolton: Bien, lo siguiente, vamos a revisar la fotografía.
+Claudio Fernández Bolton: importante evaluar la foto.
+Claudio Fernández Bolton: La foto está correcta en este caso, pero habría que detectarla y por lo tanto habría que en este caso revisar la página y la foto del del usuario y darle una retroalimentación con respecto a eso.
+Claudio Fernández Bolton: Si la inteligencia artificial que tenemos en esta plataforma no permite hacerlo de forma automática, hay que sugerirle que vaya a la sección de asistentes y evalúe su fotografía en el en el asistente que retroalimenta sobre las fotografías.
+Claudio Fernández Bolton: ¿Okay?
+Claudio Fernández Bolton: Okay.
+Claudio Fernández Bolton: Después revisamos que el número de teléfono que está escrito arriba realmente concuerde con el eh psicólogo, ¿ya?
+Claudio Fernández Bolton: Por lo tanto, también le podemos decir, revisa tu teléfono en la landing page.
+Claudio Fernández Bolton: Ya.
+Claudio Fernández Bolton: Revisar foto, dijimos revisar e que el teléfono esté bien escrito.
+Claudio Fernández Bolton: Bien.
+Claudio Fernández Bolton: Eh, dijimos título de landing.
+Claudio Fernández Bolton: Dijimos revisarón.
+Claudio Fernández Bolton: Okay.
+Claudio Fernández Bolton: Siguiente.
+Claudio Fernández Bolton: Vamos a revisar que el enlace de WhatsApp esté correcto.
+Claudio Fernández Bolton: Bien.
+Claudio Fernández Bolton: Entonces, le podemos decir al cliente que revise bien si el si el WhatsApp está correcto y lo presione y después de presionarlo que o que alguien lo presione, que no sea el mismo y que verifique si aparece la
+Claudio Fernández Bolton: misma fotografía en el perfil de WhatsApp que la fotografía que aparece en la landing page.
+Claudio Fernández Bolton: Ya tiene que aparecer ojalá esa fotografía de forma pública ya de forma pública, porque solo si está pública la van a poder ver los potenciales pacientes, ¿ya?
+Claudio Fernández Bolton: Si no no lo van a poder ver porque no lo van a tener registrado en su WhatsApp.
+Claudio Fernández Bolton: Okay.
+Claudio Fernández Bolton: Siguiente.
+Claudio Fernández Bolton: Revisamos los botones de reserva ahora que realmente se estén abriendo el formulario, que aparezca la pregunta uno correctamente, que dice, "¿Para cuándo necesitas la hora, que las opciones estén bien?" La segunda pregunta,
+Claudio Fernández Bolton: ¿qué horario te acomodaría más que esté correcto?
+Claudio Fernández Bolton: que ponerle el nombre a la tercera pregunta que dice ingresa tu nombre, escribir el nombre y la cuarta pregunta que dice e que dice ingresa tu número de teléfono.
+Claudio Fernández Bolton: Eso y enviar se le tiene que sugerir al al usuario enviar un par de eh formularios de prueba para ver si le llegan o no le llegan las notificaciones al correo al
+Claudio Fernández Bolton: psicólogo.
+Claudio Fernández Bolton: Ya se debe enviar el formulario de prueba.
+Claudio Fernández Bolton: Ojalá usando ambos botones que están en la landing page, ¿ya?
+Claudio Fernández Bolton: Porque podría uno estar funcionando bien y el otro no, así que hay que probar ambos.
+Claudio Fernández Bolton: Bien, lo último que le sugiero a la persona aquí en la página, no, no lo último, lo penúltimo, es realmente mirar su página y y verificar si considera que está bien o no está bien.
+Claudio Fernández Bolton: Lo último es revisarla en formato e móvil, ya porque ahí es el formato que probablemente más las personas lo revisen.
+Claudio Fernández Bolton: En este caso estoy escribiendo aquí y se tiene que ver en el siguiente orden.
+Claudio Fernández Bolton: Se tiene que ver el título arriba, ¿cierto?
+00:15:00
+Claudio Fernández Bolton: Atención psicológica para adultos.
+Claudio Fernández Bolton: Abajito, pequeño, tiene que estar el teléfono.
+Claudio Fernández Bolton: Debajito, en un recuadro un poquito más oscuro, la consulta dónde está ubicada.
+Claudio Fernández Bolton: Un poquito más abajo, el nombre del profesional.
+Claudio Fernández Bolton: Abajo de eso y ya.
+Claudio Fernández Bolton: Por lo tanto, al medio de la pantalla, sin necesidad de scroll, eh, aparece la fotografía.
+Claudio Fernández Bolton: Debito de la fotografía, el primer botón de reservar.
+Claudio Fernández Bolton: Ahora después aparece la información que dijimos psicólogo, psicoterapeuta con más de 16 años de experiencia dependiendo la cantidad de años que que tenga el el psicólogo, por supuesto.
+Claudio Fernández Bolton: Abajito, atención psicológica para adulto nuevamente y después las áreas de experiencia, ansiedad, depresión, etcétera.
+Claudio Fernández Bolton: 15 temas ahí.
+Claudio Fernández Bolton: Y por último, abajito el botón de reservadora de nuevo.
+Claudio Fernández Bolton: Y ahora sí, por último, el botoncito de WhatsApp al lado inferior derecho.
+Claudio Fernández Bolton: Bien, con eso damos por terminada la revisión de la página de aterrizaje.
+Claudio Fernández Bolton: Ya volvemos a revisar la campaña y y verificamos.
+Claudio Fernández Bolton: Lo siguiente,
+Claudio Fernández Bolton: vamos a revisar por dentro el anuncio.
+Claudio Fernández Bolton: y vemos que esté todo bien escrito como corresponde los títulos, que la eficiencia eficacia del anuncio sea
+Claudio Fernández Bolton: excelente.
+Claudio Fernández Bolton: Bien, está todo correcto.
+Claudio Fernández Bolton: Y por último, y por último nos vamos a lo que es e la sección recursos de esa campaña.
+Claudio Fernández Bolton: Bien, nos vamos a la sección recursos y y vemos si Google ya ha habilitado algún tipo de eh recurso adicional.
+Claudio Fernández Bolton: Por ejemplo, el que más los que tenemos que tener sí o sí desde un principio son los títulos, por supuesto, descripciones, textos destacados.
+Claudio Fernández Bolton: Ya.
+Claudio Fernández Bolton: Entonces, aquí hay algunas sugerencias que tienen que ver con los anuncios.
+Claudio Fernández Bolton: E revisar anuncios, ¿cierto?
+Claudio Fernández Bolton: Que esté con la eficacia.
+Claudio Fernández Bolton: eficacia.
+Claudio Fernández Bolton: Excelente.
+Claudio Fernández Bolton: Y también nos vamos a ver los recursos, en este caso que hayan textos destacados, dijimos.
+Claudio Fernández Bolton: Y si revisamos los textos destacados, a mí me gusta que aparezcan agenda disponible, el segundo texto destacado que diga profesional recomendado, tercer texto destacado que diga excelentes resultados y otro texto destacado podría decir
+Claudio Fernández Bolton: reembolso y sapres.
+Claudio Fernández Bolton: Bien, nos vamos al siguiente recurso que aquí sería el de llamada.
+Claudio Fernández Bolton: Muy importante que esté configurado el el recurso de llamadas.
+Claudio Fernández Bolton: Aquí hay que verificar bien eh ojalá lo puede hacer la misma inteligencia artificial de crear un anuncio, una un recurso de llamada.
+Claudio Fernández Bolton: tiene que verificar que no haya ya uno y escribir correctamente el número según el código de país que hay en la landing page e con el número de teléfono que tiene el usuario.
+Claudio Fernández Bolton: Bien, el siguiente recurso tiene que ver con enlaces de sitio.
+Claudio Fernández Bolton: Ya.
+Claudio Fernández Bolton: Acá muy importante porque la IA va a tener que ver la forma de enviar a es crear un
+Claudio Fernández Bolton: desafío que tiene que ser automático para el usuario en el que se presiona el botón de crear.
+00:20:00
+Claudio Fernández Bolton: enlaces de sitio y por lo tanto la IA debería enviar una edición de la landing page del usuario,
+Claudio Fernández Bolton: tomando en cuenta cuál es la landing page que tiene asociada en Versel y crear cuatro, ¿cómo se dice?
+Claudio Fernández Bolton: secciones, como denominarlas como con un ancla para que pueda tener el enlace como nombre del sitiocl/
+Claudio Fernández Bolton: sl gato agenda y así crear cuatro distintos para poder crear estos enlaces de sitio dentro de los recursos de Google Ads.
+Claudio Fernández Bolton: Bien.
+Claudio Fernández Bolton: Y ahí se completa, por ejemplo, el primer enlace de sitio que yo sugiero dice, se llama reserva inmediata.
+Claudio Fernández Bolton: El título dice agenda.
+Claudio Fernández Bolton: Ahora, a ver, vamos a revisarlo por dentro.
+Claudio Fernández Bolton: Reserva inmediata es el texto del enlace de sitio.
+Claudio Fernández Bolton: Línea descriptiva uno dice, accede ahora a la agenda.
+Claudio Fernández Bolton: Línea descriptiva dos, disponibilidad de agenda, ¿ya?
+Claudio Fernández Bolton: Y la URL final, en este caso termina con el slatch gato inicio.
+Claudio Fernández Bolton: Bien, el segundo enlace de sitio que tenemos aquí se llama en el texto de enlace de sitio se llama consultas e información.
+Claudio Fernández Bolton: La línea descriptiva uno realiza una consulta antes.
+Claudio Fernández Bolton: Línea descriptiva dos toma contacto ahora.
+Claudio Fernández Bolton: Y la URL final tiene la URL como corresponde slat gato Bien.
+Claudio Fernández Bolton: El tercer enlace de sitio se llama sesión psicológica, el texto del enlace de sitio.
+Claudio Fernández Bolton: Y la línea descriptiva uno dice, comienza tu terapia.
+Claudio Fernández Bolton: Línea descriptiva dos, realiza una solicitud.
+Claudio Fernández Bolton: Y la URL termina en slash gato detetalles.
+Claudio Fernández Bolton: Vamos con la cuarta.
+Claudio Fernández Bolton: El texto del enlace de sitio se llama contacto y ahí, por supuesto, hay que ir poniendo línea descriptiva uno, línea descriptiva dos.
+Claudio Fernández Bolton: y la URL con una que corresponda realmente a la landing page.
+Claudio Fernández Bolton: Bien, entonces enlaces de sitio.
+Claudio Fernández Bolton: Hay que estar verificando que eso esté correctamente.
+Claudio Fernández Bolton: La siguiente, el siguiente recurso son recursos que Google Ads no siempre tiene habilitados, pero hay que tenerlos.
+Claudio Fernández Bolton: el que se llama mensaje, que es para enviar un WhatsApp directo, se tiene que configurar con por supu por supuesto el código de país que corresponde al usuario.
+Claudio Fernández Bolton: Chile en este caso pueden ser otros países, por supuesto, pero este este ejemplo que estoy viendo en Chile y vemos que esté bien puesto el número de teléfono en el mensaje de inicio y yo pongo, "Hola, solicito una hora de atención psicológica,
+Claudio Fernández Bolton: por favor." Ya,
+Claudio Fernández Bolton: en llamada a la acción pongo más información y en descripción de la llamada a la acción dice, contacta ahora al profesional.
+Claudio Fernández Bolton: Bien.
+Claudio Fernández Bolton: Y por último tenemos el último recurso llamado imagen.
+Claudio Fernández Bolton: ¿Ya?
+Claudio Fernández Bolton: Y acá es importante verificar también si el usuario tiene e las imágenes añadidas.
+Claudio Fernández Bolton: Principalmente la más importante es su foto de la landing page.
+Claudio Fernández Bolton: Ya, la foto de la landing page tiene que estar por lo por lo tanto ahí en ese recurso de imagen de Google Ads.
+Claudio Fernández Bolton: Bien.
+Claudio Fernández Bolton: Okay.
+Claudio Fernández Bolton: Después lo que hacemos es calcular.
+Claudio Fernández Bolton: Lo que tenemos que hacer ahora es
+Claudio Fernández Bolton: calcular
+00:25:00
+Claudio Fernández Bolton: calcul.
+Claudio Fernández Bolton: ular si está siendo rentable o no esta campaña.
+Claudio Fernández Bolton: Por lo tanto, tendría que ocurrir que dentro de la información con la que cuenta la inteligencia artificial es
+Claudio Fernández Bolton: saber cuánto cobra el psicólogo o el profesional.
+Claudio Fernández Bolton: ver cuántas conversiones ha tenido.
+Claudio Fernández Bolton: Estas conversiones se extraen de Google Ads, pero también el usuario puede informarlas.
+Claudio Fernández Bolton: Por lo tanto, hay que revisar tanto Google Ads como si el usuario ha indicado que ha recibido más como mensajes o llamadas, las cuales Google Ads no logra capturar.
+Claudio Fernández Bolton: Em, necesitamos ver cuántas de estas conversiones realmente han sido pacientes atendidos.
+Claudio Fernández Bolton: Necesitamos ver cuál es la adherencia que tiene este profesional en términos generales.
+Claudio Fernández Bolton: Calcular adherencia.
+Claudio Fernández Bolton: Entonces tenemos, ¿cuánto cobra el profesional?
+Claudio Fernández Bolton: ¿Cuántas conversiones?
+Claudio Fernández Bolton: ¿Cuántos de esos han sido realmente atenciones?
+Claudio Fernández Bolton: ¿Cuántos de esos leads se convirtieron realmente en pacientes?
+Claudio Fernández Bolton: ¿Y cuál es la adherencia que tiene el profesional?
+Claudio Fernández Bolton: En este caso, por ejemplo, el promedio es de 10 sesiones por con cada paciente concretado.
+Claudio Fernández Bolton: Si fuera así, habría que calcular que, por ejemplo, tuvo un ejemplo, tuvo e 10 conversiones, o sea, personas que llenaron un formulario, cinco atenciones,
+Claudio Fernández Bolton: cobra.
+Claudio Fernández Bolton: por sesión.
+Claudio Fernández Bolton: Entonces, si tuvo cinco cinco pacientes nuevos con 30,000 pesos, sería por cada primera sesión con cada uno, tuvo 3 *
+Claudio Fernández Bolton: 5 15,000 pesos.
+Claudio Fernández Bolton: Ya, pero vamos a suponer que la adherencia que que tiende a tener con cada paciente es de 10 sesiones, tendríamos eh ya no 150,000 pesos, sino que por 10. Por lo tanto, sería e 150 1,500,000 pesos, ¿cierto?
+Claudio Fernández Bolton: Perfecto.
+Claudio Fernández Bolton: Y ahí se calcula ese monto de ingresos y además se muestra en el periodo el periodo de
+Claudio Fernández Bolton: cálculo.
+Claudio Fernández Bolton: Y por último, se hace una comparación entre el gasto publicitario y el ingreso.
+Claudio Fernández Bolton: Y ahí se deja una ganancia.
+Claudio Fernández Bolton: Vale, perfecto.
+Claudio Fernández Bolton: Entonces, en el caso de él, de este usuario, yo realmente recomendaría ir a revisar ahora en qué posición está saliendo en las búsquedas.
+00:30:00
+Claudio Fernández Bolton: Eso lo podemos buscar en Google Ads.
+Claudio Fernández Bolton: Vamos aquí.
+Claudio Fernández Bolton: Buscamos los últimos 7 días.
+Claudio Fernández Bolton: está apareciendo en la parte superior absoluta el 97% de las veces y en el y la impresión en la parte superior el 100% de las veces.
+Claudio Fernández Bolton: Bien, excelente.
+Claudio Fernández Bolton: Eso significa que está apareciendo lo más alto posible.
+Claudio Fernández Bolton: Ahora, lo único que nos falta por descubrir es si hay impresiones perdidas.
+Claudio Fernández Bolton: ¿Y por qué motivos?
+Claudio Fernández Bolton: Entonces nos vamos a descubrir.
+Claudio Fernández Bolton: Voy a modificar las columnas.
+Claudio Fernández Bolton: Vamos a descubrir las impresiones perdidas de la búsqueda por ranking y las impresiones perdidas de la búsqueda por presupuesto.
+Claudio Fernández Bolton: Bien, en este caso que estoy analizando un el porcentaje de impresiones perdidas de la búsqueda por ranking es de un 8%.
+Claudio Fernández Bolton: Es muy bajito y el y por y por presupuesto 0%.
+Claudio Fernández Bolton: Por lo tanto, muy muy bien.
+Claudio Fernández Bolton: Ya.
+Claudio Fernández Bolton: Fantástico.
+Claudio Fernández Bolton: Y eso sería todo.
+Claudio Fernández Bolton: Ya podemos sacar una buena recomendación a este usuario, que sería simplemente mantener el ritmo.
+Claudio Fernández Bolton: Bien, se le puede sugerir a este usuario tener tal vez e buscar probar otra fotografía durante un tiempo.
+Claudio Fernández Bolton: Sería la única opción porque está todo bastante bien en las métricas de este usuario.
+Claudio Fernández Bolton: Eso sería todo.
+Claudio Fernández Bolton: Vamos a buscar otro otro caso, otro caso para que pueda realmente servir, para que veas cómo pienso yo.
+Claudio Fernández Bolton: Vamos a entrar aquí a la campaña dos, ya una cuenta de otro cliente.
+Claudio Fernández Bolton: la campaña dos.
+Claudio Fernández Bolton: Entonces, en este caso miramos los últimos 7 días, los primeros que analizamos y vemos que tiene cero impresiones, cero costo, cero clics, no se está mostrando.
+Claudio Fernández Bolton: Y lo segundo que vemos es cuál será el motivo y veo que la campaña está en pausa.
+Claudio Fernández Bolton: Quiero verificar si esto es algo que está ocurriendo los últimos 7 días no más y la persona pausó o realmente es algo que está pausado hace más tiempo.
+Claudio Fernández Bolton: Entonces voy a poner, voy a revisar los últimos 30 días y veo que está super pausada, super pausado.
+Claudio Fernández Bolton: Tiene cero impresiones, cero clics.
+Claudio Fernández Bolton: Y voy a poner, entonces voy a revisar desde principio de año, todo el año y veo que todo este año tampoco ha tenido movimiento, por lo tanto estamos frente a una campaña detenida y la recomendación, por lo tanto,
+Claudio Fernández Bolton: para esta persona es activar su campaña porque está detenida y si por algún algún motivo la detuvo.
+Claudio Fernández Bolton: Ah, no, aquí tenemos que ver desde siempre.
+Claudio Fernández Bolton: Vamos a ver la métrica desde siempre para ver si alguna vez estuvo movimiento o no.
+00:35:00
+Claudio Fernández Bolton: Ya, desde siempre veo que está cero.
+Claudio Fernández Bolton: Por lo tanto, la única sugerencia para esta persona sería activarla.
+Claudio Fernández Bolton: Si hubiéramos encontrado algún tipo de movimiento antiguo, tendríamos que decirle que nos comente cuál es el motivo de por qué la pausó.
+Claudio Fernández Bolton: Pero le sugerimos activarla, sería la recomendación.
+Claudio Fernández Bolton: Ya vamos a la campaña de la cuenta tres.
+Claudio Fernández Bolton: Cuenta tres.
+Claudio Fernández Bolton: Campaña 3.
+Claudio Fernández Bolton: Угуm.
+Claudio Fernández Bolton: aquí.
+Claudio Fernández Bolton: Entonces, lo primero que vemos en las campañas es que tiene dos campañas encendidas.
+Claudio Fernández Bolton: Aquí ya vemos que hay un problema porque en general yo voy a sugerir siempre tener solo una campaña, ¿ya?
+Claudio Fernández Bolton: a menos que ya haya una campaña que resulta demasiado bien.
+Claudio Fernández Bolton: Ya.
+Claudio Fernández Bolton: Entonces, tenemos dos campañas y lo que estoy viendo es que hay una de búsqueda y una smart.
+Claudio Fernández Bolton: Ya, yo aquí voy a sugerir, probablemente la la persona entró a su campaña y activó crear una campaña smart, lo cual yo no sugeriría.
+Claudio Fernández Bolton: Sí. Entonces, yo le sugeriría lo primero eliminar la campaña Smart, usar solo campaña de búsqueda.
+Claudio Fernández Bolton: Bien, eso es lo primero.
+Claudio Fernández Bolton: Ahora, si analizamos solo la de búsqueda, dice que todos los anuncios se han rechazado.
+Claudio Fernández Bolton: Por lo tanto, habría que ir a buscar qué ocurre con los anuncios.
+Claudio Fernández Bolton: Vamos al anuncio, revisamos el anuncio y no sé por qué estarían rechazados.
+Claudio Fernández Bolton: Se dice acceso, acceso no no accesible.
+Claudio Fernández Bolton: Vamos a apelar.
+Claudio Fernández Bolton: Esa podría ser una recomendación para esta persona, apelar a esos anuncios si realmente están accesibles, ¿cierto?
+Claudio Fernández Bolton: Vamos a revisar la eficiencia de esta campaña y tenemos los últimos 7 días.
+Claudio Fernández Bolton: Partamos por ese análisis.
+Claudio Fernández Bolton: Clicks tenemos 41. Ya me parece que es harto para los últimos 40 los últimos 7 días.
+00:40:00
+Claudio Fernández Bolton: Impresiones 563. Por lo tanto, hay un CTR del 7%.
+Claudio Fernández Bolton: está como en el límite inferior, pero todavía aceptable.
+Claudio Fernández Bolton: Ya cuando es más de cinco, cu 5 se es aceptable.
+Claudio Fernández Bolton: El costo por click a mí me parece que está muy bajo porque es 446 pesos, muy bajo para lo que es esta campaña.
+Claudio Fernández Bolton: Las campañas de psicólogos online rondan actualmente entre 100 a 2500 pesos chilenos el click.
+Claudio Fernández Bolton: Y este está 446. Puede ser una campaña muy buena, pero no sé, no sé si realmente está tan buena.
+Claudio Fernández Bolton: Vamos a tener que revisar las conversiones.
+Claudio Fernández Bolton: Entonces, y las conversiones dice que hay 14 conversiones, o sea, el 34% de las personas que le hacen clic al anuncio terminan haciendo una conversión.
+Claudio Fernández Bolton: está muy bien, muy bueno.
+Claudio Fernández Bolton: Ya, el costo por conversión está en 1300 pes, lo que está fantástico.
+Claudio Fernández Bolton: Por lo tanto, esta campaña yo lo único que haría sería e aplaudir a la persona.
+Claudio Fernández Bolton: De hecho, hay una sugerencia aquí en Google Ads que dice limitada por el presupuesto.
+Claudio Fernández Bolton: ¿Le aumentaría un poquito el presupuesto?
+Claudio Fernández Bolton: Sí, le aumentaría un poquito el presupuesto.
+Claudio Fernández Bolton: Están 7,000 pes diarios.
+Claudio Fernández Bolton: le podríamos poner hasta 12,000 pesos diarios y andaría bien.
+Claudio Fernández Bolton: De todas formas, me gustaría revisar cuánto está el costo máximo por conversión.
+Claudio Fernández Bolton: En este caso vamos a revisar porque está por estrategia de conversión y en este caso podríamos decir que el costo
+Claudio Fernández Bolton: máximo está en 59,923 pesos.
+Claudio Fernández Bolton: Ya.
+Claudio Fernández Bolton: Sí podríamos dejar eso así y aumentar el tema.
+Claudio Fernández Bolton: Eh, en redes aparece red de búsqueda de Google y aparece partners de búsqueda.
+Claudio Fernández Bolton: A mí me gusta eliminar lo que es partners de búsqueda, eliminarlo porque genera tráfico de calidad media, media baja.
+Claudio Fernández Bolton: Ya, eso, eso.
+Claudio Fernández Bolton: Bien.
+Claudio Fernández Bolton: Entonces, habría que preguntarle al usuario cómo están llegando esa cantidad de clientes, se se ha traducido o no se ha traducido en clientes reales esas 14 conversiones de los últimos 7 días.
+Claudio Fernández Bolton: Ya yo eliminaría, como digo, eh la red de partners de búsqueda de Google e los últimos 30 días lo revisaría también dice 18 conversiones y me iría a ver si tal vez esta usuaria por algún motivo
+Claudio Fernández Bolton: debió haber entrado a crear optimizaciones automáticas de Google Ads en Google Ads y eso yo no lo sugiero.
+Claudio Fernández Bolton: Porque a veces Google Ads se pone a aceptar cosas que no realmente no ayudan.
+Claudio Fernández Bolton: Bien, entonces aquí vamos a recomendaciones.
+Claudio Fernández Bolton: No, las campañas ya.
+Claudio Fernández Bolton: No tiene aplicaciones automáticas.
+Claudio Fernández Bolton: Está bueno.
+Claudio Fernández Bolton: Okay, eso sería.
+Claudio Fernández Bolton: Pronto añadiré más información sobre estas más campañas.
+Claudio Fernández Bolton: Por ahora tenemos
+Claudio Fernández Bolton: tres.
+00:45:00
+Claudio Fernández Bolton: En este caso, esta persona, la campaña tres, me gustaría revisarla aquí el tema de la posición, ¿en qué posición está saliendo?
+Claudio Fernández Bolton: Vamos a ver los últimos 7 días.
+Claudio Fernández Bolton: Ya viste en la en la parte superior absoluta un 21% lo que es bajo y en la parte superior un 76%.
+Claudio Fernández Bolton: Igual está bueno ya en ese sentido es como que tal vez está saliendo en la parte en la posición tres o cuatro de la sección superior de los resultados de Google Ads.
+Claudio Fernández Bolton: Igual está correcto, está bien.
+Claudio Fernández Bolton: Tampoco hay que luchar por estar en el primer primer lugar, ¿no?
+Claudio Fernández Bolton: Porque a veces es muy caro.
+Claudio Fernández Bolton: Eso por el momento.
+La reunión finalizó después de 00:46:06 👋
+Esta transcripción editable se generó automáticamente y puede contener errores. Los usuarios también pueden cambiar el texto después de que se cree.
+

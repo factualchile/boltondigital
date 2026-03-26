@@ -1315,6 +1315,40 @@ export default function Dashboard() {
                             ))}
                         </div>
 
+                        {/* NUEVA SECCIÓN: CÁLCULO DE RENTABILIDAD (CEREBRO CLAUDIO) */}
+                        {insight?.claudio_roi && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                                className="glass" 
+                                style={{ 
+                                    padding: "2rem", 
+                                    borderRadius: "2rem", 
+                                    background: "linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%)", 
+                                    border: "1px solid rgba(16, 185, 129, 0.2)",
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    gap: "2rem"
+                                }}
+                            >
+                                <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+                                    <div style={{ padding: "1rem", borderRadius: "1.2rem", background: "rgba(16, 185, 129, 0.2)", color: "#10b981" }}>
+                                        <DollarSign size={32} />
+                                    </div>
+                                    <div>
+                                        <span style={{ fontSize: "0.7rem", fontWeight: 900, opacity: 0.5, textTransform: "uppercase", letterSpacing: "1.5px" }}>Rendimiento Estratégico Proyectado</span>
+                                        <h3 style={{ fontSize: "1.75rem", fontWeight: 950, color: "#10b981" }}>{insight.claudio_roi.projected_revenue} CLP</h3>
+                                        <p style={{ fontSize: "0.85rem", opacity: 0.6, marginTop: "0.3rem" }}>{insight.claudio_roi.adherence_logic}</p>
+                                    </div>
+                                </div>
+                                <div style={{ textAlign: "right" }}>
+                                    <div style={{ display: "inline-block", padding: "0.4rem 1rem", borderRadius: "2rem", background: "rgba(16, 185, 129, 0.2)", fontSize: "0.7rem", fontWeight: 900, color: "#10b981", border: "1px solid rgba(16, 185, 129, 0.3)" }}>
+                                        {insight.claudio_roi.status}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
                         {/* 3. RECOMENDACIÓN PRINCIPAL */}
                         <div className="glass" style={{ padding: "2.5rem", borderRadius: "2rem", border: "1px solid rgba(16, 185, 129, 0.2)", position: "relative", overflow: "hidden", background: "linear-gradient(165deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%)" }}>
                             <div style={{ 
