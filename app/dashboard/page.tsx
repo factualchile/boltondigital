@@ -804,12 +804,18 @@ export default function Dashboard() {
   };
 
 
-  const handleUnlink = async () => {
-    if (!user || !window.confirm("¿Estás seguro de que quieres desvincular esta campaña? Se borrará el progreso de estrategia actual para empezar de cero.")) return;
+  const handleUnlink = async (instanceKey?: string) => {
+    const isMotor = instanceKey === 'motor';
+    const confirmMsg = isMotor 
+      ? "¿Estás seguro de que quieres desvincular tu cuenta de Google Ads? Esto detendrá la sincronización del cerebro comercial."
+      : "¿Estás seguro de que quieres desvincular esta campaña? Se borrará el progreso de estrategia actual para empezar de cero.";
+    
+    if (!user || !window.confirm(confirmMsg)) return;
     
     setStatus("fetching");
     try {
-      const res = await secureFetch("/api/ads/campaigns/unlink", { 
+      const endpoint = isMotor ? "/api/ads/motor/unlink" : "/api/ads/campaigns/unlink";
+      const res = await secureFetch(endpoint, { 
         method: "POST", 
         headers: { "Content-Type": "application/json" }, 
         body: JSON.stringify({ userId: user.id }) 
@@ -817,12 +823,18 @@ export default function Dashboard() {
       
       const data = await res.json();
       if (data.success) {
-        setCampaignId(null);
+        if (isMotor) {
+          setCustomerId(null);
+          setCampaignId(null); // Si se va el motor, se va la campaña
+        } else {
+          setCampaignId(null);
+        }
+        
         setBattlePlan(null);
         setMetrics(null);
         setFunnel([]);
         await fetchProgress();
-        showToast("Campaña desvinculada. Puedes crear una nueva estrategia.", "success");
+        showToast(isMotor ? "Cuenta desvinculada correctamente." : "Campaña desvinculada. Puedes crear una nueva estrategia.", "success");
         setCurrentInstance(null);
         setStatus("dashboard");
       } else {
@@ -832,6 +844,61 @@ export default function Dashboard() {
     } catch (err) {
       showToast("Error de conexión al desvincular.", "error");
       setStatus("dashboard");
+    }
+  };
+
+  const handleDeleteLanding = async () => {
+    if (!user || !vercelProjectId || !window.confirm("¿Estás seguro de que quieres eliminar tu landing page? Se borrará el sitio web y el proyecto en Vercel permanentemente.")) return;
+    
+    setStatus("fetching");
+    setDeployingLanding(true);
+    try {
+      // 1. Borrar en Vercel
+      const delRes = await secureFetch("/api/vercel/delete-project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, projectId: vercelProjectId })
+      });
+      
+      const delData = await delRes.json();
+      if (!delData.success) throw new Error(delData.error);
+
+      // 2. Limpiar en Supabase (Settings)
+      await secureFetch("/api/user/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          userId: user.id, 
+          landingUrl: null, 
+          vercelProjectId: null, 
+          customDomain: null 
+        })
+      });
+
+      // 3. Resetear hito de progreso
+      await secureFetch("/api/user/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          userId: user.id, 
+          category: 'clientes', 
+          instanceKey: 'landing', 
+          isCompleted: false 
+        })
+      });
+
+      setLandingUrl(null);
+      setVercelProjectId(null);
+      setCustomDomain("");
+      await fetchProgress();
+      showToast("Landing page eliminada y progreso reseteado.", "success");
+      setCurrentInstance(null);
+      setStatus("dashboard");
+    } catch (err: any) {
+      showToast(`Error al eliminar landing: ${err.message}`, "error");
+      setStatus("dashboard");
+    } finally {
+      setDeployingLanding(false);
     }
   };
 
@@ -1080,6 +1147,7 @@ export default function Dashboard() {
                             instances={[actual]} 
                             onActivate={activateInstance}
                             onUnlink={handleUnlink}
+                            onDeleteLanding={handleDeleteLanding}
                             onEnter={(k) => {
                               if (k === 'motor') handleConnected(customerId!, true);
                               setCurrentInstance(k);
@@ -1162,6 +1230,7 @@ export default function Dashboard() {
                               instances={completed} 
                               onActivate={activateInstance}
                               onUnlink={handleUnlink}
+                              onDeleteLanding={handleDeleteLanding}
                               onEnter={(k) => {
                                 if (k === 'motor') handleConnected(customerId!, true);
                                 setCurrentInstance(k);

@@ -15,25 +15,24 @@ export async function POST(req: Request) {
 
     const db = supabaseAdmin || supabase;
     
-    // 1. Obtener settings y email de Auth
+    // 1. Obtener settings
     const { data: settings } = await db
       .from('user_settings')
-      .select('campaign_survey, email')
+      .select('campaign_survey')
       .eq('user_id', userId)
       .single();
 
-    let userEmail = settings?.email;
 
-    // Si no hay email en settings, lo buscamos en el sistema de Auth (Admin)
-    if (!userEmail && supabaseAdmin) {
+    let userEmail = null;
+
+    // Buscamos el email en el sistema de Auth (Admin)
+    if (supabaseAdmin) {
       const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
       userEmail = userData?.user?.email;
     }
 
-    // Si no hay nada, error crítico (necesitamos destinatario para leads)
-    if (!userEmail) {
-      return NextResponse.json({ error: "No se encontró un email válido para recibir leads" }, { status: 404 });
-    }
+    // Si aún no hay nada, usamos un fallback
+    if (!userEmail) userEmail = "atencion@psicologo.cl";
 
     const survey = formData || settings?.campaign_survey || {
         full_name: "Profesional",

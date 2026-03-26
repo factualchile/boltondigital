@@ -17,6 +17,7 @@ interface CategoryPathProps {
   onActivate: (instanceKey: string) => void;
   onEnter: (instanceKey: string) => void;
   onUnlink?: (instanceKey: string) => void;
+  onDeleteLanding?: () => void;
   onGoToDashboard?: () => void;
   onDeployLanding?: () => void;
   onShowDns?: () => void;
@@ -31,6 +32,7 @@ export default function CategoryPath({
   onActivate, 
   onEnter, 
   onUnlink, 
+  onDeleteLanding,
   onGoToDashboard,
   onDeployLanding,
   onShowDns,
@@ -137,16 +139,18 @@ export default function CategoryPath({
                       </div>
                     )}
                   </div>
-                  <p style={{ fontSize: "0.9rem", opacity: 0.6 }}>
+                  <div style={{ fontSize: "0.9rem", opacity: 0.6 }}>
                     {inst.key === 'landing' && landingUrl ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                        <span>URL: <a href={landingUrl} target="_blank" className="hover:underline" style={{ color: 'var(--primary)', fontWeight: 700 }}>{landingUrl}</a></span>
+                        <span>URL: <a href={landingUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 700 }}>{landingUrl}</a></span>
                         {customDomain && (
                           <span style={{ color: '#10b981', fontWeight: 800 }}>Dominio vinculado: {customDomain}</span>
                         )}
                       </div>
-                    ) : inst.description}
-                  </p>
+                    ) : (
+                      inst.description
+                    )}
+                  </div>
                </div>
 
                <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
@@ -160,12 +164,12 @@ export default function CategoryPath({
                           style={{ padding: "0.5rem 1rem", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.5rem" }}
                         >
                            {deployingLanding ? 'Construyendo...' : 'Activar'} 
-                           {deployingLanding ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}><Play size={14} /></motion.div> : <Play size={14} />}
+                           {deployingLanding ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}><RefreshCcw size={14} /></motion.div> : <Play size={14} />}
                         </button>
                       )}
-                      {landingUrl && (
+                      {landingUrl && inst.status === 'completed' && (
                         <>
-                          <a href={landingUrl} target="_blank" className="btn-secondary" style={{ padding: "0.5rem 1rem", fontSize: "0.8rem", textDecoration: "none" }}>
+                          <a href={landingUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ padding: "0.5rem 1rem", fontSize: "0.8rem", textDecoration: "none" }}>
                             Ver Landing
                           </a>
                           <button 
@@ -182,6 +186,17 @@ export default function CategoryPath({
                           >
                              Configurar DNS <ArrowRight size={14} />
                           </button>
+                          
+                          {/* BOTÓN SOLICITADO: Eliminar Landing */}
+                          {onDeleteLanding && (
+                             <button 
+                               onClick={(e) => { e.stopPropagation(); onDeleteLanding(); }}
+                               className="btn-secondary" 
+                               style={{ padding: "0.5rem 1rem", fontSize: "0.8rem", color: "#ef4444", background: "rgba(239, 68, 68, 0.05)", border: "1px solid rgba(239, 68, 68, 0.1)" }}
+                             >
+                               Eliminar landing page
+                             </button>
+                          )}
                         </>
                       )}
                     </div>
