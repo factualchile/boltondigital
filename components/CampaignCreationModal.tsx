@@ -108,7 +108,7 @@ const CampaignCreationModal: React.FC<CampaignCreationModalProps> = ({ onClose, 
                      <Plus size={60} style={{ position: 'absolute', right: '-10px', bottom: '-10px', opacity: 0.1 }} />
                   </button>
                   <button 
-                    onClick={() => { setMode('select'); next(); }}
+                    onClick={() => { setMode('select'); setStep(5); }}
                     style={{ padding: '2rem', borderRadius: '1.2rem', background: mode === 'select' ? 'linear-gradient(135deg, #4b5563, #1f2937)' : 'rgba(255,255,255,0.05)', border: mode === 'select' ? 'none' : '1px solid rgba(255,255,255,0.1)', color: 'white', textAlign: 'left', cursor: 'pointer', borderLeft: mode === 'select' ? 'none' : '4px solid #4b5563' }}
                   >
                      <h4 style={{ fontSize: '1.4rem', fontWeight: 950 }}>Vincular Existente</h4>

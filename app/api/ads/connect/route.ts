@@ -41,26 +41,61 @@ export async function POST(req: Request) {
       developer_token: DEVELOPER_TOKEN,
     });
 
-    const customer = client.Customer({
-      customer_id: cleanedId,
-      refresh_token: REFRESH_TOKEN,
-      login_customer_id: MCC_ID,
-    });
+    // SISTEMA DE CONEXIÓN INTELIGENTE (Standalone VS Managed)
+    const tryConnect = async (useMcc: boolean) => {
+        console.log(`[Bolton Engine] Intentando conexión (Modo MCC: ${useMcc})...`);
+        const customerConfig: any = {
+            customer_id: cleanedId,
+            refresh_token: REFRESH_TOKEN,
+        };
+        
+        // Solo inyectamos el login_customer_id si estamos en modo MCC
+        if (useMcc && MCC_ID) {
+            customerConfig.login_customer_id = MCC_ID.replace(/-/g, "");
+        } else {
+            // Standalone: no usamos manager_id
+        }
 
-    // Test the connection by fetching basic info
-    // This will throw an error if the connection fails or access is denied
-    const results = await customer.query(`
-      SELECT customer.id, customer.descriptive_name 
-      FROM customer 
-      LIMIT 1
-    `);
+        const customer = client.Customer(customerConfig);
 
-    if (results && results.length > 0) {
-      const customerInfo = results[0] as any;
+        const results = await customer.query(`
+            SELECT customer.id, customer.descriptive_name 
+            FROM customer 
+            LIMIT 1
+        `);
+
+        if (results && results.length > 0) {
+            return results[0] as any;
+        }
+        return null;
+    }
+
+    let customerInfo = null;
+    let fallbackUsed = false;
+
+    try {
+        // Intento 1: Como cuenta gestionada (MCC)
+        customerInfo = await tryConnect(true);
+    } catch (e: any) {
+        console.warn("[Bolton Engine] Falló la conexión inicial MCC. Iniciando rescate Standalone...");
+        try {
+            // Intento 2 (Fallback): Como cuenta independiente (Standalone)
+            customerInfo = await tryConnect(false);
+            if (customerInfo) fallbackUsed = true;
+        } catch (e2: any) {
+            console.error("[Bolton Engine] Fallo total en ambos modos.");
+            // Propagamos el error segundo si también falla, es más probable que sea el real (como invalid_grant)
+            throw e2; 
+        }
+    }
+
+    if (customerInfo) {
+      console.log(`[Bolton Engine] ¡Éxito! Conectado a: ${customerInfo.customer.descriptive_name} (Modo Standalone: ${fallbackUsed})`);
       return NextResponse.json({ 
         success: true, 
         name: customerInfo.customer.descriptive_name,
-        id: customerInfo.customer.id 
+        id: customerInfo.customer.id,
+        standalone: fallbackUsed
       });
     }
 

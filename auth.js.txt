@@ -1,0 +1,45 @@
+const { OAuth2Client } = require('google-auth-library');
+const readline = require('readline');
+
+// ⚠️ SUSTITUYE ESTOS DOS VALORES CON TUS CREDENCIALES DE GOOGLE CLOUD ⚠️
+const CLIENT_ID = 'TU_CLIENT_ID_AQUE'; 
+const CLIENT_SECRET = 'TU_CLIENT_SECRET_AQUÍ';
+
+const oauth2Client = new OAuth2Client(
+  CLIENT_ID,
+  CLIENT_SECRET,
+  'urn:ietf:wg:oauth:2.0:oob' // Permite obtener el código de forma visual
+);
+
+const SCOPE = ['https://www.googleapis.com/auth/adwords'];
+
+const url = oauth2Client.generateAuthUrl({
+  access_type: 'offline', // CRÍTICO: Indica que queremos un Refresh Token persistente
+  prompt: 'consent',     // Obliga a Google a mostrar la pantalla de consentimiento
+  scope: SCOPE,
+});
+
+console.log('\n🛡️ BOLTON AUTH ENGINE 🚀');
+console.log('---------------------------');
+console.log('1. Abre este enlace en tu navegador:\n');
+console.log(url);
+console.log('\n---------------------------');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+rl.question('2. Tras autorizar la app, PASTA aquí el CÓDIGO que te dio Google: ', async (code) => {
+  try {
+    const { tokens } = await oauth2Client.getToken(code);
+    console.log('\n✅ ¡ÉXITO! TU NUEVO REFRESH TOKEN ES:\n');
+    console.log(tokens.refresh_token);
+    console.log('\n---------------------------');
+    console.log('⚠️  Copia este token y actualízalo en tus secretos de VERCEL');
+    console.log('Nombre del secreto: GOOGLE_ADS_REFRESH_TOKEN');
+  } catch (err) {
+    console.error('\n❌ ERROR al obtener el token:', err.message);
+  }
+  rl.close();
+});

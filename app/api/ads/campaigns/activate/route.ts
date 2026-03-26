@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase, supabaseAdmin } from "@/lib/supabase";
-import { GoogleAdsApi } from "google-ads-api";
+import { getSmartCustomer } from "@/lib/google-ads";
 import { verifyUser } from "@/lib/auth-server";
-
-const client = new GoogleAdsApi({
-  client_id: process.env.GOOGLE_ADS_CLIENT_ID || "",
-  client_secret: process.env.GOOGLE_ADS_CLIENT_SECRET || "",
-  developer_token: process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "",
-});
 
 export async function POST(req: Request) {
   try {
@@ -31,21 +25,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No se encontró una campaña activa para activar." }, { status: 404 });
     }
 
-    const customerId = settings.google_ads_id.replace(/-/g, "");
+    const customerIdStr = settings.google_ads_id.replace(/-/g, "");
     const campaignId = settings.current_campaign_id;
     const refreshToken = process.env.GOOGLE_ADS_REFRESH_TOKEN;
 
     if (!refreshToken) throw new Error("Google Ads Refresh Token missing in environment");
 
-    console.log(`[Activate] Iniciando activación de campaña ${campaignId} para cliente ${customerId}`);
+    console.log(`[Activate] Iniciando activación de campaña ${campaignId} para cliente ${customerIdStr}`);
 
-    // 3. MUTACIÓN EN GOOGLE ADS
-    const customer = client.Customer({
-      customer_id: customerId,
-      refresh_token: refreshToken,
-    });
+    // 3. OBTENER CLIENTE INTELIGENTE (MCC/Standalone)
+    const customer = await getSmartCustomer(customerIdStr);
 
-    const campaignResourceName = `customers/${customerId}/campaigns/${campaignId}`;
+    const campaignResourceName = `customers/${customerIdStr}/campaigns/${campaignId}`;
 
     await customer.campaigns.update([
       {
