@@ -47,14 +47,14 @@ export default function PreviewLanding() {
       }}>
         <div style={{ display: "flex", flexDirection: "column" }}>
             <h1 className="service-title" style={{ margin: 0, fontSize: "1.8rem", fontWeight: 900, color: "#1e4b6b", letterSpacing: "-0.5px" }}>{service}</h1>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#64748b", fontSize: "0.85rem", fontWeight: 600 }}>
+            <div className="location-box" style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#64748b", fontSize: "0.85rem", fontWeight: 600 }}>
                 <MapPin size={14} />
                 <span>{location}</span>
             </div>
         </div>
         <div className="contact-info" style={{ textAlign: "right" }}>
-            <p style={{ margin: 0, fontSize: "0.7rem", fontWeight: 900, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px" }}>Contacto Directo</p>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.2rem", fontWeight: 800, color: "#2c6a91" }}>
+            <p className="contact-label" style={{ margin: 0, fontSize: "0.7rem", fontWeight: 900, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px" }}>Contacto Directo</p>
+            <div className="phone-box" style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.2rem", fontWeight: 800, color: "#2c6a91" }}>
                 <Phone size={20} />
                 <a href={`tel:${phone}`} style={{ color: "inherit", textDecoration: "none" }}>{phone}</a>
             </div>
@@ -230,10 +230,21 @@ export default function PreviewLanding() {
         /* RESPONSIVE MAGIC */
         @media (max-width: 1024px) {
           .landing-container { height: auto !important; overflow: auto !important; }
-          .header { flex-direction: column; text-align: center; gap: 1rem; padding: 1.5rem 5% !important; }
-          .contact-info { text-align: center !important; }
           
-          .main-content { padding: 1rem !important; display: block !important; }
+          /* HEADER COMPACTO (-33%) */
+          .header { 
+            padding: 0.5rem 5% !important; 
+            flex-direction: column; 
+            text-align: center; 
+            gap: 0.2rem !important; 
+          }
+          .service-title { font-size: 1.2rem !important; line-height: 1.2; }
+          .location-box { font-size: 0.7rem !important; margin-bottom: 0.2rem; }
+          .contact-label { display: none; }
+          .phone-box { font-size: 1rem !important; justify-content: center; }
+          .phone-box svg { width: 16px; height: 16px; }
+          
+          .main-content { padding: 0.5rem !important; display: block !important; }
           .card-wrapper { 
             grid-template-columns: 1fr !important; 
             height: auto !important; 
@@ -241,27 +252,36 @@ export default function PreviewLanding() {
             flex-direction: column !important;
           }
           
-          /* RESET COLUMNS TO FLOW CHILDREN */
           .col-left, .col-center, .col-right { 
             display: contents !important; 
           }
 
-          /* CUSTOM ORDERING PER CLAUDIO'S REQUEST */
-          .main-name { order: 1 !important; text-align: center; padding: 2rem 1rem 0 !important; font-size: 2.2rem !important; white-space: normal !important; width: 100%; box-sizing: border-box; }
-          .profile-img-container { order: 2 !important; margin: 1.5rem auto !important; width: 140px !important; height: 140px !important; }
-          .profession-text { order: 3 !important; text-align: center; margin-bottom: 2rem !important; font-size: 1.1rem !important; }
-          .comp-phrase { order: 4 !important; text-align: center; padding: 0 2rem !important; margin-bottom: 1rem !important; }
-          .small-link-btn { order: 5 !important; margin: 0 auto 2rem !important; display: flex !important; }
-          .experience-text { order: 6 !important; padding: 0 2rem !important; text-align: center; }
-          .specialties-box { order: 7 !important; margin: 2rem !important; text-align: left; }
-          .specialties-grid { grid-template-columns: 1fr !important; }
+          /* CUSTOM ORDERING */
+          .main-name { 
+            order: 1 !important; 
+            text-align: center; 
+            padding: 1.5rem 1rem 0 !important; 
+            font-size: clamp(1.4rem, 6vw, 2rem) !important; /* DINÁMICO PARA UNA SOLA LÍNEA */
+            white-space: nowrap !important; /* UNA SOLA LÍNEA */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%; 
+            box-sizing: border-box; 
+          }
+          .profile-img-container { order: 2 !important; margin: 1rem auto !important; width: 120px !important; height: 120px !important; }
+          .profession-text { order: 3 !important; text-align: center; margin-bottom: 1.5rem !important; font-size: 0.95rem !important; padding: 0 1rem; }
+          .comp-phrase { order: 4 !important; text-align: center; padding: 0 1.5rem !important; margin-bottom: 1rem !important; font-size: 0.8rem !important; }
+          .small-link-btn { order: 5 !important; margin: 0 auto 1.5rem !important; display: flex !important; padding: 0.3rem 0.8rem !important; font-size: 0.7rem !important; }
+          .experience-text { order: 6 !important; padding: 0 1.5rem !important; text-align: center; font-size: 0.9rem !important; }
+          .specialties-box { order: 7 !important; margin: 1.5rem !important; padding: 1.2rem !important; text-align: left; }
+          .specialties-grid { grid-template-columns: 1fr !important; gap: 0.5rem !important; }
           
-          .col-right { display: flex !important; flex-direction: column !important; order: 8 !important; padding: 0 2rem 3rem !important; background: #1e293b !important; }
-          .guarantee-box { order: 1 !important; margin: 2rem 0 !important; }
-          .reserve-btn-main { order: 2 !important; }
+          .col-right { display: flex !important; flex-direction: column !important; order: 8 !important; padding: 0 1.5rem 2rem !important; background: #1e293b !important; }
+          .guarantee-box { order: 1 !important; margin: 1.5rem 0 !important; padding: 1rem !important; }
+          .reserve-btn-main { order: 2 !important; padding: 1rem !important; font-size: 1rem !important; }
           
           .profile-separator { display: none !important; }
-          .whatsapp-float { width: 50px !important; height: 50px !important; bottom: 1.5rem !important; right: 1.5rem !important; }
+          .whatsapp-float { width: 50px !important; height: 50px !important; bottom: 1.2rem !important; right: 1.2rem !important; }
         }
 
         /* HOVERS */
