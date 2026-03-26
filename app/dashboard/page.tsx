@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { LogOut, Radio, BarChart3, Bot, Zap, TrendingUp, MousePointer2, Eye, DollarSign, Target, Loader2, Sparkles, MessageSquare, ArrowRight, ArrowLeft, ShieldCheck, Activity, ThumbsUp, ThumbsDown, Lock, User as UserIcon, Layers, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, MinusCircle, Lightbulb, TrendingDown, Clock, Check, Edit3, MessageCircle, PenTool, Calculator, Calendar, Play, Pause, Filter, Users, Mail, Phone, ExternalLink, UserCheck, BrainCircuit, Star, BarChart, Trophy, Flame, Shield, ShieldAlert, ShieldCheck as ShieldOk, Globe, Layout, Palette, Copy, BookmarkCheck, History, ListRestart, Send, Rocket, LayoutDashboard, Brain, TestTube2, ScrollText, Settings, X as XIcon, Radar, GraduationCap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import GoogleAdsConnect from "@/components/GoogleAdsConnect";
@@ -186,8 +186,8 @@ export default function Dashboard() {
     const init = async () => {
       const rescueTimer = setTimeout(() => {
         setLoadingSettings(false);
-        console.log("Bolton: Protocolo de Rescate Activado (Timeout)");
-      }, 2000);
+        console.warn("[Bolton] Protocolo de Rescate Activado (Timeout 5s). Asegurando renderizado.");
+      }, 5000);
 
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -197,18 +197,18 @@ export default function Dashboard() {
           clearTimeout(rescueTimer);
 
           // DISPARADOR DE BIENVENIDA (Fase 10)
-          // 🛡️ CONTROL DE BIENVENIDA ÚNICA (Solo una vez por sesión de navegador)
-          const welcomeTriggered = sessionStorage.getItem(`welcome_sent_${session.user.id}`);
+          // 🛡️ CONTROL DE BIENVENIDA ÚNICA (Persistencia total con localStorage)
+          const welcomeTriggered = localStorage.getItem(`welcome_sent_${session.user.id}`);
           if (session.user.email_confirmed_at && !welcomeTriggered) {
-            sessionStorage.setItem(`welcome_sent_${session.user.id}`, 'true');
+            localStorage.setItem(`welcome_sent_${session.user.id}`, 'true');
             fetch('/api/notify/welcome', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email: session.user.email, userId: session.user.id })
-            }).catch(e => {
-              console.error("Welcome trigger failed:", e);
-              // Si falla el fetch por red, permitimos reintento eliminando la marca
-              sessionStorage.removeItem(`welcome_sent_${session.user.id}`);
+            }).catch(async (e) => {
+              console.error("[Bolton] Welcome trigger fallback attempt:", e);
+              // Reintento silencioso vía Auth Hook o eliminar marca para siguiente sesión
+              localStorage.removeItem(`welcome_sent_${session.user.id}`);
             });
           }
 
@@ -623,24 +623,38 @@ export default function Dashboard() {
   };
 
   const handleManualComplete = async (instanceKey: string, category: string = 'clientes') => {
-    if (!user) return;
+    if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        showToast("Error estratégico: Tu sesión ha expirado. Forzando reconexión.", "error");
+        setTimeout(() => router.push("/"), 2000);
+        return;
+      }
+      setUser(session.user);
+    }
+    
+    console.log(`[Bolton] Marcando hito manual: ${instanceKey} en ${category}`);
     setStatus("fetching");
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await secureFetch("/api/user/progress", { 
         method: "POST", 
         headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ userId: user.id, category, instanceKey, isCompleted: true }) 
+        body: JSON.stringify({ userId: session?.user?.id || user?.id, category, instanceKey, isCompleted: true }) 
       });
       const data = await res.json();
       if (data.success) {
-        showToast("¡Hito completado!", "success");
-        await fetchProgress();
-        setSuccessMessage({ title: "¡Paso Superado!", body: "Has habilitado la infraestructura necesaria para Bolton." });
+        showToast("¡Hito estratégico superado!", "success");
+        await fetchProgress(); // Sincroniza estado local con Supabase
+        setSuccessMessage({ title: "¡Estructura Blindada!", body: "Has habilitado la infraestructura necesaria para Bolton OS." });
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 5000);
+      } else {
+        throw new Error(data.error);
       }
-    } catch (e) {
-      showToast("Error al sincronizar progreso estratégico.", "error");
+    } catch (e: any) {
+      console.error("[Bolton] Error al guardar progreso:", e);
+      showToast(`Error al sincronizar progreso: ${e.message}`, "error");
     } finally {
       setStatus("dashboard");
     }
@@ -1041,7 +1055,7 @@ export default function Dashboard() {
                   ))}
                 </div>
 
-                <AnimatePresence mode="wait">
+                <AnimatePresence>
                   {(() => {
                     const allChallenges = getInstances("clientes");
                     
@@ -1180,7 +1194,7 @@ export default function Dashboard() {
                               onActivate={activateInstance}
                               onUnlink={handleUnlink}
                               onEnter={() => {}}
-                              onGoToDashboard={() => {}}
+                              onGoToDashboard={() => setActivePilar("dashboard")}
                             />
                         </motion.div>
                       );
@@ -1194,289 +1208,231 @@ export default function Dashboard() {
 
           {activePilar === "dashboard" && (
             <motion.div key="dashboard-pilar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-              <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-                {/* SUB-NAVEGACIÓN DASHBOARD */}
-                <div style={{ display: "flex", gap: "1.5rem", marginBottom: "3rem", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "1rem" }}>
-                  {[
-                    { id: "facil", name: "Fácil" },
-                    { id: "avanzado", name: "Avanzado" },
-                    { id: "clon", name: "Clon Claudio" },
-                  ].map((mode) => (
-                    <button
-                      key={mode.id}
-                      onClick={() => setDashboardMode(mode.id as any)}
-                      style={{
-                        padding: "0.5rem 1rem",
-                        color: dashboardMode === mode.id ? "#8b5cf6" : "var(--muted-foreground)",
-                        fontWeight: 800,
-                        fontSize: "0.9rem",
-                        position: "relative",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer"
-                      }}
-                    >
-                      {mode.name}
-                      {dashboardMode === mode.id && (
-                        <motion.div layoutId="dashboardUnderline" style={{ position: "absolute", bottom: -1, left: 0, right: 0, height: "2px", background: "#8b5cf6" }} />
-                      )}
-                    </button>
-                  ))}
+              <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "1rem" }}>
+                
+                {/* 1. SECCIÓN: ESTADO DEL SISTEMA (AI MSG) */}
+                <div className="glass" style={{ padding: "2.5rem", borderRadius: "2rem", marginBottom: "2rem", background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%)", border: "1px solid rgba(59, 130, 246, 0.2)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "1rem" }}>
+                        <div style={{ padding: "0.8rem", borderRadius: "1.2rem", background: "rgba(59, 130, 246, 0.2)", color: "var(--primary)" }}>
+                            <Bot size={32} />
+                        </div>
+                        <div>
+                            <span style={{ fontSize: "0.75rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "2px", opacity: 0.5 }}>Estado de tu sistema</span>
+                            <h2 style={{ fontSize: "2rem", fontWeight: 950 }}>{insight?.system_status?.label || "Calibrando Visión..."}</h2>
+                        </div>
+                    </div>
+                    <p style={{ fontSize: "1.25rem", fontWeight: 500, lineHeight: 1.6, opacity: 0.8, maxWidth: "800px" }}>
+                        {insight?.system_status?.message || "Bolton está analizando la mejor ruta para conectar con tus próximos pacientes. En unos instantes verás el camino despejado."}
+                    </p>
                 </div>
 
-                <AnimatePresence mode="wait">
-                  {dashboardMode === "facil" && (
-                    <motion.div key="facil-view" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                       <div className="glass" style={{ padding: "4rem", marginBottom: "3rem", borderLeft: "8px solid var(--primary)", background: "linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, transparent 100%)", position: 'relative', overflow: 'hidden' }}>
-                          <div style={{ position: 'absolute', top: '-10%', right: '-5%', opacity: 0.03 }}><Bot size={400} /></div>
-                          
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-                             <div style={{ display: "flex", gap: "1rem", alignItems: "center", color: "var(--primary)" }}>
-                                <div style={{ padding: "0.5rem", background: "rgba(59, 130, 246, 0.1)", borderRadius: "0.5rem" }}><Zap size={24} /></div>
-                                <span style={{ fontWeight: 950, fontSize: "0.9rem", letterSpacing: "3px", textTransform: "uppercase" }}>Diagnóstico Estratégico AI</span>
-                             </div>
-                             <div className="glass" style={{ padding: "0.6rem 1.2rem", borderRadius: "2rem", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(0,0,0,0.2)" }}>
-                                <p style={{ fontSize: "0.7rem", fontWeight: 950, color: "var(--muted)", letterSpacing: "1px" }}>ESTRATEGIA: {campaigns.find(c => c.id.toString() === (campaignId || tempId)?.toString())?.name?.toUpperCase() || "CARGANDO..."}</p>
-                             </div>
-                          </div>
-
-                          <h1 style={{ fontSize: "3.5rem", fontWeight: 950, lineHeight: 1.1, marginBottom: "3rem", letterSpacing: "-1.5px", maxWidth: "900px" }}>
-                            {insight?.diagnosis || FALLBACK_INSIGHT.diagnosis}
-                          </h1>
-
-                          <div className="glass" style={{ padding: "3rem", background: "rgba(59, 130, 246, 0.05)", border: "1px solid rgba(59, 130, 246, 0.2)", borderRadius: "2rem", marginBottom: "3.5rem", position: 'relative', zIndex: 1 }}>
-                             <div style={{ display: "flex", gap: "2rem", alignItems: "flex-start" }}>
-                                <div className="glass" style={{ padding: "1rem", borderRadius: "1.2rem", background: "rgba(59, 130, 246, 0.15)", border: "1px solid rgba(59, 130, 246, 0.4)", boxShadow: "0 0 30px rgba(59, 130, 246, 0.1)" }}>
-                                   <Bot size={40} color="#3b82f6" />
+                <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "2rem" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+                        
+                        {/* 2. SECCIÓN: SEÑALES DE ACTIVIDAD */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1.5rem" }}>
+                            {[
+                                { label: "Visibilidad", value: insight?.activity_signals?.views || "Sincronizando...", icon: Eye, color: "#3b82f6" },
+                                { label: "Interés", value: insight?.activity_signals?.interest || "Procesando...", icon: MousePointer2, color: "#10b981" },
+                                { label: "Contactos", value: insight?.activity_signals?.leads || "Esperando...", icon: UserCheck, color: "#f59e0b" }
+                            ].map((sig, i) => (
+                                <div key={i} className="glass" style={{ padding: "1.5rem", borderRadius: "1.8rem", textAlign: "center", border: "1px solid rgba(255,255,255,0.03)" }}>
+                                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: `${sig.color}15`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
+                                        <sig.icon size={20} color={sig.color} />
+                                    </div>
+                                    <h4 style={{ fontSize: "1.2rem", fontWeight: 950, marginBottom: "0.2rem", letterSpacing: "-0.5px" }}>{sig.value}</h4>
+                                    <p style={{ fontSize: "0.65rem", opacity: 0.4, fontWeight: 900, textTransform: "uppercase", letterSpacing: "1px" }}>{sig.label}</p>
                                 </div>
-                                <div style={{ flex: 1 }}>
-                                   <p style={{ fontSize: "0.8rem", fontWeight: 950, color: "#3b82f6", letterSpacing: "3px", textTransform: "uppercase", marginBottom: "1rem" }}>Veredicto de la Inteligencia</p>
-                                   <p style={{ fontSize: "1.4rem", fontWeight: 800, lineHeight: 1.6, color: "white" }}>
-                                      {battlePlan || insight?.battlePlan || FALLBACK_INSIGHT.battlePlan}
-                                   </p>
-                                </div>
-                             </div>
-                          </div>
+                            ))}
+                        </div>
 
-                          <div style={{ display: "flex", gap: "3rem", alignItems: "center" }}>
-                             <div className="glass" style={{ display: "inline-flex", padding: "1.2rem 2.5rem", background: "rgba(255,255,255,0.03)", alignItems: "center", gap: "1.25rem", borderRadius: "1.5rem" }}>
-                                <Rocket size={28} color="var(--primary)" />
-                                <div>
-                                   <p style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 800, textTransform: "uppercase" }}>Próxima Misión</p>
-                                   <p style={{ fontWeight: 900, fontSize: "1.3rem" }}>{insight?.nextAction || FALLBACK_INSIGHT.nextAction}</p>
-                                </div>
-                             </div>
-                             
-                             <div style={{ display: "flex", gap: "1rem" }}>
-                                <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 10px #10b981" }} />
-                                <p style={{ fontSize: "0.85rem", fontWeight: 800, opacity: 0.6 }}>SISTEMA OPERATIVO ACTIVO</p>
-                             </div>
-                          </div>
-                       </div>
-
-                       {/* RECOMENDACIONES ESTRATÉGICAS */}
-                       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2rem", marginBottom: "4rem" }}>
-                          {(recommendations.length > 0 || !insight) && recommendations.slice(0, 3).map((rec, i) => (
-                            <div key={i} className="glass" style={{ padding: "3rem", borderRadius: "2rem", borderTop: `6px solid ${rec.type === 'AHORRO' ? '#ef4444' : rec.type === 'CRECIMIENTO' ? '#3b82f6' : '#10b981'}`, background: "linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%)", transition: "transform 0.3s ease" }}>
-                               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
-                                  <span style={{ fontSize: '0.7rem', fontWeight: 950, padding: '0.4rem 1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '2rem', letterSpacing: "1.5px", color: rec.type === 'AHORRO' ? '#ef4444' : rec.type === 'CRECIMIENTO' ? '#3b82f6' : '#10b981' }}>{rec.type}</span>
-                                  {rec.type === 'AHORRO' ? <Activity size={20} color="#ef4444" /> : rec.type === 'CRECIMIENTO' ? <Zap size={20} color="#3b82f6" /> : <ShieldCheck size={20} color="#10b981" />}
-                               </div>
-                               <h4 style={{ fontWeight: 950, fontSize: "1.5rem", marginBottom: "1.2rem", lineHeight: 1.2 }}>{rec.title}</h4>
-                               <p style={{ fontSize: "1rem", opacity: 0.5, lineHeight: 1.7, fontWeight: 500 }}>{rec.description}</p>
+                        {/* 3. RECOMENDACIÓN PRINCIPAL */}
+                        <div className="glass" style={{ padding: "2.5rem", borderRadius: "2rem", border: "1px solid rgba(16, 185, 129, 0.2)", position: "relative", overflow: "hidden", background: "linear-gradient(165deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%)" }}>
+                            <div style={{ 
+                                position: "absolute", 
+                                top: 0, 
+                                right: 0, 
+                                padding: "0.8rem 1.5rem", 
+                                background: insight?.main_recommendation?.priority === 'ALTA' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)', 
+                                borderRadius: "0 0 0 1.5rem", 
+                                fontSize: "0.65rem", 
+                                fontWeight: 900, 
+                                color: insight?.main_recommendation?.priority === 'ALTA' ? '#fca5a5' : '#10b981',
+                                letterSpacing: '1px'
+                            }}>
+                                PRIORIDAD {insight?.main_recommendation?.priority || "ALTA"}
                             </div>
-                          ))}
-                       </div>
-
-                       <div style={{ display: "grid", gridTemplateColumns: "1fr 0.45fr", gap: "2.5rem" }}>
-                          {/* MAPA DE GANANCIAS */}
-                          <div className="glass" style={{ padding: "4rem", borderRadius: "2.5rem" }}>
-                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4rem" }}>
-                                <div>
-                                   <h3 style={{ fontSize: "2rem", fontWeight: 950, marginBottom: "0.5rem" }}>Mapa de Ganancias</h3>
-                                   <p style={{ opacity: 0.5, fontSize: "0.9rem", fontWeight: 600 }}>Visualización del flujo de conversión Bolton OS</p>
+                            
+                            <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.5rem" }}>
+                                <div style={{ padding: "0.6rem", borderRadius: "0.8rem", background: "rgba(16, 185, 129, 0.2)", color: "#10b981" }}>
+                                    <Zap size={20} />
                                 </div>
-                                <div className="glass" style={{ padding: "0.75rem 1.5rem", borderRadius: "1rem", display: "flex", gap: "0.8rem", alignItems: "center" }}>
-                                   <MousePointer2 size={18} color="var(--primary)" />
-                                   <span style={{ fontSize: "0.85rem", fontWeight: 900 }}>EFICIENCIA 94%</span>
-                                </div>
-                             </div>
-                             <div style={{ display: "flex", flexDirection: "column", gap: "2.5rem" }}>
-                                {funnel.length > 0 ? funnel.map((step) => (
-                                   <div key={step.id}>
-                                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", fontSize: "0.95rem" }}>
-                                         <span style={{ fontWeight: 950, opacity: 0.4, letterSpacing: "2px" }}>{step.label.toUpperCase()}</span>
-                                         <b style={{ fontSize: "1.4rem", fontWeight: 950 }}>{step.value.toLocaleString()}</b>
-                                      </div>
-                                      <div style={{ height: "55px", background: "rgba(255,255,255,0.02)", borderRadius: "1.2rem", overflow: "hidden", border: "1px solid rgba(255,255,255,0.05)", padding: "4px" }}>
-                                         <motion.div 
-                                           initial={{ width: 0 }} 
-                                           animate={{ width: `${step.percentage}%` }} 
-                                           style={{ height: "100%", background: step.color, borderRadius: "0.9rem", opacity: 0.7, boxShadow: `0 0 30px ${step.color}40`, position: 'relative' }}
-                                         >
-                                            <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', fontSize: '0.75rem', fontWeight: 950, color: 'white' }}>{step.percentage}%</div>
-                                         </motion.div>
-                                      </div>
-                                   </div>
-                                )) : <div style={{ opacity: 0.3, textAlign: "center", padding: "4rem" }}>Sincronizando telemetría del embudo...</div>}
-                             </div>
-                          </div>
-
-                          {/* SCORE DE CRECIMIENTO */}
-                          <div className="glass" style={{ padding: "4rem", background: "radial-gradient(circle at top right, rgba(59, 130, 246, 0.15) 0%, transparent 100%)", textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center", borderRadius: "2.5rem" }}>
-                             <p style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 950, letterSpacing: "4px", marginBottom: "2rem", textTransform: "uppercase" }}>Índice de Dominio</p>
-                             <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto' }}>
-                                <motion.span 
-                                  initial={{ scale: 0.5, opacity: 0 }}
-                                  animate={{ scale: 1, opacity: 1 }}
-                                  style={{ fontSize: "9rem", fontWeight: 950, color: "var(--primary)", lineHeight: 1, letterSpacing: "-5px", display: "block" }}
-                                >
-                                  {insight?.growthScore || 0}
-                                </motion.span>
-                                <div style={{ position: 'absolute', top: '10%', right: '-20%', background: 'var(--primary)', color: 'white', padding: '0.4rem 0.8rem', borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: 950 }}>AI</div>
-                             </div>
-                             <div style={{ marginTop: "3rem", display: "inline-block", padding: "0.8rem 2.5rem", borderRadius: "3rem", background: "rgba(16, 185, 129, 0.15)", border: "1px solid rgba(16, 185, 129, 0.3)", boxShadow: "0 0 40px rgba(16, 185, 129, 0.1)" }}>
-                                <p style={{ fontSize: "1.2rem", color: "#10b981", fontWeight: 950, letterSpacing: "1px" }}>{insight?.statusLabel || "ÓPTIMO"}</p>
-                             </div>
-                          </div>
-                       </div>
-                    </motion.div>
-                  )}
-
-                  {dashboardMode === "avanzado" && (
-                    <motion.div key="avanzado-view" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                       {/* MÉTRICAS TÉCNICAS PROFUNDAS */}
-                       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "1.5rem", marginBottom: "3.5rem" }}>
-                          {[
-                            { label: "ROAS (Target)", value: "5.2x", color: "#10b981", icon: DollarSign, trend: "+12%" },
-                            { label: "CPA (Efectivo)", value: "$3.850", color: "#3b82f6", icon: Target, trend: "-5%" },
-                            { label: "CTR Promedio", value: "3.4%", color: "var(--accent)", icon: MousePointer2, trend: "+0.8%" },
-                            { label: "Impresiones", value: metrics?.impressions.toLocaleString() || "0", color: "white", icon: Eye, trend: "Pico 14:00" },
-                            { label: "Leads Brutos", value: leads.length.toLocaleString(), color: "white", icon: Radio, trend: "L48h" }
-                          ].map((m, i) => (
-                            <div key={i} className="glass" style={{ padding: "2.5rem 1.5rem", textAlign: "center", borderTop: `5px solid ${m.color}`, background: "rgba(255,255,255,0.01)", borderRadius: "1.5rem" }}>
-                               <p style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 950, textTransform: "uppercase", marginBottom: "1.2rem", letterSpacing: "1.5px" }}>{m.label}</p>
-                               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
-                                  <m.icon size={18} color={m.color} />
-                                  <p style={{ fontSize: "2.2rem", fontWeight: 950, color: m.color, letterSpacing: "-1px" }}>{m.value}</p>
-                                </div>
-                                <p style={{ fontSize: "0.65rem", fontWeight: 900, color: m.trend.startsWith('+') ? '#10b981' : (m.trend.startsWith('-') ? '#3b82f6' : 'var(--muted)'), opacity: 0.6 }}>{m.trend}</p>
+                                <h3 style={{ fontSize: "1.4rem", fontWeight: 950, letterSpacing: "-0.5px" }}>Acción Estratégica Sugerida</h3>
                             </div>
-                          ))}
-                       </div>
 
-                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2.5rem", marginBottom: "4rem" }}>
-                          {/* LABORATORIO DE VARIANTES */}
-                          <div className="glass" style={{ padding: "3.5rem", borderRadius: "2.5rem" }}>
-                             <div style={{ display: "flex", alignItems: "center", gap: "1.25rem", marginBottom: "3.5rem" }}>
-                                <div className="glass" style={{ padding: '0.6rem', borderRadius: '0.8rem', color: 'var(--primary)' }}><Brain size={32} /></div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
                                 <div>
-                                   <h3 style={{ fontSize: "1.8rem", fontWeight: 950 }}>Laboratorio Creativo</h3>
-                                   <p style={{ fontSize: '0.85rem', opacity: 0.5, fontWeight: 700 }}>Rendimiento por Ángulo de Venta</p>
+                                    <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "var(--primary)", textTransform: "uppercase", letterSpacing: "1.5px", display: "block", marginBottom: "0.5rem" }}>Lo que Bolton observa:</span>
+                                    <p style={{ fontSize: "1.1rem", fontWeight: 500, lineHeight: 1.5, opacity: 0.9 }}>
+                                        {insight?.main_recommendation?.interpretation || "Analizando el flujo actual de pacientes..."}
+                                    </p>
                                 </div>
-                             </div>
-                             <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-                                {variants.map((v, i) => (
-                                  <div key={i} className="glass" style={{ padding: "2.5rem", background: "linear-gradient(rgba(255,255,255,0.03), transparent)", borderRadius: "1.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
-                                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.5rem", alignItems: "center" }}>
-                                        <div style={{ display: 'flex', gap: '0.8rem' }}>
-                                           <span style={{ fontSize: "0.7rem", fontWeight: 950, color: "var(--primary)", background: "rgba(59, 130, 246, 0.1)", padding: "0.4rem 0.8rem", borderRadius: "2rem", letterSpacing: '1px' }}>{v.angle.toUpperCase()}</span>
-                                           <span style={{ fontSize: "0.7rem", fontWeight: 950, color: "#10b981", background: "rgba(16, 185, 129, 0.1)", padding: "0.4rem 0.8rem", borderRadius: "2rem", letterSpacing: '1px' }}>WINNER</span>
+
+                                {insight?.main_recommendation?.why_it_matters && (
+                                    <div className="glass" style={{ padding: "1.2rem", borderRadius: "1.2rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                                        <span style={{ fontSize: "0.65rem", fontWeight: 900, opacity: 0.5, textTransform: "uppercase", letterSpacing: "1px", display: "block", marginBottom: "0.5rem" }}>¿Por qué es importante?</span>
+                                        <p style={{ fontSize: "0.95rem", opacity: 0.7, lineHeight: 1.5 }}>{insight?.main_recommendation?.why_it_matters}</p>
+                                    </div>
+                                )}
+
+                                <div>
+                                    <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "#10b981", textTransform: "uppercase", letterSpacing: "1.5px", display: "block", marginBottom: "0.5rem" }}>Siguiente Paso:</span>
+                                    <p style={{ fontSize: "1rem", opacity: 0.8, marginBottom: "2rem", lineHeight: 1.5 }}>
+                                        {insight?.main_recommendation?.action_text || "Mantén el sistema activo mientras calibramos la protección de tu inversión."}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <motion.button 
+                                whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(16, 185, 129, 0.4)" }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => setActivePilar("desafios")}
+                                className="btn-primary" 
+                                style={{ padding: "1.2rem 2.5rem", fontSize: "0.85rem", fontWeight: 950, borderRadius: "1.2rem", background: "#10b981", border: "none", width: "100%", cursor: "pointer" }}
+                            >
+                                {insight?.main_recommendation?.button_label?.toUpperCase() || "CARGANDO MEJORA..."}
+                            </motion.button>
+                        </div>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+                        
+                        {/* 4. ACTIVIDAD DEL SISTEMA (AI TIMELINE) */}
+                        <div className="glass" style={{ padding: "2.5rem", borderRadius: "2rem", height: "100%", border: "1px solid rgba(255,255,255,0.05)", display: "flex", flexDirection: "column" }}>
+                            <h3 style={{ fontSize: "1.2rem", fontWeight: 950, marginBottom: "2rem", display: "flex", alignItems: "center", gap: "1rem", letterSpacing: "-0.5px" }}>
+                                <History size={22} color="var(--primary)" /> Historial Estratégico
+                            </h3>
+                            
+                            <div style={{ display: "flex", flexDirection: "column", gap: "2rem", position: "relative", flex: 1 }}>
+                                {/* Línea vertical decorativa */}
+                                <div style={{ position: "absolute", left: "7px", top: "10px", bottom: "10px", width: "2px", background: "linear-gradient(180deg, var(--primary) 0%, rgba(59, 130, 246, 0.1) 100%)", opacity: 0.3 }} />
+
+                                {(insight?.activity_timeline || [
+                                    { when: "Hoy", action: "Evaluando el flujo de búsquedas en tu zona..." },
+                                    { when: "Ayer", action: "Optimizando la visibilidad para tu especialidad..." },
+                                    { when: "Reciente", action: "Asegurando la protección de tu inversión..." }
+                                ]).map((item: any, i: number) => (
+                                    <motion.div 
+                                        key={i}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: i * 0.1 }}
+                                        style={{ display: "flex", gap: "1.5rem", position: "relative", zIndex: 1 }}
+                                    >
+                                        <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: i === 0 ? "var(--primary)" : "#1e293b", border: "3px solid #0f172a", marginTop: "4px", boxShadow: i === 0 ? "0 0 10px var(--primary)" : "none" }} />
+                                        <div>
+                                            <span style={{ fontSize: "0.65rem", fontWeight: 950, color: i === 0 ? "var(--primary)" : "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "1.5px" }}>{item.when}</span>
+                                            <p style={{ fontSize: "0.9rem", fontWeight: 500, opacity: i === 0 ? 0.9 : 0.6, marginTop: "0.25rem", lineHeight: 1.4 }}>{item.action}</p>
                                         </div>
-                                        <div style={{ display: "flex", gap: "1.5rem", fontSize: "0.8rem", fontWeight: 900 }}>
-                                           <div style={{ textAlign: 'right' }}><p style={{ opacity: 0.4, fontSize: '0.6rem' }}>CTR</p><p>{(Math.random() * 2 + 3).toFixed(1)}%</p></div>
-                                           <div style={{ textAlign: 'right' }}><p style={{ opacity: 0.4, fontSize: '0.6rem' }}>LEADS</p><p>{Math.floor(Math.random() * 15) + 5}</p></div>
-                                        </div>
-                                     </div>
-                                     <h4 style={{ fontSize: "1.4rem", fontWeight: 950, marginBottom: "1.2rem", color: "white" }}>{v.headline}</h4>
-                                     <p style={{ lineHeight: 1.6, opacity: 0.6, fontSize: "1rem", fontWeight: 500 }}>{v.description}</p>
-                                  </div>
+                                    </motion.div>
                                 ))}
-                             </div>
-                          </div>
+                            </div>
 
-                          {/* RADAR DE AUDIENCIA */}
-                          <div className="glass" style={{ padding: "3.5rem", borderRadius: "2.5rem" }}>
-                             <div style={{ display: "flex", alignItems: "center", gap: "1.25rem", marginBottom: "3.5rem" }}>
-                                <div className="glass" style={{ padding: '0.6rem', borderRadius: '0.8rem', color: 'var(--primary)' }}><Users size={32} /></div>
-                                <div>
-                                   <h3 style={{ fontSize: "1.8rem", fontWeight: 950 }}>Radar de Audiencia</h3>
-                                   <p style={{ fontSize: '0.85rem', opacity: 0.5, fontWeight: 700 }}>Prospección en Tiempo Real</p>
+                            <div style={{ marginTop: "2rem", padding: "1rem", borderRadius: "1rem", background: "rgba(59, 130, 246, 0.05)", border: "1px solid rgba(59, 130, 246, 0.1)" }}>
+                                <p style={{ fontSize: "0.75rem", opacity: 0.5, fontStyle: "italic", textAlign: "center" }}>
+                                    Bolton monitorea y ajusta tu sistema de forma autónoma las 24 horas del día.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 5. PROGRESO Y EVOLUCIÓN */}
+                <div style={{ marginTop: "2rem", display: "grid", gridTemplateColumns: "2.1fr 1fr", gap: "2rem" }}>
+                    <div className="glass" style={{ padding: "2.5rem", borderRadius: "2rem", background: "linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%)" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+                            <h3 style={{ fontSize: "1.2rem", fontWeight: 950, letterSpacing: "-0.5px" }}>Evolución de tu Consulta</h3>
+                            <div style={{ fontSize: "0.7rem", fontWeight: 950, color: "var(--primary)", background: "rgba(59, 130, 246, 0.1)", padding: "0.4rem 0.8rem", borderRadius: "2rem" }}>
+                                NIVEL DE CRECIMIENTO: {insight?.growthScore || "50"}%
+                            </div>
+                        </div>
+                        <div style={{ height: "120px", display: "flex", alignItems: "flex-end", gap: "0.8rem", marginBottom: "2rem" }}>
+                            {[40, 60, 45, 80, 55, 90, 100].map((h, i) => (
+                                <div key={i} style={{ flex: 1, position: "relative", height: "100%" }}>
+                                    <motion.div 
+                                        initial={{ height: 0 }}
+                                        animate={{ height: `${h}%` }}
+                                        transition={{ duration: 1, delay: i * 0.1 }}
+                                        style={{ 
+                                            position: "absolute",
+                                            bottom: 0,
+                                            width: "100%",
+                                            background: i === 6 ? "var(--primary)" : "rgba(255,255,255,0.03)", 
+                                            borderRadius: "0.5rem",
+                                            boxShadow: i === 6 ? "0 0 20px rgba(59, 130, 246, 0.3)" : "none"
+                                        }}
+                                    />
                                 </div>
-                             </div>
-                             <div className="glass" style={{ maxHeight: "650px", overflowY: "auto", padding: "1rem", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "1.5rem", background: 'rgba(0,0,0,0.1)' }}>
-                                {leads.length > 0 ? leads.map(lead => (
-                                  <div key={lead.id} className="lead-row" style={{ padding: "1.8rem", borderBottom: "1px solid rgba(255,255,255,0.03)", display: "flex", justifyContent: "space-between", alignItems: "center", transition: 'all 0.2s' }}>
-                                     <div>
-                                        <p style={{ fontWeight: 950, fontSize: "1.2rem", marginBottom: '0.25rem' }}>{lead.name}</p>
-                                        <p style={{ fontSize: "0.8rem", opacity: 0.4, fontWeight: 700, letterSpacing: '0.5px' }}>{lead.email.toUpperCase()}</p>
-                                     </div>
-                                     <div style={{ textAlign: "right" }}>
-                                        <div style={{ display: 'inline-block', padding: '0.4rem 1rem', borderRadius: '1rem', background: lead.score >= 70 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)', border: `1px solid ${lead.score >= 70 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)'}` }}>
-                                           <div style={{ fontSize: "0.85rem", fontWeight: 950, color: lead.score >= 70 ? "#10b981" : "#3b82f6" }}>🔥 {lead.score}%</div>
-                                        </div>
-                                        <div style={{ fontSize: "0.65rem", fontWeight: 900, textTransform: "uppercase", opacity: 0.3, marginTop: '0.6rem', letterSpacing: '1px' }}>{lead.trait || "Potential Client"}</div>
-                                     </div>
-                                  </div>
-                                )) : <div style={{ textAlign: "center", padding: "5rem", opacity: 0.3 }}><Radar size={50} className="animate-pulse" style={{ margin: '0 auto 1.5rem' }} /><p style={{ fontWeight: 800 }}>Escaneando señales de conversión...</p></div>}
-                             </div>
-                          </div>
-                       </div>
+                            ))}
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", padding: "1.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "1.5rem" }}>
+                            <div style={{ padding: "0.8rem", borderRadius: "50%", background: "rgba(59, 130, 246, 0.1)", color: "var(--primary)" }}>
+                                <TrendingUp size={24} />
+                            </div>
+                            <p style={{ fontSize: "1.05rem", fontWeight: 500, lineHeight: 1.5, opacity: 0.9 }}>
+                                {insight?.progress_insight || "Tu presencia digital se está fortaleciendo. Cada día llegas a personas más interesadas en tu terapia."}
+                            </p>
+                        </div>
+                    </div>
 
-                       {/* BITÁCORA TÉCNICA */}
-                       <div className="glass" style={{ padding: "4rem", borderRadius: "2.5rem" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "1.25rem", marginBottom: "4rem" }}>
-                             <div className="glass" style={{ padding: '0.6rem', borderRadius: '0.8rem', color: 'var(--primary)' }}><History size={32} /></div>
-                             <h3 style={{ fontSize: "2rem", fontWeight: 950 }}>Bitácora de Optimización Bolton</h3>
-                          </div>
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "2rem" }}>
-                             {history.map(event => (
-                               <div key={event.id} className="glass" style={{ padding: "2.5rem", borderLeft: "5px solid var(--primary)", background: "rgba(255,255,255,0.02)", borderRadius: "1.5rem", position: 'relative' }}>
-                                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.2rem", alignItems: 'center' }}>
-                                     <h4 style={{ fontSize: "1.4rem", fontWeight: 950, letterSpacing: '-0.5px' }}>{event.action_title}</h4>
-                                     <span style={{ fontSize: "0.75rem", opacity: 0.3, fontWeight: 900 }}>{new Date(event.timestamp).toLocaleDateString()}</span>
-                                  </div>
-                                  <p style={{ opacity: 0.6, fontSize: "1rem", lineHeight: 1.6, fontWeight: 500 }}>{event.impact_summary}</p>
-                                  <div style={{ position: 'absolute', right: '1.5rem', bottom: '1.5rem', opacity: 0.1 }}><ShieldCheck size={40} /></div>
-                               </div>
-                             ))}
-                          </div>
-                       </div>
-                    </motion.div>
-                  )}
+                    {/* 6. ACCESO A DESAFÍOS */}
+                    <div className="glass" style={{ padding: "2rem", borderRadius: "2rem", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", cursor: "pointer", border: "1px dashed rgba(255,255,255,0.1)" }} onClick={() => setActivePilar("desafios")}>
+                         <Trophy size={40} color="#f59e0b" style={{ marginBottom: "1rem" }} />
+                         <h3 style={{ fontSize: "1.1rem", fontWeight: 900 }}>Potencia tus resultados</h3>
+                         <p style={{ fontSize: "0.85rem", opacity: 0.6, marginTop: "0.5rem" }}>Continúa con los pequeños hitos estratégicos para multiplicar el flujo de pacientes.</p>
+                         <button className="btn-secondary" style={{ marginTop: "1.5rem", padding: "0.6rem 1.2rem", fontSize: "0.75rem" }}>VER RUTA MAESTRA</button>
+                    </div>
+                </div>
 
-                  {dashboardMode === "clon" && (
-                    <motion.div key="clon-view" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-                       <ClaudioClone 
-                          userId={user?.id}
-                          campaignData={{
-                            id: (campaignId || tempId)?.toString() || "Sin Campaña",
-                            metrics: metrics || FALLBACK_METRICS,
-                            insight: insight || FALLBACK_INSIGHT,
-                            funnel: funnel
-                          }}
-                       />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
             </motion.div>
           )}
 
           {activePilar === "asistentes" && (
-            <motion.div key="asistentes-pilar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ maxWidth: "1400px", margin: "0 auto", paddingBottom: "10rem" }}>
+            <motion.div 
+              key="asistentes-pilar" 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ maxWidth: "1400px", margin: "0 auto", paddingBottom: "10rem" }}
+            >
                <AssistantsView />
             </motion.div>
           )}
 
           {activePilar === "laboratorio" && (
-            <motion.div key="lab-pilar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '10rem' }}>
+            <motion.div 
+              key="lab-pilar" 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '10rem' }}
+            >
                <InnovationLab />
             </motion.div>
           )}
 
           {activePilar === "aprende" && (
-            <motion.div key="aprende-pilar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '10rem' }}>
+            <motion.div 
+              key="aprende-pilar" 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '10rem' }}
+            >
                <AcademyView />
             </motion.div>
           )}

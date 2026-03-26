@@ -34,7 +34,12 @@ export async function GET(req: Request) {
 
   } catch (error: any) {
     console.error("Fetch User Settings Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      error: error.message,
+      googleAdsId: null,
+      currentCampaignId: null
+    }, { status: 200 }); // Devolvemos 200 con success: false para que el frontend no colapse
   }
 }
 

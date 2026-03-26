@@ -75,7 +75,7 @@ export function AcademyView() {
 
   return (
     <div className="dashboard-main" style={{ padding: "0 2rem" }}>
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {!selectedCourse ? (
           <motion.div key="catalog" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div style={{ marginBottom: "5rem", textAlign: "center" }}>

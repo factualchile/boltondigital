@@ -12,10 +12,13 @@ export async function GET(req: Request) {
     }
 
     const usage = await getUserTokens(userId);
-
     return NextResponse.json(usage);
   } catch (error: any) {
     console.error('Error in /api/profile/tokens:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ 
+      tokens_used: 0, 
+      monthly_limit: 500000, 
+      error: error.message 
+    }, { status: 200 });
   }
 }
