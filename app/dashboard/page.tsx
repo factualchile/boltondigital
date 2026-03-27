@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { LogOut, Radio, BarChart3, Bot, Zap, TrendingUp, MousePointer2, Eye, DollarSign, Target, Loader2, Sparkles, MessageSquare, ArrowRight, ArrowLeft, ShieldCheck, Activity, ThumbsUp, ThumbsDown, Lock, User as UserIcon, Layers, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, MinusCircle, Lightbulb, TrendingDown, Clock, Check, Edit3, MessageCircle, PenTool, Calculator, Calendar, Play, Pause, Filter, Users, Mail, Phone, ExternalLink, UserCheck, BrainCircuit, Star, BarChart, Trophy, Flame, Shield, ShieldAlert, ShieldCheck as ShieldOk, Globe, Layout, Palette, Copy, BookmarkCheck, History, ListRestart, Send, Rocket, LayoutDashboard, Brain, TestTube2, ScrollText, Settings, X as XIcon, Radar, GraduationCap } from "lucide-react";
 import { getScenarioDiagnosis, ScenarioDiagnosis, AdAction } from "@/lib/ads-diagnostic";
 import { useRouter } from "next/navigation";
@@ -158,8 +158,14 @@ export default function Dashboard() {
   const [showActivationModal, setShowActivationModal] = useState(false);
   const [showScaling, setShowScaling] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [metrics, setMetrics] = useState<any>(null);
-  const [diagnosis, setDiagnosis] = useState<ScenarioDiagnosis | null>(null);
+  const [metrics, setMetrics] = useState<any>(FALLBACK_METRICS);
+  
+  // DIAGNÓSTICO REACTIVO: Se recalcula automáticamente al cambiar métricas o campañas
+  const diagnosis = useMemo(() => {
+    if (!metrics || !customerId) return null;
+    const currentCampaignData = campaigns.find((c: any) => c.id.toString() === campaignId?.toString());
+    return getScenarioDiagnosis(metrics, currentCampaignData?.status || 'ENABLED', 10000);
+  }, [metrics, customerId, campaigns, campaignId]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingAction, setPendingAction] = useState<AdAction | null>(null);
   const [actionValue, setActionValue] = useState<number>(10);
@@ -427,13 +433,11 @@ export default function Dashboard() {
           const loadedCampaigns = campData.campaigns || [];
           setCampaigns(loadedCampaigns);
 
-          // Calcular diagnóstico determinista con variables LOCALES (no estado)
-          if (currentMetrics && customerStr) {
-            const campaignData = loadedCampaigns.find((c: any) => c.id.toString() === (explicitCampaignId || campaignId)?.toString());
-            const diag = getScenarioDiagnosis(currentMetrics, campaignData?.status || 'ENABLED', 10000); 
-            console.log("[Bolton] Diagnóstico Determinista calculado:", diag.title);
-            setDiagnosis(diag);
-          }
+          const currentMetrics = metricsData.metrics || FALLBACK_METRICS;
+          setMetrics(currentMetrics);
+          
+          const loadedCampaigns = campData.campaigns || [];
+          setCampaigns(loadedCampaigns);
 
           setAiLoadingStatus("Calculando arquitectura de embudo...");
           setFunnel([
@@ -1586,11 +1590,11 @@ export default function Dashboard() {
                         </div>
                         <div>
                             <span style={{ fontSize: "0.75rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "2px", opacity: 0.5 }}>Estado de tu sistema</span>
-                            <h2 style={{ fontSize: "2rem", fontWeight: 950 }}>{insight?.system_status?.label || "Calibrando Visión..."}</h2>
+                            <h2 style={{ fontSize: "2rem", fontWeight: 950 }}>{insight?.system_status?.label ?? diagnosis?.title ?? "Calibrando Visión..."}</h2>
                         </div>
                     </div>
                     <p style={{ fontSize: "1.25rem", fontWeight: 500, lineHeight: 1.6, opacity: 0.8, maxWidth: "800px" }}>
-                        {insight?.system_status?.message || "Bolton está analizando la mejor ruta para conectar con tus próximos pacientes. En unos instantes verás el camino despejado."}
+                        {insight?.system_status?.message ?? diagnosis?.diagnosis ?? "Bolton está analizando la mejor ruta para conectar con tus próximos pacientes."}
                     </p>
                 </div>
 
@@ -1655,9 +1659,9 @@ export default function Dashboard() {
                         {/* 2. SECCIÓN: SEÑALES DE ACTIVIDAD */}
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1.5rem" }}>
                             {[
-                                { label: "Visibilidad", value: insight?.activity_signals?.views || "Sincronizando...", icon: Eye, color: "#3b82f6" },
-                                { label: "Interés", value: insight?.activity_signals?.interest || "Procesando...", icon: MousePointer2, color: "#10b981" },
-                                { label: "Contactos", value: insight?.activity_signals?.leads || "Esperando...", icon: UserCheck, color: "#f59e0b" }
+                                { label: "Visibilidad", value: insight?.activity_signals?.views ?? metrics?.impressions ?? "Sincronizando...", icon: Eye, color: "#3b82f6" },
+                                { label: "Interés", value: insight?.activity_signals?.interest ?? metrics?.clicks ?? "Procesando...", icon: MousePointer2, color: "#10b981" },
+                                { label: "Contactos", value: insight?.activity_signals?.leads ?? metrics?.conversions ?? "Esperando...", icon: UserCheck, color: "#f59e0b" }
                             ].map((sig, i) => (
                                 <div key={i} className="glass" style={{ padding: "1.5rem", borderRadius: "1.8rem", textAlign: "center", border: "1px solid rgba(255,255,255,0.03)" }}>
                                     <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: `${sig.color}15`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
