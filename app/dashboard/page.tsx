@@ -422,15 +422,18 @@ export default function Dashboard() {
           ]);
 
           const currentMetrics = metricsData.metrics || FALLBACK_METRICS;
-          setMetrics(metricsData.metrics);
-          // Calcular diagnóstico determinista
-          if (metricsData.metrics && customerId) {
-            const campaignData = campaigns.find(c => c.id.toString() === campaignId?.toString());
-            const diag = getScenarioDiagnosis(metricsData.metrics, campaignData?.status || 'ENABLED', 10000); // Budget hardcoded temporalmente
-            setDiagnosis(diag);
-          }
+          setMetrics(currentMetrics);
+          
           const loadedCampaigns = campData.campaigns || [];
           setCampaigns(loadedCampaigns);
+
+          // Calcular diagnóstico determinista con variables LOCALES (no estado)
+          if (metricsData.metrics && customerStr) {
+            const campaignData = loadedCampaigns.find((c: any) => c.id.toString() === (explicitCampaignId || campaignId)?.toString());
+            const diag = getScenarioDiagnosis(metricsData.metrics, campaignData?.status || 'ENABLED', 10000); 
+            console.log("[Bolton] Diagnóstico Determinista calculado:", diag.title);
+            setDiagnosis(diag);
+          }
 
           setAiLoadingStatus("Calculando arquitectura de embudo...");
           setFunnel([
@@ -448,22 +451,22 @@ export default function Dashboard() {
           }
 
           setAiLoadingStatus("Analizando métricas con GPT-4...");
-          secureFetch("/api/ads/interpret", { 
-            method: "POST", headers: { "Content-Type": "application/json" }, 
-            body: JSON.stringify({ metrics: currentMetrics, userId: user?.id }) 
-          }).then(r => r.json()).then(d => { 
-            if (d.success) {
-              console.log("[Bolton] Diagnóstico de IA Real Recibido.");
-              setInsight(d);
-              setIsAiFinal(true);
-              setAiError(null);
-            } else {
-              setAiError(`Interpret AI: ${d.error || 'Fallo de interpretación'}`);
-            }
-          }).catch((err) => {
-            console.error("[Bolton] Error en Interpret IA:", err);
-            setAiError(`Interpret Network Error: ${err.message}`);
+          const interpretRes = await secureFetch("/api/ads/interpret", { 
+            method: "POST", 
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify({ metrics: currentMetrics, userId: currentUser.id }) 
           });
+          
+          const d = await interpretRes.json();
+          if (d.success) {
+            console.log("[Bolton] Diagnóstico de IA Real Recibido.");
+            setInsight(d);
+            setIsAiFinal(true);
+            setAiError(null);
+          } else {
+            console.error("[Bolton] Error en Interpret IA:", d.error);
+            setAiError(`Interpret AI: ${d.error || 'Fallo de interpretación'}`);
+          }
           
           if (recommendations.length === 0) setRecommendations(FALLBACK_RECOMMENDATIONS);
 
