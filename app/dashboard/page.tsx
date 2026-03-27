@@ -1589,7 +1589,7 @@ export default function Dashboard() {
                         </div>
                     </div>
                     <p style={{ fontSize: "1.25rem", fontWeight: 500, lineHeight: 1.6, opacity: 0.8, maxWidth: "800px" }}>
-                        {insight?.system_status?.message ?? "Bolton está procesando los últimos datos de Google para entregarte una visión estratégica profunda. El panel inferior muestra el diagnóstico técnico inmediato."}
+                        {insight?.system_status?.message ?? (aiError ? `Error de Conexión: ${aiError}` : "Bolton está procesando los últimos datos de Google para entregarte una visión estratégica profunda. El panel inferior muestra el diagnóstico técnico inmediato.")}
                     </p>
                 </div>
 
