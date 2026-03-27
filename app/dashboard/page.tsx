@@ -451,26 +451,33 @@ export default function Dashboard() {
           }
 
           setAiLoadingStatus("Analizando métricas con GPT-4...");
-          const interpretRes = await secureFetch("/api/ads/interpret", { 
+          
+          // EJECUCIÓN CONCURRENTE: No bloqueamos los Leads por la IA lenta
+          fetchLeads(); 
+          if (currentUser?.id) {
+            fetchProgress();
+          }
+
+          // La interpretación de IA corre en paralelo
+          secureFetch("/api/ads/interpret", { 
             method: "POST", 
             headers: { "Content-Type": "application/json" }, 
             body: JSON.stringify({ metrics: currentMetrics, userId: currentUser.id }) 
+          }).then(res => res.json()).then(d => {
+            if (d.success) {
+              console.log("[Bolton] Diagnóstico de IA Real Recibido.");
+              setInsight(d);
+              setIsAiFinal(true);
+              setAiError(null);
+            } else {
+              setAiError(`Interpret AI: ${d.error || 'Fallo de interpretación'}`);
+            }
+          }).catch(err => {
+            console.error("[Bolton] Error en Interpret IA:", err);
+            setAiError(`Interpret Error: ${err.message}`);
           });
-          
-          const d = await interpretRes.json();
-          if (d.success) {
-            console.log("[Bolton] Diagnóstico de IA Real Recibido.");
-            setInsight(d);
-            setIsAiFinal(true);
-            setAiError(null);
-          } else {
-            console.error("[Bolton] Error en Interpret IA:", d.error);
-            setAiError(`Interpret AI: ${d.error || 'Fallo de interpretación'}`);
-          }
-          
-          if (recommendations.length === 0) setRecommendations(FALLBACK_RECOMMENDATIONS);
 
-          fetchLeads();
+          if (recommendations.length === 0) setRecommendations(FALLBACK_RECOMMENDATIONS);
           fetchHistory();
           fetchLearnings();
 
