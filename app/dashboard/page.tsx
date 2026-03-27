@@ -1593,11 +1593,11 @@ export default function Dashboard() {
                                 </div>
                                 <div>
                                     <span style={{ fontSize: "0.75rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "2px", opacity: 0.5 }}>Visión Estratégica IA</span>
-                                    <h2 style={{ fontSize: "2rem", fontWeight: 950 }}>{insight.system_status?.label}</h2>
+                                    <h2 style={{ fontSize: "2rem", fontWeight: 950 }}>{insight.system_status?.label || "Análisis en Curso"}</h2>
                                 </div>
                             </div>
                             <p style={{ fontSize: "1.25rem", fontWeight: 500, lineHeight: 1.6, opacity: 0.8, maxWidth: "800px" }}>
-                                {insight.system_status?.message}
+                                {insight.system_status?.message || "Bolton está procesando tu estrategia. Si el mensaje no aparece, intenta refrescar en unos segundos para recalibrar la visión."}
                             </p>
                         </motion.div>
                     )}

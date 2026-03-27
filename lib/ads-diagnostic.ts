@@ -16,65 +16,101 @@ export interface ScenarioDiagnosis {
 export function getScenarioDiagnosis(metrics: any, status: string, budget: number): ScenarioDiagnosis {
   const { clicks, impressions, conversions, ctr, averageCpc } = metrics;
   
-  // 1. EL GRAN SILENCIO (Métricas en 0)
-  if (impressions === 0 && status !== 'ENABLED') {
+  // 🚩 1. EL GRAN SILENCIO (Métricas en Cero total)
+  if (status !== 'ENABLED' || (impressions === 0 && clicks === 0 && conversions === 0)) {
     return {
       id: 1,
       title: "El Gran Silencio",
-      diagnosis: "Tu motor de demanda está apagado. La campaña no está participando en ninguna subasta.",
+      diagnosis: "Tu motor de demanda está apagado o en ralentí absoluto. No hay actividad detectada en la subasta.",
       actions: [
-        { id: 'ENABLE_CAMPAIGN', label: "Activar Campaña", description: "Poner la campaña en estado HABILITADO inmediatamente.", type: 'status' },
-        { id: 'INCREASE_BUDGET', label: "Inyectar Presupuesto", description: "Aumentar el presupuesto para asegurar visibilidad.", suggestedValue: 10, type: 'budget' }
+        { id: 'ENABLE', label: "Activar Campaña", description: "Asegurar que el estado sea HABILITADO.", type: 'status' },
+        { id: 'CHECK_PAYMENT', label: "Verificar Pagos", description: "Revisar si hay alertas de facturación en Google Ads.", type: 'status' }
       ]
     };
   }
 
-  // 7. EL DIAMANTE EN BRUTO (Pocos clics pero convierten)
-  if (clicks > 0 && clicks < 50 && conversions > 0 && (conversions / clicks) > 0.05) {
+  // 🚩 2. ANUNCIO INVISIBLE (Impresiones pero no clics)
+  if (impressions > 0 && clicks === 0) {
     return {
-      id: 7,
-      title: "El Diamante en Bruto",
-      diagnosis: "¡Bingo! Estás atrayendo tráfico de altísima calidad que sabe lo que quiere. Cada clic cuenta.",
+      id: 2,
+      title: "Anuncio Invisible",
+      diagnosis: "Tu anuncio se está mostrando, pero nadie hace clic. El mensaje no está conectando con el interés del paciente.",
       actions: [
-        { id: 'INCREASE_BUDGET', label: "Escalar Presupuesto", description: "Aumentar la inversión para capturar más de este tráfico ganador.", suggestedValue: 20, type: 'budget' },
-        { id: 'INCREASE_BID', label: "Subir Puja 10%", description: "Asegurar que tu anuncio aparezca más arriba para este tráfico cualificado.", suggestedValue: 10, type: 'bid' }
+        { id: 'EDIT_ADS', label: "Mejorar Títulos", description: "Bolton sugiere usar ganchos más directos a la solución del dolor.", type: 'status' },
+        { id: 'CHECK_URL', label: "Validar Enlace", description: "Verificar que la URL de destino funcione correctamente.", type: 'status' }
       ]
     };
   }
 
-  // 8. EL GANADOR (CTR Muy Alto)
-  if (ctr > 7) {
+  // 🚩 3. BAJA PARTICIPACIÓN (Impresiones muy bajas)
+  if (impressions > 0 && impressions < 100) {
+    return {
+      id: 3,
+      title: "Baja Participación",
+      diagnosis: "Estás participando en la subasta, pero estás 'al fondo de la fila'. Tu puja o tu presupuesto son insuficientes.",
+      actions: [
+        { id: 'INCREASE_BID', label: "Subir Puja 20%", description: "Aumentar la puja máxima para ganar mejores posiciones.", suggestedValue: 20, type: 'bid' },
+        { id: 'EXPAND_KEYWORDS', label: "Ampliar Keywords", description: "Agregar términos relacionados para capturar más volumen.", type: 'status' }
+      ]
+    };
+  }
+
+  // 🚩 8. EL GANADOR (CTR Excepcional)
+  if (ctr > 10) {
     return {
       id: 8,
       title: "El Ganador",
-      diagnosis: `Tu anuncio tiene un CTR fantástico del ${ctr.toFixed(1)}%. Casi el doble del estándar aceptable.`,
+      diagnosis: `¡Tienes un CTR del ${ctr.toFixed(1)}%! Este es el ADN de Claudio Fernández Bolton en acción. El mercado ama tu anuncio.`,
       actions: [
-        { id: 'INCREASE_BUDGET', label: "Potenciar Presupuesto", description: "Aprovechar que el anuncio encanta a los pacientes.", suggestedValue: 15, type: 'budget' }
+        { id: 'SCALE_BUDGET', label: "Escalar Presupuesto", description: "Aumentar inversión para no perder ni un solo clic ganador.", suggestedValue: 20, type: 'budget' }
       ]
     };
   }
 
-  // 5. EL FANTASMA DE LA LANDING (CTR Sano pero 0 conversiones)
-  if (ctr > 3 && conversions === 0 && clicks > 20) {
+  // 🚩 7. EL DIAMANTE EN BRUTO (Alta conversión, poco tráfico)
+  if (conversions > 0 && (conversions / (clicks || 1)) > 0.10) {
+    return {
+      id: 7,
+      title: "El Diamante en Bruto",
+      diagnosis: "Pocos clics, pero una tasa de conversión altísima. Estás filtrando muy bien al paciente ideal.",
+      actions: [
+        { id: 'INCREASE_BUDGET', label: "Inyectar Combustible", description: "Sube el presupuesto diario para atraer a más de estos pacientes.", suggestedValue: 15, type: 'budget' }
+      ]
+    };
+  }
+
+  // 🚩 5. EL FANTASMA DE LA LANDING (Clics pero 0 conversiones)
+  if (clicks > 25 && conversions === 0) {
     return {
       id: 5,
       title: "El Fantasma de la Landing",
-      diagnosis: "Tu anuncio atrae gente, pero tu página web no está logrando 'cerrar' el trato. Algo falta en el vínculo.",
+      diagnosis: "El anuncio atrae al paciente, pero tu página web lo deja ir. El problema está en el 'pasillo' final.",
       actions: [
-        { id: 'OPTIMIZE_LANDING', label: "Optimizar Landing IA", description: "Bolton redactará una nueva versión de tu página para mejorar la conversión.", type: 'status' }, // Trigger especial
-        { id: 'PAUSE_CAMPAIGN', label: "Pausar para Revisar", description: "Detener el gasto hasta que la página esté optimizada.", type: 'status' }
+        { id: 'FIX_LANDING', label: "Revisar Botón Reserva", description: "Verificar que el botón de contacto sea visible en móvil.", type: 'status' },
+        { id: 'CHECK_PIXEL', label: "Validar Conversiones", description: "Asegurar que el rastreo de Google esté activo.", type: 'status' }
       ]
     };
   }
 
-  // Predeterminado: Optimización Continua
+  // 🚩 21. EL ESPEJISMO DEL CPC (Escenario Elite)
+  if (averageCpc > 1000 && averageCpc < 2000 && conversions > 0) {
+    return {
+      id: 21,
+      title: "El Espejismo del CPC",
+      diagnosis: "Estás pagando un CPC premium (~$1.400), pero es BARATO porque estás en zonas de NSE alto con ROI superior.",
+      actions: [
+        { id: 'MAINTAIN_ADS', label: "Blindar Campaña", description: "Mantener inversión y proteger la calidad del tráfico.", type: 'status' }
+      ]
+    };
+  }
+
+  // Default: Viento en Popa
   return {
     id: 10,
     title: "Viento en Popa",
-    diagnosis: "Tu campaña está operando en rangos estables. Bolton recomienda ajustes finos para maximizar la rentabilidad.",
+    diagnosis: "Tu sistema está operando en rangos óptimos. Bolton recomienda ajustes de sintonía fina.",
     actions: [
-      { id: 'INCREASE_BUDGET', label: "Escalar Gradual", description: "Aumentar ligeramente el presupuesto para seguir creciendo.", suggestedValue: 10, type: 'budget' },
-      { id: 'MAINTAIN', label: "Mantener Estrategia", description: "Seguir con la configuración actual y vigilar tendencias.", type: 'status' }
+      { id: 'SCALE_GRADUAL', label: "Escalar 10%", description: "Aumento táctico para seguir creciendo sin desestabilizar.", suggestedValue: 10, type: 'budget' }
     ]
   };
 }
