@@ -160,17 +160,18 @@ export default function Dashboard() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [metrics, setMetrics] = useState<any>(FALLBACK_METRICS);
   
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<AdAction | null>(null);
+  const [actionValue, setActionValue] = useState<number>(10);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+
   // DIAGNÓSTICO REACTIVO: Se recalcula automáticamente al cambiar métricas o campañas
   const diagnosis = useMemo(() => {
     if (!metrics || !customerId) return null;
     const currentCampaignData = campaigns.find((c: any) => c.id.toString() === campaignId?.toString());
     return getScenarioDiagnosis(metrics, currentCampaignData?.status || 'ENABLED', 10000);
   }, [metrics, customerId, campaigns, campaignId]);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [pendingAction, setPendingAction] = useState<AdAction | null>(null);
-  const [actionValue, setActionValue] = useState<number>(10);
-  const [isExecuting, setIsExecuting] = useState(false);
-  const [campaigns, setCampaigns] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
   const [funnel, setFunnel] = useState<any[]>([]);
   const [history, setHistory] = useState<any[]>([]);
