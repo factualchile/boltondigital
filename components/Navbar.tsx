@@ -11,8 +11,9 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const isLandingPage = pathname?.startsWith('/l/') || pathname?.startsWith('/landing/');
 
-  if (pathname === "/prueba-landing") return null;
+  if (isLandingPage) return null;
 
   useEffect(() => {
     // Obtener sesión inicial

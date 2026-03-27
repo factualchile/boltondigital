@@ -29,7 +29,8 @@ export async function GET(req: Request) {
         currentCampaignId: data?.current_campaign_id || null,
         landingUrl: data?.landing_url || null,
         customDomain: data?.custom_domain || null,
-        vercelProjectId: data?.vercel_project_id || null
+        vercelProjectId: data?.vercel_project_id || null,
+        conversionConfig: data?.conversion_config || null
     });
 
   } catch (error: any) {

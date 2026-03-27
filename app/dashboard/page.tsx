@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useState, Suspense } from "react";
 import { LogOut, Radio, BarChart3, Bot, Zap, TrendingUp, MousePointer2, Eye, DollarSign, Target, Loader2, Sparkles, MessageSquare, ArrowRight, ArrowLeft, ShieldCheck, Activity, ThumbsUp, ThumbsDown, Lock, User as UserIcon, Layers, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, MinusCircle, Lightbulb, TrendingDown, Clock, Check, Edit3, MessageCircle, PenTool, Calculator, Calendar, Play, Pause, Filter, Users, Mail, Phone, ExternalLink, UserCheck, BrainCircuit, Star, BarChart, Trophy, Flame, Shield, ShieldAlert, ShieldCheck as ShieldOk, Globe, Layout, Palette, Copy, BookmarkCheck, History, ListRestart, Send, Rocket, LayoutDashboard, Brain, TestTube2, ScrollText, Settings, X as XIcon, Radar, GraduationCap } from "lucide-react";
+import { getScenarioDiagnosis, ScenarioDiagnosis, AdAction } from "@/lib/ads-diagnostic";
 import { useRouter } from "next/navigation";
 import GoogleAdsConnect from "@/components/GoogleAdsConnect";
 import CategoryPath from "@/components/CategoryPath";
@@ -158,6 +159,11 @@ export default function Dashboard() {
   const [showScaling, setShowScaling] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [metrics, setMetrics] = useState<any>(null);
+  const [diagnosis, setDiagnosis] = useState<ScenarioDiagnosis | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<AdAction | null>(null);
+  const [actionValue, setActionValue] = useState<number>(10);
+  const [isExecuting, setIsExecuting] = useState(false);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
   const [funnel, setFunnel] = useState<any[]>([]);
@@ -416,7 +422,13 @@ export default function Dashboard() {
           ]);
 
           const currentMetrics = metricsData.metrics || FALLBACK_METRICS;
-          setMetrics(currentMetrics);
+          setMetrics(metricsData.metrics);
+          // Calcular diagnóstico determinista
+          if (metricsData.metrics && customerId) {
+            const campaignData = campaigns.find(c => c.id.toString() === campaignId?.toString());
+            const diag = getScenarioDiagnosis(metricsData.metrics, campaignData?.status || 'ENABLED', 10000); // Budget hardcoded temporalmente
+            setDiagnosis(diag);
+          }
           const loadedCampaigns = campData.campaigns || [];
           setCampaigns(loadedCampaigns);
 
@@ -548,6 +560,190 @@ export default function Dashboard() {
     if (d.success) setLearnings(d.learnings);
   };
 
+  const transparentRedeploy = async () => {
+    if (!user) return;
+    setDeployingLanding(true);
+    showToast("Bolton IA: Reflejando cambios en tu sitio en vivo...", "info");
+    
+    try {
+      const prepRes = await secureFetch("/api/vercel/prepare-landing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id })
+      });
+      const prepData = await prepRes.json();
+      if (!prepData.success) throw new Error(prepData.error);
+
+      const deployRes = await secureFetch("/api/vercel/deploy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, landingData: prepData.landingData })
+      });
+      const deployData = await deployRes.json();
+      if (!deployData.success) throw new Error(deployData.error);
+      
+      showToast("¡Sincronización de sitio completada!", "success");
+    } catch (err: any) {
+      console.error("Transparent Redeploy Error:", err);
+      showToast("No pudimos actualizar el sitio automáticamente.", "error");
+    } finally {
+      setDeployingLanding(false);
+    }
+  };
+
+  const setupConversions = async () => {
+    if (!user) return;
+    setStatus("fetching");
+    showToast("Bolton IA: Creando acción de conversión en Google Ads...", "info");
+    
+    try {
+      const res = await secureFetch("/api/ads/conversions/setup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id })
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        showToast("¡Configuración de conversión exitosa!", "success");
+        await fetchProgress();
+        
+        // MÁXIMA MAGIA: Redeploy automático
+        await transparentRedeploy();
+
+        setSuccessMessage({ title: "¡Conversiones Activas!", body: "Bolton ahora mide cada contacto real. Tu ROI empezará a calibrarse." });
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 5000);
+      } else {
+        showToast(`Error: ${data.error || "No se pudo configurar"}`, "error");
+      }
+    } catch (err) {
+      showToast("Error de conexión al configurar conversiones.", "error");
+    } finally {
+      setStatus("dashboard");
+    }
+  };
+
+  const setupCallouts = async () => {
+    if (!user) return;
+    setStatus("fetching");
+    showToast("Bolton IA: Analizando tu perfil para redactar textos de alto impacto...", "info");
+    
+    try {
+      const res = await secureFetch("/api/ads/assets/callouts/setup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id })
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        showToast("¡Textos destacados inyectados con éxito!", "success");
+        await fetchProgress();
+        setSuccessMessage({ title: "¡Anuncios Optimizados!", body: "Bolton ha inyectado tus fortalezas directamente en Google Ads. Tus ads ya son más grandes y potentes." });
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 5000);
+      } else {
+        showToast(`Error: ${data.error || "No se pudo configurar"}`, "error");
+      }
+    } catch (err) {
+      showToast("Error de conexión al configurar textos destacados.", "error");
+    } finally {
+      setStatus("dashboard");
+    }
+  };
+
+  const setupSitelinks = async () => {
+    if (!user) return;
+    setStatus("fetching");
+    showToast("Bolton IA: Diseñando enlaces de sitio estratégicos...", "info");
+    
+    try {
+      const res = await secureFetch("/api/ads/assets/sitelinks/setup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id })
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        showToast("¡Enlaces de sitio creados con éxito!", "success");
+        await fetchProgress();
+        setSuccessMessage({ title: "¡Estructura Expandida!", body: "Tus anuncios ahora ocupan más espacio y ofrecen accesos directos a tus servicios." });
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 5000);
+      } else {
+        showToast(`Error: ${data.error || "No se pudo configurar"}`, "error");
+      }
+    } catch (err) {
+      showToast("Error de conexión al configurar sitelinks.", "error");
+    } finally {
+      setStatus("dashboard");
+    }
+  };
+
+  const setupCallExtension = async () => {
+    if (!user) return;
+    setStatus("fetching");
+    showToast("Bolton IA: Vinculando línea de atención directa...", "info");
+    
+    try {
+      const res = await secureFetch("/api/ads/assets/calls/setup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id })
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        showToast("¡Extensión de llamada habilitada!", "success");
+        await fetchProgress();
+        setSuccessMessage({ title: "¡Llamada Directa!", body: "Tus pacientes ahora pueden llamarte con un clic desde el anuncio de Google." });
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 5000);
+      } else {
+        showToast(`Error: ${data.error || "No se pudo configurar"}`, "error");
+      }
+    } catch (err) {
+      showToast("Error de conexión al configurar extensión de llamada.", "error");
+    } finally {
+      setStatus("dashboard");
+    }
+  };
+
+  const handleExecuteAction = async () => {
+    if (!user || !pendingAction || !campaignId || !customerId) return;
+    setIsExecuting(true);
+    
+    try {
+      const res = await secureFetch("/api/ads/actions/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          actionId: pendingAction.id,
+          campaignId,
+          customerId,
+          value: actionValue
+        })
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        showToast(`¡Acción ejecutada!: ${data.actionLabel}`, "success");
+        setShowConfirmModal(false);
+        await fetchMetrics(); // Refrescar métricas/estado
+      } else {
+        showToast(`Error: ${data.error}`, "error");
+      }
+    } catch (err) {
+      showToast("Error al ejecutar la acción estratégica.", "error");
+    } finally {
+      setIsExecuting(false);
+      setPendingAction(null);
+    }
+  };
+
   const activateInstance = async (key: string) => {
     if (key === 'motor') {
       if (!customerId) setShowIdModal(true);
@@ -562,6 +758,14 @@ export default function Dashboard() {
       }
     } else if (key === 'activacion') {
       setShowActivationModal(true);
+    } else if (key === 'escalamiento') {
+      setupConversions();
+    } else if (key === 'geografia') {
+      setupCallouts();
+    } else if (key === 'creativo') {
+      setupSitelinks();
+    } else if (key === 'leads') {
+      setupCallExtension();
     }
   };
 
@@ -948,13 +1152,13 @@ export default function Dashboard() {
       return [
         { 
           key: 'crear_cuenta', 
-          name: '1. Crea tu cuenta Motor', 
+          name: 'Crea tu cuenta Motor', 
           description: 'Crea tu cuenta de Google Ads para habilitar la infraestructura Bolton.', 
           status: isComp('crear_cuenta') ? 'completed' : 'unlocked' as any
         },
         { 
           key: 'motor', 
-          name: '2. Vincula Motor', 
+          name: 'Vincula Motor', 
           description: 'Vincula tu cuenta de Google Ads para activar el cerebro comercial.', 
           status: isComp('crear_cuenta') ? ((isComp('motor') || !!customerId) ? 'completed' : 'unlocked') : 'locked' as any,
           value: customerId || undefined
@@ -980,33 +1184,33 @@ export default function Dashboard() {
         },
         { 
           key: 'escalamiento', 
-          name: 'Escalamiento Táctico', 
-          description: 'Optimización de presupuestos dinámicos y puja agresiva.', 
+          name: 'Configuración de conversiones', 
+          description: 'Mide cada contacto y reserva para que Bolton optimice tu inversión con precisión quirúrgica.', 
           status: isComp('activacion') ? 'unlocked' : 'locked' as any 
         },
         { 
           key: 'geografia', 
-          name: 'Dominio Geográfico', 
-          description: 'Expansión radial de zonas de impacto y calor de demanda.', 
-          status: 'locked' as any 
+          name: 'Define tus Textos destacados', 
+          description: 'Resalta tus fortalezas (años de experiencia, atención inmediata) para disparar tu CTR.', 
+          status: isComp('escalamiento') ? (isComp('geografia') ? 'completed' : 'unlocked') : 'locked' as any 
         },
         { 
           key: 'creativo', 
-          name: 'Optimización Creativa', 
-          description: 'Laboratorio de variantes de alto CTR y mensajes persuasivos.', 
-          status: 'locked' as any 
+          name: 'Crear enlaces de sitio', 
+          description: 'Añade accesos directos a tus servicios clave (ej: Terapia de Pareja) para captar más espacio.', 
+          status: isComp('geografia') ? (isComp('creativo') ? 'completed' : 'unlocked') : 'locked' as any 
         },
         { 
           key: 'leads', 
-          name: 'Re-engagement de Leads', 
-          description: 'Estrategias de retorta y cierre masivo con ganchos de IA.', 
-          status: 'locked' as any 
+          name: 'Crear extensión de llamada', 
+          description: 'Permite que tus pacientes te llamen con un solo clic directamente desde tu anuncio de Google.', 
+          status: isComp('creativo') ? (isComp('leads') ? 'completed' : 'unlocked') : 'locked' as any 
         },
         { 
           key: 'canales', 
           name: 'Expansión de Canales', 
           description: 'Integración multicanal Bolton para dominio total del mercado.', 
-          status: 'locked' as any 
+          status: isComp('leads') ? 'unlocked' : 'locked' as any 
         },
       ];
     }
@@ -1022,7 +1226,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: "2rem", minHeight: "100vh" }}>
+    <div className="container" style={{ paddingTop: "6rem", minHeight: "100vh" }}>
       {currentMacro !== "portal" && (
         <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2.5rem", padding: "0 0.5rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
@@ -1300,6 +1504,66 @@ export default function Dashboard() {
             </motion.div>
           )}
 
+          {/* MODAL DE CONFIRMACIÓN BOLTON DECISIONS */}
+          <AnimatePresence>
+            {showConfirmModal && pendingAction && (
+              <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(10px)" }}>
+                <motion.div 
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  className="glass"
+                  style={{ padding: "3rem", borderRadius: "2.5rem", maxWidth: "500px", width: "90%", border: "1px solid rgba(59, 130, 246, 0.3)", textAlign: "center" }}
+                >
+                  <div style={{ width: "60px", height: "60px", background: "rgba(59, 130, 246, 0.1)", borderRadius: "1.2rem", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.5rem" }}>
+                    <Shield size={32} color="var(--primary)" />
+                  </div>
+                  
+                  <h2 style={{ fontSize: "1.8rem", fontWeight: 950, marginBottom: "1rem" }}>Confirmar Acción</h2>
+                  <p style={{ opacity: 0.7, marginBottom: "2rem" }}>
+                    Bolton está listo para ejecutar: <br/>
+                    <strong style={{ color: "white", fontSize: "1.2rem" }}>{pendingAction.label}</strong>
+                  </p>
+
+                  {pendingAction.type === 'budget' && (
+                    <div style={{ marginBottom: "2rem", padding: "1.5rem", background: "rgba(255,255,255,0.03)", borderRadius: "1.2rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                       <p style={{ fontSize: "0.7rem", fontWeight: 900, textTransform: "uppercase", opacity: 0.5, marginBottom: "1rem" }}>Ajustar Porcentaje (%)</p>
+                       <input 
+                         type="number" 
+                         value={actionValue}
+                         onChange={(e) => setActionValue(Number(e.target.value))}
+                         style={{ background: "transparent", border: "none", borderBottom: "2px solid var(--primary)", fontSize: "2rem", fontWeight: 900, color: "white", textAlign: "center", width: "100px", outline: "none" }}
+                       />
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", gap: "1rem" }}>
+                    <button 
+                      onClick={() => setShowConfirmModal(false)}
+                      className="btn-secondary" 
+                      style={{ flex: 1, padding: "1rem", borderRadius: "1rem" }}
+                      disabled={isExecuting}
+                    >
+                      Cancelar
+                    </button>
+                    <button 
+                      onClick={handleExecuteAction}
+                      className="btn-primary" 
+                      style={{ flex: 1, padding: "1rem", borderRadius: "1rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}
+                      disabled={isExecuting}
+                    >
+                      {isExecuting ? <Loader2 className="animate-spin" size={18} /> : "Ejecutar Acción"}
+                    </button>
+                  </div>
+                  
+                  <p style={{ marginTop: "1.5rem", fontSize: "0.6rem", opacity: 0.4, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px" }}>
+                    Bolton enviará una notificación a tu correo tras la ejecución.
+                  </p>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+
           {activePilar === "dashboard" && (
             <motion.div key="dashboard-pilar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
               <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "1rem" }}>
@@ -1319,6 +1583,61 @@ export default function Dashboard() {
                         {insight?.system_status?.message || "Bolton está analizando la mejor ruta para conectar con tus próximos pacientes. En unos instantes verás el camino despejado."}
                     </p>
                 </div>
+
+                {/* NUEVO: PANEL DE DECISIÓN BOLTON (DETERMINISTA) */}
+                {diagnosis && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="glass" 
+                    style={{ 
+                      padding: "2rem", 
+                      borderRadius: "2rem", 
+                      marginBottom: "2rem", 
+                      background: "linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)",
+                      border: "1px solid rgba(59, 130, 246, 0.3)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "1.5rem"
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+                        <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#3b82f6", boxShadow: "0 0 10px #3b82f6" }} />
+                        <h3 style={{ fontSize: "1.2rem", fontWeight: 950, letterSpacing: "-0.5px" }}>Diagnóstico: {diagnosis.title}</h3>
+                      </div>
+                      <div className="glass-pill" style={{ fontSize: "0.6rem", fontWeight: 900, background: "rgba(59, 130, 246, 0.1)" }}>DESCUBRIMIENTO DETERMINISTA</div>
+                    </div>
+                    
+                    <p style={{ fontSize: "1.1rem", fontWeight: 500, opacity: 0.9, lineHeight: 1.5 }}>{diagnosis.diagnosis}</p>
+                    
+                    <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                      {diagnosis.actions.map(act => (
+                        <button
+                          key={act.id}
+                          onClick={() => {
+                            setPendingAction(act);
+                            setActionValue(act.suggestedValue || 10);
+                            setShowConfirmModal(true);
+                          }}
+                          className="btn-primary"
+                          style={{ 
+                            padding: "0.8rem 1.5rem", 
+                            fontSize: "0.8rem", 
+                            borderRadius: "1rem", 
+                            display: "flex", 
+                            alignItems: "center", 
+                            gap: "0.6rem",
+                            background: act.type === 'budget' ? 'linear-gradient(to right, #3b82f6, #10b981)' : 'var(--primary)',
+                            border: "none"
+                          }}
+                        >
+                          {act.label} <ArrowRight size={14} />
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
 
                 <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "2rem" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
@@ -1715,9 +2034,10 @@ export default function Dashboard() {
 
       {showLandingForm && (
         <LandingFormModal 
+          userId={user.id}
           initialData={preLandingData}
           onClose={() => setShowLandingForm(false)}
-          onConfirm={(data: any) => handleDeployLanding(data)}
+          onConfirm={handleDeployLanding}
         />
       )}
 

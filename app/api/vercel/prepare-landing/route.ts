@@ -15,72 +15,59 @@ export async function POST(req: Request) {
 
     const db = supabaseAdmin || supabase;
     
-    // 1. Obtener settings
+    // 1. Obtener settings si no vienen en formData
     const { data: settings } = await db
       .from('user_settings')
-      .select('campaign_survey')
+      .select('campaign_survey, conversion_config')
       .eq('user_id', userId)
       .single();
 
-
     let userEmail = null;
 
-    // Buscamos el email en el sistema de Auth (Admin)
+    // Buscamos el email en el sistema de Auth (Admin) para notificaciones
     if (supabaseAdmin) {
       const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
       userEmail = userData?.user?.email;
     }
 
-    // Si aún no hay nada, usamos un fallback
-    if (!userEmail) userEmail = "atencion@psicologo.cl";
+    if (!userEmail) userEmail = "soporte@boltondigital.cl";
 
-    const survey = formData || settings?.campaign_survey || {
-        full_name: "Profesional",
-        profession: "Especialista",
-        main_service: "Servicio Profesional",
-        phone: "+56 9 1234 5678",
-        location: "Chile"
-    };
+    const survey = formData || settings?.campaign_survey || {};
 
-    // IA: GENERACIÓN DE COPIES PERSUASIVOS PARA LANDING
-    const aiResponse = await openai.chat.completions.create({
-      model: "gpt-4-turbo-preview",
-      messages: [
-        { 
-          role: "system", 
-          content: `Eres un experto en Copywriting de Conversión. Tu misión es generar el contenido para la Landing Page de un profesional.
-          
-          REGLAS:
-          1. Tono humano, cercano y autoritario pero empático (como profesional de la salud/servicios).
-          2. Generar una biografía corta e impactante (2 frases).
-          3. Generar una lista de 8 "especialidades" o "beneficios" concretos basados en su servicio.
-          4. No usar lenguaje genérico. Sé específico según la profesión.
-          
-          Formato de respuesta: JSON con campos 'experience' (biografía) y 'specialties' (array de 8 strings).` 
-        },
-        { 
-          role: "user", 
-          content: `Profesión: ${survey.profession || survey.main_service}. Servicio principal: ${survey.main_service || survey.service}. Ubicación: ${survey.location || survey.commune || 'Online'}.` 
-        }
-      ],
-      response_format: { type: "json_object" }
-    });
+    // IA: Solo si faltan datos descriptivos (Experience)
+    let aiContent = { experience: "", specialties: [] };
+    if (!survey.profession && !survey.specialties) {
+        const aiResponse = await openai.chat.completions.create({
+            model: "gpt-4-turbo-preview",
+            messages: [
+                { 
+                role: "system", 
+                content: "Genera biografía y especialidades para un profesional en formato JSON { 'experience': string, 'specialties': string[] }." 
+                },
+                { 
+                role: "user", 
+                content: `Profesión: ${survey.profession || survey.main_service}.` 
+                }
+            ],
+            response_format: { type: "json_object" }
+        });
+        aiContent = JSON.parse(aiResponse.choices[0].message?.content || "{}");
+    }
 
-    const aiContent = JSON.parse(aiResponse.choices[0].message?.content || "{}");
-
-    // Construcción del objeto final para la landing
+    // Construcción del objeto final para la landing respetando la estructura de Claudio
     const landingData = {
-      name: survey.profession?.includes('Psicólog') ? `Ps. ${survey.full_name || survey.name || 'Profesional'}` : (survey.full_name || survey.name || 'Profesional'),
+      name: survey.name || "Profesional",
       profession: survey.profession || "Especialista",
-      service: `Atención de ${survey.main_service || survey.service || 'Servicio Profesional'}`,
-      location: survey.location || survey.commune || 'Online',
-      phone: survey.phone || survey.whatsapp || "+56 9 1234 5678",
-      imageUrl: survey.imageUrl || "", // Pasamos la URL directamente si existe
-      experience: survey.description || aiContent.experience || `Especialista en ${survey.main_service || survey.service} con enfoque en resultados y bienestar.`,
-      specialties: survey.specialties_raw 
-        ? survey.specialties_raw.split('\n').filter((s: string) => s.trim().length > 0)
-        : (aiContent.specialties || [survey.main_service || survey.service, "Atención personalizada", "Confidencialidad absoluta"]),
-      email: userEmail
+      service: survey.service || "Atención Profesional",
+      location: survey.location || "Chile",
+      phone: survey.phone || "+56 9 1234 5678",
+      imageUrl: survey.imageUrl || "", 
+      slogan: survey.slogan || "Comprometido con resultados tangibles.",
+      experience: survey.profession || aiContent.experience || "Profesional dedicado con amplia trayectoria en el sector.",
+      specialties: survey.specialties || aiContent.specialties || ["Atención de calidad", "Confidencialidad"],
+      includeGuarantee: survey.includeGuarantee !== undefined ? survey.includeGuarantee : true,
+      email: userEmail,
+      conversionConfig: settings?.conversion_config || null
     };
 
     return NextResponse.json({ success: true, landingData });

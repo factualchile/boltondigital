@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
 import { verifyUser } from "@/lib/auth-server";
+import { sendLeadNotification } from "@/lib/resend";
 
 export async function GET(req: Request) {
   try {
@@ -38,9 +39,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required data" }, { status: 400 });
     }
 
-    const isOwner = await verifyUser(req, userId);
-    if (!isOwner) return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
-
+    // Nota: El lead capture puede venir de la landing sin auth de sesión,
+    // pero aquí se asume que userId se pasa para asociar el lead al profesional.
+    
     const { data, error } = await supabase
       .from('leads')
       .insert([{ user_id: userId, name, email, source_campaign }])
@@ -48,7 +49,23 @@ export async function POST(req: Request) {
 
     if (error) throw error;
 
-    return NextResponse.json({ success: true, lead: data[0] });
+    const newLead = data[0];
+
+    // NOTIFICACIÓN VÍA RESEND
+    try {
+      if (supabaseAdmin) {
+        const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
+        const professionalEmail = userData?.user?.email;
+        if (professionalEmail) {
+          await sendLeadNotification(professionalEmail, newLead);
+        }
+      }
+    } catch (notifErr) {
+      console.error("[Leads] Failed to send email notification:", notifErr);
+      // No bloqueamos el éxito de la captura por un fallo en el correo
+    }
+
+    return NextResponse.json({ success: true, lead: newLead });
 
   } catch (error: any) {
     console.error("Lead Insert Error:", error);

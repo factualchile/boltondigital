@@ -130,16 +130,6 @@ export function AcademyView() {
                 </motion.div>
               ))}
             </div>
-
-            <div className="glass grid-responsive" style={{ marginTop: "6rem", padding: "4rem", borderRadius: "3rem", display: "flex", gap: "3rem", alignItems: "center", background: "linear-gradient(135deg, rgba(88, 28, 135, 0.1) 0%, transparent 100%)" }}>
-               <div className="glass" style={{ width: "100px", height: "100px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--primary)", boxShadow: "0 0 40px rgba(59, 130, 246, 0.3)" }}>
-                  <Trophy size={50} color="white" />
-               </div>
-               <div>
-                  <h4 style={{ fontSize: "1.8rem", fontWeight: 950, marginBottom: "0.5rem" }}>Sube de Nivel</h4>
-                  <p style={{ opacity: 0.7, fontSize: "1.1rem", fontWeight: 500 }}>Completa cursos para desbloquear el **Modo Avanzado** del Dashboard y obtener acceso a los Asistentes Pro del Marketplace.</p>
-               </div>
-            </div>
           </motion.div>
         ) : (
           <motion.div key="viewer" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>

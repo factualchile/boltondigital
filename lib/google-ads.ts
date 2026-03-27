@@ -1,4 +1,6 @@
-import { GoogleAdsApi } from "google-ads-api";
+import { GoogleAdsApi, enums } from "google-ads-api";
+
+export { enums };
 
 const CLIENT_ID = process.env.GOOGLE_ADS_CLIENT_ID!;
 const CLIENT_SECRET = process.env.GOOGLE_ADS_CLIENT_SECRET!;

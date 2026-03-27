@@ -33,6 +33,8 @@ export default function MainNavigation({ activePilar, onChange }: MainNavigation
       margin: "0 auto 3.5rem",
       backdropFilter: "blur(10px)",
       WebkitBackdropFilter: "blur(10px)",
+      zIndex: 100,
+      position: "relative"
     }}>
       {PILARS.map((pilar) => {
         const isActive = activePilar === pilar.id;
@@ -41,21 +43,28 @@ export default function MainNavigation({ activePilar, onChange }: MainNavigation
         return (
           <button
             key={pilar.id}
-            onClick={() => onChange(pilar.id as Pilar)}
+            onClick={() => {
+              console.log("Navigating to:", pilar.id);
+              onChange(pilar.id as Pilar);
+            }}
             style={{
               position: "relative",
-              padding: "0.75rem 1.5rem",
-              borderRadius: "1.2rem",
+              padding: "0.6rem 1.4rem",
+              borderRadius: "99px",
               border: "none",
               background: "transparent",
-              color: isActive ? "white" : "var(--muted-foreground)",
+              color: isActive ? "white" : "rgba(255,255,255,0.4)",
               cursor: "pointer",
-              transition: "all 0.3s ease",
+              transition: "all 0.2s ease",
               display: "flex",
               alignItems: "center",
-              gap: "0.75rem",
-              fontWeight: 700,
-              fontSize: "0.9rem",
+              justifyContent: "center",
+              gap: "0.6rem",
+              fontWeight: 800,
+              fontSize: "0.85rem",
+              zIndex: 110,
+              outline: "none",
+              WebkitTapHighlightColor: "transparent"
             }}
           >
             {isActive && (
@@ -64,20 +73,21 @@ export default function MainNavigation({ activePilar, onChange }: MainNavigation
                 style={{
                   position: "absolute",
                   inset: 0,
-                  background: "rgba(255, 255, 255, 0.05)",
-                  borderRadius: "1.2rem",
-                  border: `1px solid ${pilar.color}44`,
-                  boxShadow: `0 0 20px ${pilar.color}11`,
-                  zIndex: 0,
+                  background: "rgba(255, 255, 255, 0.08)",
+                  borderRadius: "99px",
+                  border: `1px solid ${pilar.color}55`,
+                  boxShadow: `0 8px 16px -4px ${pilar.color}22`,
+                  zIndex: -1,
+                  pointerEvents: "none"
                 }}
               />
             )}
             <Icon 
-              size={18} 
-              color={isActive ? pilar.color : "var(--muted-foreground)"} 
-              style={{ position: "relative", zIndex: 1 }} 
+              size={16} 
+              color={isActive ? pilar.color : "rgba(255,255,255,0.4)"} 
+              style={{ pointerEvents: "none" }} 
             />
-            <span style={{ position: "relative", zIndex: 1 }}>{pilar.name}</span>
+            <span style={{ pointerEvents: "none" }}>{pilar.name}</span>
           </button>
         );
       })}
