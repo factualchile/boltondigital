@@ -433,12 +433,6 @@ export default function Dashboard() {
           const loadedCampaigns = campData.campaigns || [];
           setCampaigns(loadedCampaigns);
 
-          const currentMetrics = metricsData.metrics || FALLBACK_METRICS;
-          setMetrics(currentMetrics);
-          
-          const loadedCampaigns = campData.campaigns || [];
-          setCampaigns(loadedCampaigns);
-
           setAiLoadingStatus("Calculando arquitectura de embudo...");
           setFunnel([
             { id: 1, label: "Impresiones", value: currentMetrics.impressions, percentage: 100, color: "#3b82f6" },
