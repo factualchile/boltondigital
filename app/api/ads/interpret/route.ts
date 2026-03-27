@@ -127,12 +127,27 @@ export async function POST(req: Request) {
       response_format: { type: "json_object" }
     });
 
-    const aiResult = JSON.parse(response.choices[0].message.content || "{}");
+    let aiResult;
+    try {
+      const content = response.choices[0].message.content || "{}";
+      aiResult = JSON.parse(content);
+    } catch (e) {
+      console.error("[Bolton IA] Error parseando respuesta:", e);
+      aiResult = {};
+    }
+
+    // 🛡️ GARANTÍA DE ESQUEMA (Si la IA falla o devuelve algo incompleto, inyectamos el diagnóstico determinista)
+    if (!aiResult.system_status || !aiResult.system_status.label) {
+       aiResult.system_status = {
+          label: "Calibrando Visión Estratégica",
+          message: "Bolton está analizando tu motor. Por ahora, guíate por el diagnóstico técnico del panel inferior mientras sincronizamos tu visión de largo plazo."
+       };
+    }
 
     // 🛡️ RESPALDO EN SUPABASE Y BITÁCORA TÉCNICA
     if (userId) {
       // 1. Log para auditoría IA (Detallado)
-      await client.from('ai_audit_log').insert([{
+      await (supabaseAdmin || supabase).from('ai_audit_log').insert([{
         user_id: userId,
         metrics_snapshot: metrics,
         ai_response: aiResult,
@@ -140,11 +155,11 @@ export async function POST(req: Request) {
       }]).catch((e: any) => console.error("Audit log failed:", e));
 
       // 2. Log para Historial Real (Resumen Técnico)
-      await client.from('user_activity_log').insert([{
+      await (supabaseAdmin || supabase).from('user_activity_log').insert([{
           user_id: userId,
           action_type: 'AI_STRATEGY_AUDIT',
-          description: `Bolton realizó un análisis estratégico: ${aiResult.system_status?.label}`,
-          meta_data: { status: aiResult.system_status?.label, score: aiResult.growthScore }
+          description: `Análisis de Visión: ${aiResult.system_status.label}`,
+          meta_data: { status: aiResult.system_status.label, score: aiResult.growthScore }
       }]).catch((e: any) => console.error("Activity log failed:", e));
     }
 
