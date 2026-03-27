@@ -1584,12 +1584,12 @@ export default function Dashboard() {
                             <Bot size={32} />
                         </div>
                         <div>
-                            <span style={{ fontSize: "0.75rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "2px", opacity: 0.5 }}>Estado de tu sistema</span>
-                            <h2 style={{ fontSize: "2rem", fontWeight: 950 }}>{insight?.system_status?.label ?? diagnosis?.title ?? "Calibrando Visión..."}</h2>
+                            <span style={{ fontSize: "0.75rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "2px", opacity: 0.5 }}>Análisis de IA en tiempo real</span>
+                            <h2 style={{ fontSize: "2rem", fontWeight: 950 }}>{insight?.system_status?.label ?? "Sintonizando Estrategia..."}</h2>
                         </div>
                     </div>
                     <p style={{ fontSize: "1.25rem", fontWeight: 500, lineHeight: 1.6, opacity: 0.8, maxWidth: "800px" }}>
-                        {insight?.system_status?.message ?? diagnosis?.diagnosis ?? "Bolton está analizando la mejor ruta para conectar con tus próximos pacientes."}
+                        {insight?.system_status?.message ?? "Bolton está procesando los últimos datos de Google para entregarte una visión estratégica profunda. El panel inferior muestra el diagnóstico técnico inmediato."}
                     </p>
                 </div>
 
