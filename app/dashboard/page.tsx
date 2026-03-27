@@ -428,9 +428,9 @@ export default function Dashboard() {
           setCampaigns(loadedCampaigns);
 
           // Calcular diagnóstico determinista con variables LOCALES (no estado)
-          if (metricsData.metrics && customerStr) {
+          if (currentMetrics && customerStr) {
             const campaignData = loadedCampaigns.find((c: any) => c.id.toString() === (explicitCampaignId || campaignId)?.toString());
-            const diag = getScenarioDiagnosis(metricsData.metrics, campaignData?.status || 'ENABLED', 10000); 
+            const diag = getScenarioDiagnosis(currentMetrics, campaignData?.status || 'ENABLED', 10000); 
             console.log("[Bolton] Diagnóstico Determinista calculado:", diag.title);
             setDiagnosis(diag);
           }
