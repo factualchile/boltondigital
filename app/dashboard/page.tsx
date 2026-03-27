@@ -732,7 +732,7 @@ export default function Dashboard() {
       if (data.success) {
         showToast(`¡Acción ejecutada!: ${data.actionLabel}`, "success");
         setShowConfirmModal(false);
-        await fetchMetrics(); // Refrescar métricas/estado
+        await handleConnected(customerId, true); // Refrescar métricas/estado
       } else {
         showToast(`Error: ${data.error}`, "error");
       }
