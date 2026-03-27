@@ -1578,20 +1578,30 @@ export default function Dashboard() {
               <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "1rem" }}>
                 
                 {/* 1. SECCIÓN: ESTADO DEL SISTEMA (AI MSG) */}
-                <div className="glass" style={{ padding: "2.5rem", borderRadius: "2rem", marginBottom: "2rem", background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%)", border: "1px solid rgba(59, 130, 246, 0.2)" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "1rem" }}>
-                        <div style={{ padding: "0.8rem", borderRadius: "1.2rem", background: "rgba(59, 130, 246, 0.2)", color: "var(--primary)" }}>
-                            <Bot size={32} />
-                        </div>
-                        <div>
-                            <span style={{ fontSize: "0.75rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "2px", opacity: 0.5 }}>Análisis de IA en tiempo real</span>
-                            <h2 style={{ fontSize: "2rem", fontWeight: 950 }}>{insight?.system_status?.label ?? "Sintonizando Estrategia..."}</h2>
-                        </div>
-                    </div>
-                    <p style={{ fontSize: "1.25rem", fontWeight: 500, lineHeight: 1.6, opacity: 0.8, maxWidth: "800px" }}>
-                        {insight?.system_status?.message ?? (aiError ? `Error de Conexión: ${aiError}` : "Bolton está procesando los últimos datos de Google para entregarte una visión estratégica profunda. El panel inferior muestra el diagnóstico técnico inmediato.")}
-                    </p>
-                </div>
+                {/* CUADRO DE IA ESTRATÉGICA (Solo se muestra cuando llega el análisis profundo) */}
+                <AnimatePresence>
+                    {insight && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="glass" 
+                            style={{ padding: "2.5rem", borderRadius: "2rem", marginBottom: "2rem", background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%)", border: "1px solid rgba(59, 130, 246, 0.2)" }}
+                        >
+                            <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "1rem" }}>
+                                <div style={{ padding: "0.8rem", borderRadius: "1.2rem", background: "rgba(59, 130, 246, 0.2)", color: "var(--primary)" }}>
+                                    <Sparkles size={32} />
+                                </div>
+                                <div>
+                                    <span style={{ fontSize: "0.75rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "2px", opacity: 0.5 }}>Visión Estratégica IA</span>
+                                    <h2 style={{ fontSize: "2rem", fontWeight: 950 }}>{insight.system_status?.label}</h2>
+                                </div>
+                            </div>
+                            <p style={{ fontSize: "1.25rem", fontWeight: 500, lineHeight: 1.6, opacity: 0.8, maxWidth: "800px" }}>
+                                {insight.system_status?.message}
+                            </p>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* NUEVO: PANEL DE DECISIÓN BOLTON (DETERMINISTA) */}
                 {diagnosis && (
