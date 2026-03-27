@@ -1041,6 +1041,25 @@ export default function Dashboard() {
     }
   };
 
+  const handleEditLandingData = async () => {
+    if (!user) return;
+    try {
+      const res = await secureFetch(`/api/user/settings?userId=${user.id}`);
+      const data = await res.json();
+      if (data.success && data.campaignSurvey) {
+          setPreLandingData({
+              full_name: data.campaignSurvey.name || "",
+              profession: data.campaignSurvey.profession || "",
+              main_service: data.campaignSurvey.service || "",
+              phone: data.campaignSurvey.phone || "",
+              location: data.campaignSurvey.commune || ""
+          });
+      }
+      setShowLandingForm(true);
+    } catch (e) {
+      showToast("Error al cargar datos para editar", "error");
+    }
+  };
 
   const handleUnlink = async (instanceKey?: string) => {
     const isMotor = instanceKey === 'motor';
@@ -1392,6 +1411,7 @@ export default function Dashboard() {
                             }}
                             onGoToDashboard={() => setActivePilar("dashboard")}
                             onDeployLanding={handleDeployLanding}
+                            onEditLandingData={handleEditLandingData}
                             deployingLanding={deployingLanding}
                             landingUrl={landingUrl}
                             customDomain={customDomain}
@@ -1475,6 +1495,7 @@ export default function Dashboard() {
                               }}
                               onGoToDashboard={() => setActivePilar("dashboard")}
                               onDeployLanding={handleDeployLanding}
+                              onEditLandingData={handleEditLandingData}
                               deployingLanding={deployingLanding}
                               landingUrl={landingUrl}
                               customDomain={customDomain}

@@ -21,6 +21,7 @@ interface CategoryPathProps {
   onGoToDashboard?: () => void;
   onDeployLanding?: () => void;
   onShowDns?: () => void;
+  onEditLandingData?: () => void;
   deployingLanding?: boolean;
   landingUrl?: string | null;
   customDomain?: string | null;
@@ -36,6 +37,7 @@ export default function CategoryPath({
   onGoToDashboard,
   onDeployLanding,
   onShowDns,
+  onEditLandingData,
   deployingLanding,
   landingUrl,
   customDomain
@@ -179,6 +181,17 @@ export default function CategoryPath({
                           >
                              Volver a crear <RefreshCcw size={14} />
                           </button>
+                          
+                          {/* BOTÓN SOLICITADO: Editar Datos */}
+                          {onEditLandingData && (
+                            <button 
+                              onClick={onEditLandingData}
+                              className="btn-secondary" 
+                              style={{ padding: "0.5rem 1rem", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.5rem", borderColor: "#3b82f6", color: "#3b82f6" }}
+                            >
+                               Editar Datos ✏️
+                            </button>
+                          )}
                           <button 
                             onClick={onShowDns}
                             className="btn-secondary" 

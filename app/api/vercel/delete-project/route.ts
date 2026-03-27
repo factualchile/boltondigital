@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyUser } from "@/lib/auth-server";
 
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
-const TEAM_ID = "team_0PZkhC8Qe13ExRpSLJ3amS7P";
+const TEAM_ID = process.env.VERCEL_TEAM_ID;
 
 export async function POST(req: Request) {
   try {
@@ -20,7 +20,8 @@ export async function POST(req: Request) {
     }
 
     // Borrar el proyecto en Vercel
-    const deleteRes = await fetch(`https://api.vercel.com/v9/projects/${projectId}?teamId=${TEAM_ID}`, {
+    const deleteUrl = `https://api.vercel.com/v9/projects/${projectId}${TEAM_ID ? `?teamId=${TEAM_ID}` : ''}`;
+    const deleteRes = await fetch(deleteUrl, {
       method: "DELETE",
       headers: {
         "Authorization": `Bearer ${VERCEL_TOKEN}`

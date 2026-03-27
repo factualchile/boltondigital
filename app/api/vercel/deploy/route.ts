@@ -20,13 +20,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Vercel Token no configurado en el servidor" }, { status: 500 });
     }
 
+    const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID; // Opcional
     const projectName = `bolton-landing-${userId.slice(0, 8)}`;
 
     // 1. CREAR EL DEPLOYMENT DIRECTO (FILE-BASED)
     // Usamos el API de Vercel para subir archivos HTML/CSS/JS estáticos
     // que representen la landing personalizada.
-    
-    const indexHtml = `
+        const indexHtml = `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     ` : ''}
 
     <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #f1f5f9; color: #1e293b; overflow-x: hidden; }
+        body { font-family: 'Outfit', sans-serif; background-color: #f1f5f9; color: #1e293b; min-height: 100vh; }
         .typeform-modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .typeform-content { width: 90%; max-width: 600px; color: white; padding: 2rem; }
         .typeform-step { display: none; flex-direction: column; gap: 2rem; animation: slideUp 0.5s ease-out; }
@@ -72,7 +72,6 @@ export async function POST(req: Request) {
         .typeform-input:focus { border-color: #3b82f6; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Estilos de cuadrícula Premium */
         @media (min-width: 1025px) {
             .desktop-grid { display: grid; grid-template-columns: 20% 60% 20%; height: 82vh; overflow: hidden; }
             .col-left { border-right: 1px solid rgba(0,0,0,0.03); background-color: #f8fafc; }
@@ -80,12 +79,10 @@ export async function POST(req: Request) {
             .no-scroll { height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         }
 
-        /* Responsive Mobile Reordering */
         @media (max-width: 1024px) {
             .reorder-container { display: flex; flex-direction: column; }
             .order-1 { order: 1; } .order-2 { order: 2; } .order-3 { order: 3; } .order-4 { order: 4; }
             .order-5 { order: 5; } .order-6 { order: 6; } .order-7 { order: 7; } .order-8 { order: 8; }
-            .mobile-hide { display: none; }
         }
     </style>
     <script>
@@ -128,7 +125,6 @@ export async function POST(req: Request) {
             const phoneEl = document.getElementById('leadPhone');
             leadData.phone = phoneEl ? phoneEl.value : '';
 
-            // DISPARAR CONVERSIÓN GOOGLE ADS
             if (typeof gtag !== 'undefined' && '${landingData.conversionConfig?.googleAdsConversionId || ""}') {
                 gtag('event', 'conversion', {
                     'send_to': 'AW-${landingData.conversionConfig?.googleAdsConversionId}/${landingData.conversionConfig?.conversionLabel}'
@@ -148,18 +144,18 @@ export async function POST(req: Request) {
     </script>
 </head>
 <body class="no-scroll">
-    <!-- HEADER -->
+    <!-- HEADER PREMIUM -->
     <header class="bg-white border-b border-black/5 py-4 px-[5%] flex justify-between items-center z-10 shrink-0">
         <div class="flex flex-col">
-            <h1 class="text-2xl lg:text-3xl font-black text-[#1e4b6b] tracking-tighter leading-tight">${landingData.service}</h1>
-            <div class="flex items-center gap-2 text-slate-500 text-xs lg:text-sm font-semibold">
+            <h1 class="text-xl lg:text-3xl font-black text-[#1e4b6b] tracking-tighter leading-tight">${landingData.service}</h1>
+            <div class="flex items-center gap-1 text-slate-500 text-[10px] lg:text-sm font-semibold">
                 <span>📍</span>
                 <span>${landingData.location}</span>
             </div>
         </div>
         <div class="text-right">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest hidden lg:block">Contacto Directo</p>
-            <div class="flex items-center gap-2 text-lg lg:text-xl font-bold text-[#2c6a91]">
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest hidden lg:block">Contacto Directivo</p>
+            <div class="flex items-center gap-2 text-md lg:text-xl font-bold text-[#2c6a91]">
                 <span>📞</span>
                 <a href="tel:${landingData.phone}">${landingData.phone}</a>
             </div>
@@ -171,22 +167,22 @@ export async function POST(req: Request) {
         <div class="bg-white w-full max-w-[1400px] desktop-grid rounded-3xl shadow-2xl border border-white/80 overflow-hidden reorder-container">
             
             <!-- Columna Izquierda (Perfil) -->
-            <div class="col-left p-8 flex flex-col items-center order-3 lg:order-1">
-                <div class="w-32 lg:w-40 h-32 lg:h-40 rounded-full overflow-hidden border-4 lg:border-8 border-white shadow-lg mb-6 order-2 lg:order-none">
+            <div class="col-left p-6 lg:p-8 flex flex-col items-center order-3 lg:order-1">
+                <div class="w-28 lg:w-40 h-28 lg:h-40 rounded-full overflow-hidden border-4 lg:border-8 border-white shadow-lg mb-6 order-2 lg:order-none">
                     <img src="${landingData.imageUrl || 'https://images.unsplash.com/photo-1559839734-2b71f1536783?auto=format&fit=crop&w=400&h=400'}" class="w-full h-full object-cover">
                 </div>
                 <div class="h-1 w-8 bg-[#2c6a91] mb-6 rounded-full hidden lg:block"></div>
-                <p class="text-xs lg:text-sm text-slate-500 font-semibold text-center leading-relaxed mb-6 order-4 lg:order-none">
+                <p class="text-[10px] lg:text-sm text-slate-500 font-semibold text-center leading-relaxed mb-6 order-4 lg:order-none">
                     ${landingData.slogan}
                 </p>
-                <button onclick="openModal(event)" class="bg-white text-[#2c6a91] border border-[#2c6a91] px-4 py-2 rounded-full text-[10px] lg:text-xs font-black hover:bg-[#2c6a91] hover:text-white transition-all order-5 lg:order-none">
+                <button onclick="openModal(event)" class="bg-white text-[#2c6a91] border border-[#2c6a91] px-4 py-2 rounded-full text-[9px] lg:text-xs font-black hover:bg-[#2c6a91] hover:text-white transition-all order-5 lg:order-none">
                     RESERVAR AHORA
                 </button>
             </div>
 
             <!-- Columna Central (Info) -->
             <div class="p-6 lg:p-12 flex flex-col justify-start lg:pt-16 order-1 lg:order-2">
-                <h2 class="text-3xl lg:text-6xl font-black text-slate-800 tracking-tighter mb-2 order-1 lg:order-none text-center lg:text-left truncate">
+                <h2 class="text-3xl lg:text-6xl font-black text-slate-800 tracking-tighter mb-2 order-1 lg:order-none text-center lg:text-left">
                     ${landingData.name}
                 </h2>
                 <p class="text-lg lg:text-2xl font-bold text-[#2c6a91] mb-8 order-2 lg:order-none text-center lg:text-left">
@@ -194,13 +190,13 @@ export async function POST(req: Request) {
                 </p>
                 
                 <div class="bg-slate-50 p-6 lg:p-8 rounded-2xl border border-black/5 order-8 lg:order-none">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Áreas de especialidad técnica</p>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">Especialidades técnicas</p>
                     <ul class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        ${landingData.specialties.map((s: string) => `<li class="flex items-center gap-3 text-sm font-semibold text-slate-600"><span>✅</span> ${s}</li>`).join('')}
+                        ${landingData.specialties.map((s: string) => `<li class="flex items-center gap-2 text-xs lg:text-sm font-semibold text-slate-600"><span>✅</span> ${s}</li>`).join('')}
                     </ul>
                 </div>
 
-                <p class="mt-8 text-slate-500 text-sm lg:text-base leading-relaxed order-6 lg:order-none text-center lg:text-left">
+                <p class="mt-8 text-slate-500 text-xs lg:text-base leading-relaxed order-6 lg:order-none text-center lg:text-left">
                     ${landingData.experience}
                 </p>
             </div>
@@ -209,7 +205,7 @@ export async function POST(req: Request) {
             <div class="col-right p-8 lg:p-12 flex flex-col items-center lg:pt-20 order-8 lg:order-3">
                 ${landingData.includeGuarantee ? `
                 <div class="bg-white/5 p-6 rounded-2xl border border-white/10 w-full mb-12 text-center">
-                    <p class="font-black text-[10px] text-slate-400 uppercase mb-3 tracking-widest">GARANTÍA</p>
+                    <p class="font-black text-[9px] text-slate-400 uppercase mb-3 tracking-widest">GARANTÍA</p>
                     <p class="text-xs lg:text-sm leading-relaxed opacity-90">
                         Si la primera sesión no te parece <strong class="text-blue-400 font-black">GENIAL</strong>, te devuelvo tu dinero.
                     </p>
@@ -224,16 +220,15 @@ export async function POST(req: Request) {
         </div>
     </main>
 
-    <!-- WHATSAPP -->
+    <!-- WHATSAPP FLOAT -->
     <a 
       href="https://wa.me/${landingData.phone.replace(/\D/g, '')}" 
-      ${landingData.conversionConfig ? `onclick="return gtag_report_conversion('https://wa.me/${landingData.phone.replace(/\D/g, '')}')"` : ''}
       class="fixed bottom-6 right-6 bg-[#25d366] text-white w-14 lg:w-16 h-14 lg:h-16 rounded-full shadow-2xl z-50 flex items-center justify-center hover:scale-110 transition-transform"
     >
         <svg viewBox="0 0 24 24" width="32" height="32" fill="white"><path d="M12.031 6.172c-2.32 0-4.591.531-6.621 1.541l-.471.241-4.901-1.281 1.3 4.791-.261.411c-1.12 1.771-1.711 3.821-1.711 5.921 0 6.111 4.971 11.081 11.081 11.081 1.933 0 3.775-.512 5.373-1.47l.43-.258 4.754 1.244-1.266-4.655.267-.426c.953-1.522 1.453-3.298 1.453-5.125 0-6.11-4.97-11.081-11.081-11.081zm0 20.306c-1.82 0-3.6-.482-5.161-1.391l-.37-.21-3.831.996 1.016-3.731-.231-.37c-1.021-1.63-1.561-3.511-1.561-5.461 0-5.711 4.641-10.351 10.351-10.351 2.731 0 5.3 1.061 7.231 2.991 1.931 1.931 2.991 4.5 2.991 7.231 0 5.711-4.641 10.351-10.351 10.351z" /></svg>
     </a>
 
-    <!-- Modal -->
+    <!-- Modal Lead -->
     <div id="leadModal" class="typeform-modal">
         <div class="typeform-content">
             <div class="typeform-step active" id="step1">
@@ -272,24 +267,24 @@ export async function POST(req: Request) {
         </div>
     </div>
 
-    <form id="leadForm" action="https://www.boltondigital.cl/api/leads/capture" method="POST" target="hidden_iframe" style="display:none">
+    <!-- Túnel Atómico -->
+    <form id="leadForm" action="https://boltondigital.cl/api/leads/capture" method="POST" target="hidden_iframe" style="display:none">
         <input type="hidden" name="payload" id="leadPayload">
     </form>
     <iframe name="hidden_iframe" id="hidden_iframe" style="display:none"></iframe>
 
     <script>
-        // Forzar scroll top en mobile al empezar
         if(window.innerWidth < 1024) {
             window.scrollTo(0,0);
         }
     </script>
 </body>
 </html>
-    `;
+`;
 
     // 2. DISPARAR DEPLOYMENT
-    const TEAM_ID = "team_0PZkhC8Qe13ExRpSLJ3amS7P"; // Detectado en diagnóstico
-    const deployRes = await fetch(`https://api.vercel.com/v13/deployments?teamId=${TEAM_ID}`, {
+    const deployUrl = `https://api.vercel.com/v13/deployments${VERCEL_TEAM_ID ? `?teamId=${VERCEL_TEAM_ID}` : ''}`;
+    const deployRes = await fetch(deployUrl, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${VERCEL_TOKEN}`,
