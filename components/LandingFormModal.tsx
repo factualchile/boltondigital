@@ -38,27 +38,23 @@ export default function LandingFormModal({ onClose, onConfirm, initialData, user
 
     setUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}-${Math.random()}.${fileExt}`;
-      const filePath = `professional-photos/${fileName}`;
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
+      formDataUpload.append("userId", userId);
 
-      const { error: uploadError } = await supabase.storage
-        .from('landing-images')
-        .upload(filePath, file);
+      const uploadRes = await fetch("/api/storage/upload", {
+        method: "POST",
+        body: formDataUpload
+      });
+      
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(uploadData.error || "Fallo en la carga");
 
-      if (uploadError) {
-        // Fallback or bucket creation check (normally handled in dashboard)
-        throw uploadError;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('landing-images')
-        .getPublicUrl(filePath);
-
+      const publicUrl = uploadData.publicUrl;
       setFormData({ ...formData, imageUrl: publicUrl });
     } catch (error: any) {
       console.error("Error uploading image:", error);
-      alert("Error al subir la imagen. Asegúrate de que el bucket 'landing-images' exista o intenta con un enlace.");
+      alert("Error al subir la imagen a través del procesador Bolton: " + error.message);
     } finally {
       setUploading(false);
     }

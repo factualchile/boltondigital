@@ -111,7 +111,7 @@ export default function Dashboard() {
 
   const secureFetch = async (url: string, options: any = {}) => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 90000); // Aumentado a 90s para procesos pesados de IA/Ads
     
     try {
       const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
@@ -153,6 +153,44 @@ export default function Dashboard() {
   const [successMessage, setSuccessMessage] = useState({ title: "¡Hito Alcanzado!", body: "Has desbloqueado un nuevo nivel de crecimiento." });
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
   const [loadingSettings, setLoadingSettings] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(true);
+  const [syncCountdown, setSyncCountdown] = useState(20);
+
+  // PUENTE DE COMUNICACIÓN CON NAVBAR (RADIO-FRECUENCIA BOLTON)
+  useEffect(() => {
+    // 1. Informar a la Navbar del estado actual
+    window.dispatchEvent(new CustomEvent('bolton:pilar-changed', { detail: activePilar }));
+    (window as any).__BOLTON_ACTIVE_PILAR__ = activePilar;
+    
+    // 2. Escuchar órdenes de la Navbar
+    const handleRemoteChange = (e: any) => {
+      if (e.detail && e.detail !== activePilar) {
+        setActivePilar(e.detail);
+      }
+    };
+    
+    window.addEventListener('bolton:remote-pilar-set', handleRemoteChange);
+    (window as any).__BOLTON_SET_PILAR__ = (p: string) => {
+       setActivePilar(p as any);
+       window.dispatchEvent(new CustomEvent('bolton:pilar-changed', { detail: p }));
+    };
+    (window as any).__BOLTON_SHOW_PROFILE__ = () => setShowProfile(true);
+
+    return () => {
+      window.removeEventListener('bolton:remote-pilar-set', handleRemoteChange);
+    };
+  }, [activePilar]);
+
+  // CONTROL DE CUENTA REGRESIVA ESTRATÉGICA
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (loadingProgress && syncCountdown > 0) {
+      timer = setInterval(() => {
+        setSyncCountdown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [loadingProgress, syncCountdown]);
   const [showIdModal, setShowIdModal] = useState(false);
   const [showCreationModal, setShowCreationModal] = useState(false);
   const [showActivationModal, setShowActivationModal] = useState(false);
@@ -191,6 +229,7 @@ export default function Dashboard() {
   const [customDomain, setCustomDomain] = useState("");
   const [dnsConfig, setDnsConfig] = useState<any>(null);
   const [vercelProjectId, setVercelProjectId] = useState<string | null>(null);
+  const [conversionConfig, setConversionConfig] = useState<any>(null);
   const [status, setStatus] = useState<"connecting" | "fetching" | "interpreting" | "dashboard">("connecting");
   const router = useRouter();
 
@@ -239,31 +278,42 @@ export default function Dashboard() {
             if (data.landingUrl) setLandingUrl(data.landingUrl);
             if (data.customDomain) setCustomDomain(data.customDomain);
             if (data.vercelProjectId) setVercelProjectId(data.vercelProjectId);
+            if (data.conversionConfig || data.campaignSurvey) {
+              setConversionConfig({ 
+                ...(data.conversionConfig || {}), 
+                campaignSurvey: data.campaignSurvey 
+              });
+            }
 
             const syncProgress = async () => {
+              // 1. Sincronizar pasos automáticos
+              const syncPromises = [];
               if (data.googleAdsId) {
-                await secureFetch("/api/user/progress", { 
+                syncPromises.push(secureFetch("/api/user/progress", { 
                   method: "POST", headers: { "Content-Type": "application/json" }, 
                   body: JSON.stringify({ userId: session.user.id, category: 'clientes', instanceKey: 'motor', isCompleted: true }) 
-                });
+                }));
               }
               
               if (data.landingUrl) {
-                await secureFetch("/api/user/progress", { 
+                syncPromises.push(secureFetch("/api/user/progress", { 
                   method: "POST", headers: { "Content-Type": "application/json" }, 
                   body: JSON.stringify({ userId: session.user.id, category: 'clientes', instanceKey: 'landing', isCompleted: true }) 
-                });
+                }));
               }
 
               if (data.currentCampaignId) {
-                await secureFetch("/api/user/progress", { 
+                syncPromises.push(secureFetch("/api/user/progress", { 
                   method: "POST", headers: { "Content-Type": "application/json" }, 
                   body: JSON.stringify({ userId: session.user.id, category: 'clientes', instanceKey: 'creacion', isCompleted: true }) 
-                });
+                }));
               }
-              fetchProgress(session.user.id);
+
+              // Esperar a que toda la sincronización termine antes de preguntar por el estado final
+              await Promise.all(syncPromises);
+              await fetchProgress(session.user.id);
             };
-            syncProgress();
+            await syncProgress();
 
             if (data.currentCampaignId && data.googleAdsId) {
               setCurrentInstance('motor');
@@ -301,12 +351,20 @@ export default function Dashboard() {
   const fetchProgress = async (userId?: string) => {
     const targetId = userId || user?.id;
     if (!targetId) return;
-    const res = await secureFetch(`/api/user/progress?userId=${targetId}`);
-    const d = await res.json();
-    if (d.success) {
-      setProgress(d.progress);
-      const active = d.progress.filter((p: any) => p.is_active).map((p: any) => p.category.toLowerCase());
-      setActiveCategories(Array.from(new Set(active)));
+    
+    setLoadingProgress(true);
+    try {
+      const res = await secureFetch(`/api/user/progress?userId=${targetId}`);
+      const d = await res.json();
+      if (d.success) {
+        setProgress(d.progress);
+        const active = d.progress.filter((p: any) => p.is_active).map((p: any) => p.category.toLowerCase());
+        setActiveCategories(Array.from(new Set(active)));
+      }
+    } catch (e) {
+      console.error("Error fetching progress:", e);
+    } finally {
+      setLoadingProgress(false);
     }
   };
 
@@ -609,7 +667,7 @@ export default function Dashboard() {
       const res = await secureFetch("/api/ads/conversions/setup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id })
+        body: JSON.stringify({ userId: user.id, googleAdsId: customerId })
       });
       
       const data = await res.json();
@@ -801,7 +859,7 @@ export default function Dashboard() {
       const res = await secureFetch("/api/ads/campaigns/create", { 
         method: "POST", 
         headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ userId: currentUser.id, customerId, ...data }) 
+        body: JSON.stringify({ userId: currentUser.id, customerId, type: 'create', ...data }) 
       });
 
       const result = await res.json();
@@ -982,7 +1040,12 @@ export default function Dashboard() {
       await secureFetch("/api/user/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, landingUrl: deployData.url, vercelProjectId: deployData.projectId })
+        body: JSON.stringify({ 
+          userId: user.id, 
+          landingUrl: deployData.url, 
+          vercelProjectId: deployData.projectId,
+          conversionConfig: { ...deployData.conversionConfig, lastLandingData: prepData.landingData }
+        })
       });
 
       // 4. Sincronizar progreso de desafío
@@ -1214,7 +1277,7 @@ export default function Dashboard() {
           key: 'escalamiento', 
           name: 'Configuración de conversiones', 
           description: 'Mide cada contacto y reserva para que Bolton optimice tu inversión con precisión quirúrgica.', 
-          status: isComp('activacion') ? 'unlocked' : 'locked' as any 
+          status: isComp('escalamiento') ? 'completed' : (isComp('activacion') ? 'unlocked' : 'locked') as any 
         },
         { 
           key: 'geografia', 
@@ -1248,104 +1311,20 @@ export default function Dashboard() {
   if (loadingSettings) {
     return (
       <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#050505" }}>
-        <Loader2 className="animate-spin" size={60} color="#3b82f6" style={{ opacity: 0.3 }} />
+        <div className="animate-spin" style={{ width: "40px", height: "40px", border: "3px solid rgba(59, 130, 246, 0.1)", borderTopColor: "var(--primary)", borderRadius: "50%" }} />
       </div>
     );
   }
 
   return (
-    <div className="container" style={{ paddingTop: "6rem", minHeight: "100vh" }}>
-      {currentMacro !== "portal" && (
-        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2.5rem", padding: "0 0.5rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-            <button 
-              onClick={() => { setCurrentMacro("portal"); setCurrentInstance(null); }} 
-              className="glass-pill"
-              style={{ display: "flex", alignItems: "center", gap: "0.6rem", cursor: "pointer", transition: "all 0.3s" }}
-            >
-              <LayoutDashboard size={16} color="var(--primary)" />
-              <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "white", letterSpacing: "1px" }}>MENÚ</span>
-            </button>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '0.6rem', opacity: 0.4, fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase' }}>Sistema Bolton 3.5</span>
-              <h2 style={{ fontSize: "1.1rem", fontWeight: 950, letterSpacing: "-0.5px", marginTop: '-2px' }}>
-                {currentMacro.toUpperCase()} {currentInstance ? `> ${currentInstance.toUpperCase()}` : ''}
-              </h2>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-             {customerId && currentMacro === 'clientes' && !currentInstance && (
-               <motion.button 
-                 whileHover={{ scale: 1.05 }}
-                 whileTap={{ scale: 0.95 }}
-                 onClick={() => {
-                   setCurrentInstance('motor');
-                   setCurrentView('overview');
-                 }}
-                 className="btn-primary"
-                 style={{ padding: "0.5rem 1.2rem", fontSize: "0.7rem", borderRadius: "2rem", display: "flex", alignItems: "center", gap: "0.6rem" }}
-               >
-                 <Activity size={14} /> DASHBOARD IA
-               </motion.button>
-             )}
-             
-             {currentInstance && (
-                <button 
-                  onClick={() => setCurrentInstance(null)}
-                  className="glass-pill"
-                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}
-                >
-                  <ArrowLeft size={14} color="var(--primary)" />
-                  <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "white" }}>VOLVER</span>
-                </button>
-             )}
-
-             <button 
-              onClick={() => setShowProfile(true)}
-              className="glass" 
-              style={{ width: "40px", height: "40px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)", cursor: "pointer" }}
-             >
-                <UserIcon size={18} color="var(--primary)" />
-             </button>
-          </div>
-        </header>
-      )}
-
+    <div className="container" style={{ paddingTop: "1.5rem", minHeight: "100vh" }}>
       <main className="dashboard-main" style={{ padding: "0 2rem 4rem" }}>
-        {/* NAVEGACIÓN MAESTRA BOLTON 3.0 */}
-        <MainNavigation activePilar={activePilar} onChange={setActivePilar} />
-
+        {/* NAVEGACIÓN UNIFICADA EN EL NAVBAR SUPERIOR */}
+        
         <AnimatePresence mode="wait">
           {activePilar === "desafios" && (
             <motion.div key="desafios-pilar" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
               <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-                {/* CABECERA DE VINCULACIONES (Requerido por Claudio) */}
-                {/* SMART STATUS BAR (Reemplaza al cuadro grande) */}
-                <div style={{ display: "flex", justifyContent: "center", marginBottom: "3rem" }}>
-                  <div className="glass status-bar-responsive" style={{ display: "flex", padding: "0.75rem 2rem", gap: "3rem", alignItems: "center", border: "1px solid rgba(59, 130, 246, 0.15)", background: "rgba(15, 23, 42, 0.3)" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                      <Target size={14} color="var(--primary)" />
-                      <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "var(--muted-foreground)" }}>ADS ID:</span>
-                      <span style={{ fontSize: "0.8rem", fontWeight: 800, letterSpacing: '0.5px' }}>{customerId || "PENDIENTE"}</span>
-                    </div>
-                    {landingUrl && (
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                        <Globe size={14} color="#10b981" />
-                        <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "var(--muted-foreground)" }}>LANDING:</span>
-                        <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "#3b82f6" }}>{landingUrl}</span>
-                      </div>
-                    )}
-                    {campaignId && (
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                        <Activity size={14} color="var(--accent)" />
-                        <span style={{ fontSize: "0.7rem", fontWeight: 900, color: "var(--muted-foreground)" }}>CAMP:</span>
-                        <span style={{ fontSize: "0.8rem", fontWeight: 800 }}>{campaigns.find(c => c.id.toString() === campaignId.toString())?.name || campaignId}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
                 {/* SUB-NAVEGACIÓN DESAFÍOS */}
                 <div className="nav-pilar-container" style={{ display: "flex", justifyContent: "center", gap: "3rem", marginBottom: "3.5rem" }}>
                   {[
@@ -1382,6 +1361,48 @@ export default function Dashboard() {
                 <AnimatePresence>
                   {(() => {
                     const allChallenges = getInstances("clientes");
+
+                    if (loadingProgress) {
+                      const progressPercent = ((20 - syncCountdown) / 20) * 100;
+                      return (
+                        <motion.div key="loading-challenges" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ padding: "4rem 0" }}>
+                           <div className="glass" style={{ padding: "4rem 3rem", borderRadius: "3rem", border: "1px solid rgba(59, 130, 246, 0.2)", maxWidth: "850px", margin: "0 auto", background: "linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(5, 5, 8, 0.9) 100%)", textAlign: "center" }}>
+                              
+                              <div style={{ width: "80px", height: "80px", borderRadius: "50%", background: "rgba(59, 130, 246, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 2.5rem", border: "1px solid rgba(59, 130, 246, 0.2)" }}>
+                                 <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }}>
+                                    <BrainCircuit size={40} color="var(--primary)" />
+                                 </motion.div>
+                              </div>
+
+                              <h3 style={{ fontSize: "2rem", fontWeight: 950, marginBottom: "1rem" }}>Sincronizando Logros Bolton</h3>
+                              <p style={{ opacity: 0.6, fontSize: "1.1rem", marginBottom: "3rem", maxWidth: "500px", margin: "0 auto 3.5rem" }}>
+                                Estamos recuperando tu historial de campañas y asegurando que cada hito alcanzado esté reflejado.
+                              </p>
+
+                              {/* BARRA DE PROGRESO PREMIUM */}
+                              <div style={{ width: "100%", maxWidth: "500px", margin: "0 auto", position: "relative" }}>
+                                <div style={{ height: "10px", background: "rgba(255,255,255,0.05)", borderRadius: "20px", overflow: "hidden", marginBottom: "1.5rem", border: "1px solid rgba(255,255,255,0.03)" }}>
+                                  <motion.div 
+                                    initial={{ width: 0 }} 
+                                    animate={{ width: `${progressPercent}%` }} 
+                                    style={{ height: "100%", background: "linear-gradient(90deg, #3b82f6, #60a5fa)", boxShadow: "0 0 20px rgba(59, 130, 246, 0.5)" }} 
+                                  />
+                                </div>
+                                
+                                <p style={{ fontSize: "0.9rem", fontWeight: 800, color: "var(--primary)", letterSpacing: "1px" }}>
+                                  CARGANDO EN APROXIMADAMENTE <span style={{ fontSize: "1.2rem", color: "white" }}>{syncCountdown}</span> SEGUNDOS
+                                </p>
+                              </div>
+
+                              <div style={{ marginTop: "4rem", display: "flex", justifyContent: "center", gap: "2rem", opacity: 0.3 }}>
+                                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.6rem", fontWeight: 900, textTransform: "uppercase" }}><div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#3b82f6" }} /> Ads API</div>
+                                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.6rem", fontWeight: 900, textTransform: "uppercase" }}><div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#3b82f6" }} /> Vercel OS</div>
+                                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.6rem", fontWeight: 900, textTransform: "uppercase" }}><div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#3b82f6" }} /> Supabase DB</div>
+                              </div>
+                           </div>
+                        </motion.div>
+                      );
+                    }
                     
                     if (desafioTab === 'actual') {
                       const actual = allChallenges.find(c => c.status !== 'completed' && c.status !== 'locked');
@@ -1599,30 +1620,45 @@ export default function Dashboard() {
               <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "1rem" }}>
                 
                 {/* 1. SECCIÓN: ESTADO DEL SISTEMA (AI MSG) */}
-                {/* CUADRO DE IA ESTRATÉGICA (Solo se muestra cuando llega el análisis profundo) */}
-                <AnimatePresence>
-                    {insight && (
-                        <motion.div 
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="glass" 
-                            style={{ padding: "2.5rem", borderRadius: "2rem", marginBottom: "2rem", background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%)", border: "1px solid rgba(59, 130, 246, 0.2)" }}
-                        >
-                            <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "1rem" }}>
-                                <div style={{ padding: "0.8rem", borderRadius: "1.2rem", background: "rgba(59, 130, 246, 0.2)", color: "var(--primary)" }}>
-                                    <Sparkles size={32} />
-                                </div>
-                                <div>
-                                    <span style={{ fontSize: "0.75rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "2px", opacity: 0.5 }}>Visión Estratégica IA</span>
-                                    <h2 style={{ fontSize: "2rem", fontWeight: 950 }}>{insight.system_status?.label || "Análisis en Curso"}</h2>
-                                </div>
-                            </div>
-                            <p style={{ fontSize: "1.25rem", fontWeight: 500, lineHeight: 1.6, opacity: 0.8, maxWidth: "800px" }}>
-                                {insight.system_status?.message || "Bolton está procesando tu estrategia. Si el mensaje no aparece, intenta refrescar en unos segundos para recalibrar la visión."}
-                            </p>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                {(!insight || !diagnosis) ? (
+                   <div className="glass" style={{ padding: "4rem", borderRadius: "2.5rem", textAlign: "center", border: "1px solid rgba(59, 130, 246, 0.1)", background: "rgba(15, 23, 42, 0.2)" }}>
+                      <motion.div 
+                        animate={{ rotate: 360 }} 
+                        transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                        style={{ width: "80px", height: "80px", borderRadius: "50%", border: "2px solid rgba(59, 130, 246, 0.1)", borderTopColor: "var(--primary)", margin: "0 auto 2rem", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      >
+                         <BrainCircuit size={32} color="var(--primary)" />
+                      </motion.div>
+                      <h3 style={{ fontSize: "1.8rem", fontWeight: 950, marginBottom: "1rem" }}>Sincronizando Visión Estratégica</h3>
+                      <p style={{ opacity: 0.6, fontSize: "1.1rem", maxWidth: "500px", margin: "0 auto" }}>
+                        Bolton está recopilando la telemetría histórica de tus anuncios y analizando patrones de conversión. Un segundo...
+                      </p>
+                   </div>
+                ) : (
+                  <AnimatePresence>
+                      {insight && (
+                          <motion.div 
+                              initial={{ opacity: 0, y: -20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="glass" 
+                              style={{ padding: "2.5rem", borderRadius: "2rem", marginBottom: "2rem", background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%)", border: "1px solid rgba(59, 130, 246, 0.2)" }}
+                          >
+                              <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "1rem" }}>
+                                  <div style={{ padding: "0.8rem", borderRadius: "1.2rem", background: "rgba(59, 130, 246, 0.2)", color: "var(--primary)" }}>
+                                      <Sparkles size={32} />
+                                  </div>
+                                  <div>
+                                      <span style={{ fontSize: "0.75rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "2px", opacity: 0.5 }}>Visión Estratégica IA</span>
+                                      <h2 style={{ fontSize: "2rem", fontWeight: 950 }}>{insight.system_status?.label || "Análisis en Curso"}</h2>
+                                  </div>
+                              </div>
+                              <p style={{ fontSize: "1.25rem", fontWeight: 500, lineHeight: 1.6, opacity: 0.8, maxWidth: "800px" }}>
+                                  {insight.system_status?.message || "Bolton está procesando tu estrategia. Si el mensaje no aparece, intenta refrescar en unos segundos para recalibrar la visión."}
+                              </p>
+                          </motion.div>
+                      )}
+                  </AnimatePresence>
+                )}
 
                 {/* NUEVO: PANEL DE DECISIÓN BOLTON (DETERMINISTA) */}
                 {diagnosis && (
@@ -1923,7 +1959,7 @@ export default function Dashboard() {
               transition={{ duration: 0.2 }}
               style={{ maxWidth: "1400px", margin: "0 auto", paddingBottom: "10rem" }}
             >
-               <AssistantsView />
+               <AssistantsView landingUrl={landingUrl} conversionConfig={conversionConfig} userId={user.id} />
             </motion.div>
           )}
 

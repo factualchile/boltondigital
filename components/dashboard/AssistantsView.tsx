@@ -6,8 +6,10 @@ import {
   Calculator, MessageSquare, Globe, User, 
   ArrowLeft, Send, Loader2, Zap, 
   CheckCircle2, TrendingUp, Users, DollarSign,
-  AlertCircle, Smartphone
+  AlertCircle, Smartphone, Sparkles, ListRestart,
+  Camera, Download, Mail, RefreshCw
 } from 'lucide-react';
+import { supabase } from "@/lib/supabase";
 
 interface Assistant {
   id: string;
@@ -29,8 +31,8 @@ const NEW_ASSISTANTS: Assistant[] = [
   },
   {
     id: 'whatsapp',
-    name: 'Simulador de Paciente',
-    description: 'Entrena tu cierre de ventas por WhatsApp con pacientes simulados por IA.',
+    name: 'SIMULADOR de potencial paciente',
+    description: 'Entrena tu cierre de ventas con pacientes simulados por IA y personalidades reales.',
     icon: MessageSquare,
     color: '#10b981',
     type: 'chat'
@@ -53,7 +55,7 @@ const NEW_ASSISTANTS: Assistant[] = [
   }
 ];
 
-export function AssistantsView() {
+export function AssistantsView({ landingUrl, conversionConfig, userId }: { landingUrl?: string | null, conversionConfig?: any, userId?: string }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const activeAssistant = NEW_ASSISTANTS.find(a => a.id === selectedId);
@@ -129,9 +131,9 @@ export function AssistantsView() {
                 </div>
 
                 {selectedId === 'estimador' && <EstimadorResults assistant={activeAssistant!} />}
-                {selectedId === 'whatsapp' && <SimulatorChat type="simulator" assistant={activeAssistant!} />}
-                {selectedId === 'landing' && <SimulatorChat type="audit_landing" assistant={activeAssistant!} placeholder="Pega la URL o el texto de tu landing..." />}
-                {selectedId === 'foto' && <SimulatorChat type="audit_photo" assistant={activeAssistant!} placeholder="Describe tu foto profesional o sube una para analizar..." />}
+                {selectedId === 'whatsapp' && <SimulatorChat type="simulator" assistant={activeAssistant!} userId={userId} />}
+                {selectedId === 'landing' && <SimulatorChat type="audit_landing" assistant={activeAssistant!} landingUrl={landingUrl} conversionConfig={conversionConfig} userId={userId} placeholder="Pega la URL o el texto de tu landing..." />}
+                {selectedId === 'foto' && <SimulatorChat type="audit_photo" assistant={activeAssistant!} userId={userId} placeholder="Describe tu foto profesional o sube una para analizar..." />}
               </div>
             </div>
           </motion.div>
@@ -217,53 +219,239 @@ function MetricBox({ label, value, icon: Icon }: any) {
   );
 }
 
-function SimulatorChat({ type, assistant, placeholder }: { type: string, assistant: Assistant, placeholder?: string }) {
+function SimulatorChat({ type, assistant, placeholder, landingUrl, conversionConfig, userId }: { type: string, assistant: Assistant, placeholder?: string, landingUrl?: string | null, conversionConfig?: any, userId?: string }) {
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [epiphany, setEpiphany] = useState<string | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [generatedPhoto, setGeneratedPhoto] = useState<string | null>(null);
+  const [showAIImproveButton, setShowAIImproveButton] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // INICIALIZACIÓN DE ASISTENTES
+  useEffect(() => {
+    if (type === 'simulator' && messages.length === 0) {
+      setMessages([{ role: 'assistant', content: 'Hola, solicito una hora para atención psicológica por favor' }]);
+    } else if (type === 'audit_landing' && messages.length === 0) {
+      const autoAudit = async () => {
+        setLoading(true);
+        const lData = conversionConfig?.lastLandingData;
+        const survey = conversionConfig?.campaignSurvey;
+        
+        let auditQuery = "";
+        if (lData) {
+          auditQuery = `Analiza el copy REAL de mi landing:
+             - TÍTULO: ${lData.service}
+             - SLOGAN: ${lData.slogan}
+             - BIO: ${lData.profession}
+             - UBICACIÓN: ${lData.location}
+             - ESPECIALIDADES: ${lData.specialties?.join(", ")}
+             IMPORTANTE: Solo audita esta información. Dame una retroalimentación crítica.`;
+        } else if (survey) {
+          auditQuery = `He detectado tus datos base:
+             - PROFESIÓN: ${survey.profession}
+             - SERVICIO: ${survey.service}
+             IA: Aun no tenemos el copy final, pero analicemos estos datos base.`;
+        } else {
+          auditQuery = `Auditame mi landing page. ¿Qué datos necesitas?`;
+        }
+
+        try {
+          const res = await fetch("/api/assistants/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type, userInput: auditQuery, messages: [] })
+          });
+          const data = await res.json();
+          if (data.success) setMessages([{ role: "assistant", content: data.content }]);
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setLoading(false);
+        }
+      };
+      autoAudit();
+    }
+  }, [type, messages.length, landingUrl, conversionConfig]);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("userId", userId || "anon");
+
+      const uploadRes = await fetch("/api/storage/upload", {
+        method: "POST",
+        body: formData
+      });
+      
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(uploadData.error || "Error al subir imagen");
+
+      const publicUrl = uploadData.publicUrl;
+      setUploadedImage(publicUrl);
+      setMessages([{ role: "assistant", content: "📸 He recibido tu foto. Dame unos segundos, Claudio la está auditando ahora mismo..." }]);
+      setLoading(true);
+
+      const auditRes = await fetch("/api/assistants/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          type: 'audit_photo', 
+          userInput: `Analiza esta mi foto profesional. Si crees que se puede mejorar (luz, fondo, vestimenta), incluye [PROPOSE_RETOUCH] al final.`, 
+          imageUrl: publicUrl,
+          messages: [] 
+        })
+      });
+      
+      if (!auditRes.ok) throw new Error(`Error IA: ${auditRes.statusText}`);
+      
+      const auditData = await auditRes.json();
+      if (auditData.success) {
+        let text = auditData.content;
+        if (text.includes("[PROPOSE_RETOUCH]")) {
+          text = text.replace("[PROPOSE_RETOUCH]", "").trim();
+          setShowAIImproveButton(true);
+        }
+        setMessages([{ role: "assistant", content: text }]);
+      } else {
+        throw new Error(auditData.error || "Fallo desconocido en el análisis.");
+      }
+    } catch (error: any) {
+      console.error("Audit Photo error:", error);
+      alert(`⚠️ Problema con la foto: ${error.message}`);
+      setUploadedImage(null); // Reset para permitir intentar de nuevo
+    } finally {
+      setUploadingPhoto(false);
+      setLoading(false);
+    }
+  };
+
+  const handleImprovePhoto = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/assistants/generate-photo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl: uploadedImage, profession: conversionConfig?.campaignSurvey?.profession || "Psicólogo" })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setGeneratedPhoto(data.imageUrl);
+        setMessages(prev => [...prev, { role: "assistant", content: "¡He generado una versión mejorada para ti! He ajustado la vestimenta y el entorno." }]);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+      setShowAIImproveButton(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!generatedPhoto) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/notify/photo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl: generatedPhoto })
+      });
+      const data = await res.json();
+      if (data.success) alert("¡Foto enviada a tu correo con éxito! 📧");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!input.trim() || loading) return;
-    
+    if (!input.trim() || loading || epiphany) return;
     const userMsg = { role: "user", content: input };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setLoading(true);
-
     try {
       const res = await fetch("/api/assistants/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, userInput: input, messages: messages.slice(-5) })
+        body: JSON.stringify({ 
+          type, 
+          userInput: input, 
+          messages: messages.slice(-10),
+          imageUrl: (type === 'audit_photo') ? uploadedImage : null,
+          userId
+        })
       });
       const data = await res.json();
       if (data.success) {
-        setMessages(prev => [...prev, { role: "assistant", content: data.content }]);
+        let text = data.content;
+        if (text.includes("[EPIFANIA]")) {
+          const parts = text.split("[EPIFANIA]");
+          text = parts[0].trim();
+          setEpiphany(parts[1].trim());
+        }
+        if (text.includes("[PROPOSE_RETOUCH]")) {
+          text = text.replace("[PROPOSE_RETOUCH]", "").trim();
+          setShowAIImproveButton(true);
+        }
+        if (text) setMessages(prev => [...prev, { role: "assistant", content: text }]);
       }
     } catch (e) {
-      console.error("Chat error:", e);
+      console.error(e);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "500px" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "650px", position: "relative" }}>
       <div 
         ref={scrollRef}
         style={{ flex: 1, overflowY: "auto", padding: "1rem", display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1.5rem" }}
         className="custom-scrollbar"
       >
-        {messages.length === 0 && (
+        {type === 'audit_photo' && !uploadedImage && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass"
+            style={{ padding: "4rem 2rem", borderRadius: "2rem", textAlign: "center", border: "2px dashed rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.01)" }}
+          >
+            <div style={{ width: "80px", height: "80px", borderRadius: "50%", background: "rgba(59, 130, 246, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 2rem", color: "#3b82f6" }}>
+               {uploadingPhoto ? <Loader2 className="animate-spin" size={32} /> : <Camera size={32} />}
+            </div>
+            <h4 style={{ fontSize: "1.2rem", fontWeight: 900, marginBottom: "0.5rem", color: "white" }}>Sube tu foto profesional</h4>
+            <p style={{ opacity: 0.5, fontSize: "0.9rem", marginBottom: "2rem" }}>Bolton IA auditará tu imagen y te sugerirá mejoras de autoridad.</p>
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingPhoto}
+              className="glass-button"
+              style={{ padding: "1rem 2rem", borderRadius: "1rem", fontWeight: 800, background: "#3b82f6", color: "white", border: "none", cursor: "pointer" }}
+            >
+              {uploadingPhoto ? "SUBIENDO..." : "SELECCIONAR ARCHIVO"}
+            </button>
+            <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} style={{ display: "none" }} accept="image/*" />
+          </motion.div>
+        )}
+
+        {messages.length === 0 && type !== 'audit_photo' && (
           <div style={{ textAlign: "center", padding: "3rem", opacity: 0.4 }}>
             <p style={{ fontSize: "0.9rem" }}>{placeholder || "Escribe un mensaje para comenzar..."}</p>
           </div>
         )}
+
         {messages.map((m, i) => (
           <motion.div 
             key={i}
@@ -272,11 +460,11 @@ function SimulatorChat({ type, assistant, placeholder }: { type: string, assista
             style={{ 
               alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
               maxWidth: "85%",
-              padding: "1rem 1.4rem",
-              borderRadius: m.role === 'user' ? "1.5rem 1.5rem 0.2rem 1.5rem" : "1.5rem 1.5rem 1.5rem 0.2rem",
-              background: m.role === 'user' ? "rgba(255,255,255,0.05)" : `${assistant.color}15`,
-              border: `1px solid ${m.role === 'user' ? 'rgba(255,255,255,0.1)' : `${assistant.color}30`}`,
-              fontSize: "0.95rem",
+              padding: "1.2rem 1.6rem",
+              borderRadius: m.role === 'user' ? "2rem 2rem 0.5rem 2rem" : "2rem 2rem 2rem 0.5rem",
+              background: m.role === 'user' ? "rgba(255,255,255,0.05)" : `${assistant.color}18`,
+              border: `1px solid ${m.role === 'user' ? 'rgba(255,255,255,0.1)' : `${assistant.color}35`}`,
+              fontSize: "1.05rem",
               lineHeight: 1.5,
               whiteSpace: "pre-wrap",
               color: "white"
@@ -285,31 +473,98 @@ function SimulatorChat({ type, assistant, placeholder }: { type: string, assista
             {m.content}
           </motion.div>
         ))}
-        {loading && (
-          <div style={{ alignSelf: "flex-start", opacity: 0.5, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <Loader2 className="animate-spin" size={16} /> <span style={{ fontSize: "0.8rem" }}>AI está pensando...</span>
+
+        {generatedPhoto && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass"
+            style={{ padding: "1.5rem", borderRadius: "1.5rem", marginTop: "1rem", border: "1px solid #10b98133", background: "rgba(16, 185, 129, 0.05)" }}
+          >
+            <p style={{ fontSize: "0.7rem", fontWeight: 900, color: "#10b981", letterSpacing: "1px", marginBottom: "1rem" }}>SUGERENCIA DE IA BOLTON:</p>
+            <img src={generatedPhoto} alt="Generated" style={{ width: "100%", borderRadius: "1rem", marginBottom: "1.5rem", border: "2px solid rgba(255,255,255,0.1)" }} />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <a href={generatedPhoto} download="mi-foto-bolton.jpg" target="_blank" rel="noopener noreferrer" style={{ display: "flex", textDecoration: "none", alignItems: "center", justifyContent: "center", gap: "0.5rem", background: "rgba(255,255,255,0.05)", padding: "1rem", borderRadius: "1rem", color: "white", fontSize: "0.85rem", fontWeight: 800 }}>
+                <Download size={16} /> DESCARGAR HD
+              </a>
+              <button onClick={handleSendEmail} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", background: "#3b82f6", padding: "1rem", borderRadius: "1rem", color: "white", border: "none", fontSize: "0.85rem", fontWeight: 800, cursor: "pointer" }}>
+                <Mail size={16} /> ENVIAR AL CORREO
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {showAIImproveButton && !generatedPhoto && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{ textAlign: "center", padding: "1.5rem", background: "rgba(59, 130, 246, 0.05)", borderRadius: "1.5rem", border: "1px dashed rgba(59, 130, 246, 0.3)" }}
+          >
+            <p style={{ fontSize: "0.95rem", marginBottom: "1.5rem", opacity: 0.8 }}>¿Deseas que genere una versión profesional mejorada usando este perfil?</p>
+            <button 
+              onClick={handleImprovePhoto}
+              style={{ display: "flex", alignItems: "center", gap: "0.8rem", margin: "0 auto", background: "#3b82f6", color: "white", padding: "1rem 2rem", borderRadius: "1rem", border: "none", fontWeight: 950, cursor: "pointer" }}
+            >
+              <RefreshCw size={18} className={loading ? "animate-spin" : ""} /> {loading ? "TRABAJANDO..." : "SÍ, GENERAR RETOQUE CON IA"}
+            </button>
+          </motion.div>
+        )}
+
+        {loading && !showAIImproveButton && !generatedPhoto && (
+          <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", color: "rgba(255,255,255,0.5)", paddingLeft: "1rem" }}>
+            <Loader2 className="animate-spin" size={18} /> <span style={{ fontSize: "0.9rem", fontWeight: 700 }}>AI está procesando...</span>
           </div>
+        )}
+
+        {epiphany && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} 
+            animate={{ opacity: 1, scale: 1 }} 
+            className="glass" 
+            style={{ 
+              padding: "3rem", borderRadius: "2.5rem", marginTop: "4rem", 
+              background: "linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)",
+              border: "1px solid rgba(16, 185, 129, 0.3)", boxShadow: "0 20px 50px rgba(0, 0, 0, 0.2)"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", marginBottom: "2.5rem" }}>
+               <div style={{ width: "50px", height: "50px", borderRadius: "1rem", background: "#10b981", color: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Sparkles size={28} />
+               </div>
+               <h3 style={{ fontSize: "2rem", fontWeight: 1000, letterSpacing: "-1px" }}>LA EPIFANÍA BOLTON</h3>
+            </div>
+            <div style={{ fontSize: "1.1rem", lineHeight: 1.8, opacity: 0.9, whiteSpace: "pre-wrap", marginBottom: "3rem" }}>{epiphany}</div>
+            <button 
+               onClick={() => { setMessages([]); setEpiphany(null); }}
+               className="btn-primary" 
+               style={{ width: "100%", padding: "1.2rem", borderRadius: "1.5rem", background: "#10b981", fontWeight: 950, fontSize: "0.9rem", border: "none", color: "white", cursor: "pointer" }}
+            >
+               NUEVA SIMULACIÓN <ListRestart size={18} />
+            </button>
+          </motion.div>
         )}
       </div>
 
-      <div style={{ position: "relative" }}>
-        <input 
-          type="text" 
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && sendMessage()}
-          placeholder="Escribe tu mensaje..."
-          className="glass-input"
-          style={{ width: "100%", paddingRight: "4rem", borderRadius: "1.5rem", color: "white" }}
-        />
-        <button 
-          onClick={sendMessage}
-          disabled={loading}
-          style={{ position: "absolute", right: "0.6rem", top: "50%", transform: "translateY(-50%)", background: assistant.color, border: "none", color: "white", width: "40px", height: "40px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-        >
-          <Send size={18} />
-        </button>
-      </div>
+      {!epiphany && (!showAIImproveButton || input) && (
+        <div style={{ position: "relative" }}>
+          <input 
+            type="text" 
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && sendMessage()}
+            placeholder={type === 'audit_photo' ? "Comenta tu foto..." : "Escribe un mensaje..."}
+            className="glass-input"
+            style={{ width: "100%", padding: "1.2rem 5rem 1.2rem 2rem", borderRadius: "2rem", color: "white", fontSize: "1.1rem", background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.1)" }}
+          />
+          <button 
+            onClick={sendMessage}
+            disabled={loading}
+            style={{ position: "absolute", right: "0.8rem", top: "50%", transform: "translateY(-50%)", background: assistant.color, border: "none", color: "white", width: "45px", height: "45px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+          >
+            {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

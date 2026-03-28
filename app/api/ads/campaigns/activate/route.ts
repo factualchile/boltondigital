@@ -57,12 +57,16 @@ export async function POST(req: Request) {
       }, { onConflict: 'user_id,category,instance_key' });
 
     // 📝 LOG DE ACTIVIDAD REAL
-    await clientDb.from('user_activity_log').insert([{
-        user_id: userId,
-        action_type: 'ACTIVATE_CAMPAIGN',
-        description: `Se activó la campaña ID ${campaignId} en Google Ads.`,
-        meta_data: { campaign_id: campaignId }
-    }]).catch((e: any) => console.error("Activity log failed:", e));
+    try {
+      await clientDb.from('user_activity_log').insert([{
+          user_id: userId,
+          action_type: 'ACTIVATE_CAMPAIGN',
+          description: `Se activó la campaña ID ${campaignId} en Google Ads.`,
+          meta_data: { campaign_id: campaignId }
+      }]);
+    } catch (e: any) {
+      console.error("Activity log failed:", e);
+    }
 
     console.log(`[Activate] Campaña ${campaignId} activada con éxito.`);
 

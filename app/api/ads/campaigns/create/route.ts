@@ -4,6 +4,7 @@ import { GoogleAdsApi, enums } from "google-ads-api";
 import OpenAI from "openai";
 import { verifyUser } from "@/lib/auth-server";
 import { canConsume, consumeTokens } from "@/lib/tokenomics";
+import { sendCampaignErrorNotification } from "@/lib/resend";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const client = new GoogleAdsApi({
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
 
       // 1. ANALÍTICA DE IA (ESTRATEGIA DE PRECISIÓN: KEYWORD + COPIES)
       const aiResponse = await openai.chat.completions.create({
-        model: "gpt-4-turbo-preview",
+        model: "gpt-4o",
         messages: [
           { 
             role: "system", 
@@ -172,19 +173,33 @@ export async function POST(req: Request) {
               }
             ]);
           } catch (err: any) {
-            // Bici-intento: si falla por política, extraemos la clave y reintentamos con exención
-            const policyKey = err.details?.[0]?.policy_violation_details?.key;
-            if (policyKey) {
-              console.log(`[AdsEngineer] Detectada política en Keyword. Solicitando exención automática...`);
+            console.warn(`[AdsEngineer] Intento inicial de Keyword falló. Buscando políticas...`);
+            
+            // Extracción robusta de claves de política
+            const policyKeys: string[] = [];
+            const errors = err.errors || err.details || [];
+            
+            for (const error of (Array.isArray(errors) ? errors : [errors])) {
+                const key = error?.policy_violation_details?.key || error?.details?.policy_violation_details?.key;
+                if (key) {
+                    const keyStr = typeof key === 'object' ? key.policy_name : key;
+                    if (keyStr) policyKeys.push(keyStr);
+                }
+            }
+
+            if (policyKeys.length > 0) {
+              console.log(`[AdsEngineer] Reintentando Keyword con exenciones: ${policyKeys.join(", ")}`);
               await customer.adGroupCriteria.create([
                 {
                   ad_group: adGroupResourceName,
                   status: 'ENABLED',
                   keyword: { text: finalKeyword, match_type: 'PHRASE' } as any,
-                  exempt_policy_violation_keys: [policyKey]
+                  exempt_policy_violation_keys: policyKeys.map(k => ({ policy_name: k }))
                 } as any
               ]);
             } else {
+              // Si no hay keys pero el error dice que es de política, intentamos un log más profundo
+              console.error("Ads Policy Error Detail:", JSON.stringify(err, null, 2));
               throw err;
             }
           }
@@ -210,9 +225,21 @@ export async function POST(req: Request) {
               }
             ]);
           } catch (err: any) {
-            const policyKey = err.details?.[0]?.policy_violation_details?.key;
-            if (policyKey) {
-              console.log(`[AdsEngineer] Detectada política en Anuncio. Solicitando exención automática...`);
+            console.warn(`[AdsEngineer] Intento inicial de Anuncio falló. Buscando políticas...`);
+            
+            const policyKeys: string[] = [];
+            const errors = err.errors || err.details || [];
+            
+            for (const error of (Array.isArray(errors) ? errors : [errors])) {
+                const key = error?.policy_violation_details?.key || error?.details?.policy_violation_details?.key;
+                if (key) {
+                    const keyStr = typeof key === 'object' ? key.policy_name : key;
+                    if (keyStr) policyKeys.push(keyStr);
+                }
+            }
+
+            if (policyKeys.length > 0) {
+              console.log(`[AdsEngineer] Reintentando Anuncio con exenciones: ${policyKeys.join(", ")}`);
               await customer.adGroupAds.create([
                 {
                   ad_group: adGroupResourceName,
@@ -224,10 +251,11 @@ export async function POST(req: Request) {
                     },
                     final_urls: [finalWebsite]
                   } as any,
-                  exempt_policy_violation_keys: [policyKey]
+                  exempt_policy_violation_keys: policyKeys.map(k => ({ policy_name: k }))
                 } as any
               ]);
             } else {
+              console.error("Ads Ad Policy Error Detail:", JSON.stringify(err, null, 2));
               throw err;
             }
           }
@@ -243,7 +271,7 @@ export async function POST(req: Request) {
           }
           
           if (!errorMessage) {
-            errorMessage = typeof adsErr === 'object' ? JSON.stringify(adsErr).slice(0, 100) : "Error Desconocido";
+            errorMessage = typeof adsErr === 'object' ? JSON.stringify(adsErr).slice(0, 100) : "Error Desconocido en Google Ads";
           }
 
           console.error("Ads API High-Level Error Detail:", {
@@ -251,8 +279,9 @@ export async function POST(req: Request) {
             stack: adsErr.stack,
             details: adsErr.details || adsErr.response?.data
           });
-          // EXPOSICIÓN DE ERROR EN UI PARA DIAGNÓSTICO (Solo en desarrollo)
-          finalCampaignId = `GAS-ERROR: ${errorMessage.slice(0, 200)}`;
+
+          // Lanzamos el error para que sea capturado por el bloque principal y devuelva success: false
+          throw new Error(`Google Ads Error: ${errorMessage}`);
         }
       }
     }
@@ -268,6 +297,22 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("Ads Engineer Fatal Error:", error);
+    
+    // NOTIFICACIÓN DE ERROR PROACTIVA
+    try {
+        const authHeader = req.headers.get("Authorization");
+        const token = authHeader?.replace("Bearer ", "");
+        if (token) {
+            const { data: { user } } = await supabase.auth.getUser(token);
+            if (user?.email) {
+                console.log(`[Notification] Enviando alerta de error para ${user.email}`);
+                await sendCampaignErrorNotification(user.email, error.message || "Error desconocido");
+            }
+        }
+    } catch (notifErr) {
+        console.error("Fallo al enviar notificación de error:", notifErr);
+    }
+
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

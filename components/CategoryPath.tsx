@@ -216,9 +216,34 @@ export default function CategoryPath({
                   ) : (
                     <>
                       {inst.status === 'unlocked' && (
-                        <button onClick={() => onActivate(inst.key)} className="btn-primary" style={{ padding: "0.5rem 1rem", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                           Activar <Play size={14} />
-                        </button>
+                        <>
+                          {inst.key === 'creativo' && landingUrl?.includes('vercel.app') ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.8rem' }}>
+                              <span style={{ fontSize: '0.8rem', color: '#fbbf24', fontWeight: 800, textAlign: 'right', maxWidth: '300px', lineHeight: 1.4 }}>
+                                ⚠️ Primero debes asociar tu dominio propio con tu landing page para activar este desafío.
+                              </span>
+                              <button 
+                                onClick={onShowDns} 
+                                className="btn-primary" 
+                                style={{ 
+                                  padding: "0.5rem 1rem", 
+                                  fontSize: "0.8rem", 
+                                  display: "flex", 
+                                  alignItems: "center", 
+                                  gap: "0.5rem",
+                                  background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)',
+                                  border: 'none'
+                                }}
+                              >
+                                Vincular Dominio <ArrowRight size={14} />
+                              </button>
+                            </div>
+                          ) : (
+                            <button onClick={() => onActivate(inst.key)} className="btn-primary" style={{ padding: "0.5rem 1rem", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                               Activar <Play size={14} />
+                            </button>
+                          )}
+                        </>
                       )}
                       {(inst.status === 'active' || inst.status === 'completed') && (
                         <div style={{ display: "flex", gap: "0.8rem" }}>

@@ -146,21 +146,31 @@ export async function POST(req: Request) {
 
     // 🛡️ RESPALDO EN SUPABASE Y BITÁCORA TÉCNICA
     if (userId) {
+      const db = supabaseAdmin || supabase;
+      
       // 1. Log para auditoría IA (Detallado)
-      await (supabaseAdmin || supabase).from('ai_audit_log').insert([{
-        user_id: userId,
-        metrics_snapshot: metrics,
-        ai_response: aiResult,
-        context_type: 'constant_activity_system'
-      }]).catch((e: any) => console.error("Audit log failed:", e));
+      try {
+        await db.from('ai_audit_log').insert([{
+          user_id: userId,
+          metrics_snapshot: metrics,
+          ai_response: aiResult,
+          context_type: 'constant_activity_system'
+        }]);
+      } catch (e: any) {
+        console.error("Audit log failed:", e);
+      }
 
       // 2. Log para Historial Real (Resumen Técnico)
-      await (supabaseAdmin || supabase).from('user_activity_log').insert([{
-          user_id: userId,
-          action_type: 'AI_STRATEGY_AUDIT',
-          description: `Análisis de Visión: ${aiResult.system_status.label}`,
-          meta_data: { status: aiResult.system_status.label, score: aiResult.growthScore }
-      }]).catch((e: any) => console.error("Activity log failed:", e));
+      try {
+        await db.from('user_activity_log').insert([{
+            user_id: userId,
+            action_type: 'AI_STRATEGY_AUDIT',
+            description: `Análisis de Visión: ${aiResult.system_status.label}`,
+            meta_data: { status: aiResult.system_status.label, score: aiResult.growthScore }
+        }]);
+      } catch (e: any) {
+        console.error("Activity log failed:", e);
+      }
     }
 
     return NextResponse.json({ success: true, ...aiResult });

@@ -34,42 +34,67 @@ export async function POST(req: Request) {
 
     // 2. Crear el Asset de Llamada
     // Limpiar teléfono para Google (ej: +56912345678)
-    const cleanPhone = phone.startsWith('+') ? phone : `+56${phone.replace(/\D/g, "")}`;
+    const cleanPhone = phone.trim().startsWith('+') ? phone.trim() : `+56${phone.replace(/\D/g, "")}`;
+    const timestamp = Date.now();
 
-    const assetResponse = await customer.assets.create([{
-      call_asset: {
-        country_code: "CL", // Default Chile por contexto factualchile
-        phone_number: cleanPhone,
-        call_tracking_enabled: true
-      },
-      type: enums.AssetType.CALL,
-      name: `Bolton Call: ${cleanPhone}`
-    } as any]);
+    try {
+      const assetResponse = await customer.assets.create([{
+        call_asset: {
+          country_code: "CL", 
+          phone_number: cleanPhone,
+          call_tracking_enabled: true
+        },
+        type: enums.AssetType.CALL,
+        name: `Bolton Call ${timestamp}: ${cleanPhone}`.substring(0, 80)
+      } as any]);
 
-    const assetResourceName = (assetResponse.results[0] as any).resource_name;
+      const assetResourceName = (assetResponse.results[0] as any).resource_name;
 
-    // 3. Vincular Asset a la Campaña
-    const campaignResourceName = `customers/${settings.google_ads_id.replace(/-/g, "")}/campaigns/${campaignId}`;
-    
-    await customer.campaignAssets.create([{
-      campaign: campaignResourceName,
-      asset: assetResourceName,
-      fieldType: enums.AssetFieldType.CALL
-    }] as any);
+      // 3. Vincular Asset a la Campaña
+      const campaignResourceName = `customers/${settings.google_ads_id.replace(/-/g, "")}/campaigns/${campaignId}`;
+      
+      const campaignAssetOperations = [{
+        campaign: campaignResourceName,
+        asset: assetResourceName,
+        field_type: enums.AssetFieldType.CALL
+      }];
+
+      console.log(`[Calls] Vinculando teléfono ${cleanPhone} a la campaña ${campaignId}`);
+      await customer.campaignAssets.create(campaignAssetOperations as any);
+
+    } catch (assetErr: any) {
+      console.error("[Calls] Error Google Ads:", assetErr);
+      if (!assetErr.message?.includes("ALREADY_EXISTS")) {
+          throw assetErr;
+      }
+    }
 
     // 4. Marcar progreso
     await db.from('user_progress').upsert({
       user_id: userId,
       category: 'clientes',
-      instance_key: 'leads', // Desafío #6
+      instance_key: 'leads', 
       is_completed: true,
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id, category, instance_key' });
 
-    return NextResponse.json({ success: true, phone: cleanPhone });
+    return NextResponse.json({ 
+        success: true, 
+        phone: cleanPhone,
+        message: "Extensión de llamada configurada correctamente."
+    });
 
   } catch (error: any) {
-    console.error("Call Asset Setup Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Call Asset Setup Detailed Error:", error);
+    let finalMsg = error.message;
+
+    if (error.errors && Array.isArray(error.errors)) {
+      finalMsg = `${error.message}: ${error.errors[0]?.message} (${error.errors[0]?.location?.field_path_elements?.map((e:any) => e.field_name).join('.')})`;
+    }
+
+    return NextResponse.json({ 
+        success: false,
+        error: finalMsg || "Error desconocido al configurar la extensión de llamada." 
+    }, { status: 500 });
   }
 }
